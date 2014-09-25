@@ -1,0 +1,85 @@
+# "hstd_base_reader.hsl" (C) Copyright 2014 Rafael Santiago
+#
+#  Description: "hstd.base" reading stuffs.
+#
+
+local function get_next_hstd_base_data_from_buffer(buffer type string, offset type int) : result type string {
+    var data type string;
+    var byte type string;
+    $data = "";
+    $byte = "#";
+    while ($byte == "#" && $offset < $buffer.len()) {
+        $byte = $buffer.at($offset);
+        while (($byte ==  " " || $byte == "\n" || $byte == "\r" || $byte == "\t") && $offset < $buffer.len()) {
+            $offset = $offset + 1;
+            $byte = $buffer.at($offset);
+        }
+        if ($byte == "#") {
+            while ($byte != "\n" && $offset < $buffer.len()) {
+                $offset = $offset + 1;
+                $byte = $buffer.at($offset);
+            }
+            $byte = "#";
+        }
+    }
+    while ($byte != " " && $byte != "\n" && $byte != "\r" && $byte != "\t" && $offset < $buffer.len()) {
+        $data = $data + $byte;
+        $offset = $offset + 1;
+        $byte = $buffer.at($offset);
+        if ($byte == "\\") {
+            $offset = $offset + 1;
+            $data = $data + $buffer.at($offset);
+            $offset = $offset + 1;
+        }
+    }
+    hefesto.sys.byref($offset);
+    result $data;
+}
+
+function load_hstd_base(extensions type list, extensions_root_dir type list) : result type int {
+
+    var hstd_base_data type string;
+    var retval type int;
+    var fp type file;
+    var fsize type int;
+
+    $fp = hefesto.sys.fopen("src/hstd.base", "rb");
+    $fsize = hefesto.sys.fsize($fp);
+    hefesto.sys.fread($hstd_base_data, $fsize, $fp);
+    hefesto.sys.fclose($fp);
+
+    #hefesto.sys.echo($hstd_base_data + "\n");
+
+    $extensions.clear();
+    $extensions_root_dir.clear();
+    $retval = 1;
+
+    if ($hstd_base_data.len() == 0) {
+        hefesto.sys.echo("ERROR: hstd.base is empty or not exists.\n");
+        $retval = 0;
+    }
+
+    var next_data type string;
+    var data_offset type int;
+
+    $data_offset = 0;
+    $next_data = get_next_hstd_base_data_from_buffer($hstd_base_data, $data_offset);
+
+    while ($next_data.len() > 0) {
+        $extensions.add_item($next_data); # The current extension name...
+        $next_data = get_next_hstd_base_data_from_buffer($hstd_base_data, $data_offset);
+        $extensions_root_dir.add_item($next_data); # This extension's root directory...
+        $next_data = get_next_hstd_base_data_from_buffer($hstd_base_data, $data_offset);
+    }
+
+    if ($extensions.count() != $extensions_root_dir.count()) {
+        hefesto.sys.echo("ERROR: hstd.base seems corrupted.\n");
+        $retval = 0;
+    }
+
+    hefesto.sys.byref($extensions);
+
+    hefesto.sys.byref($extensions_root_dir);
+
+    result $retval;
+}

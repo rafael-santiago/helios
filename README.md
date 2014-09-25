@@ -28,18 +28,18 @@ And yes, it can be understood as an official Hefesto's extensions repository.
 
 ## How to access the Helios catalog to know more about available extensions?
 
-Being inside Helios' root directory just type: "hefesto --helios-catalog".
+Being inside Helios' root directory just type: "hefesto --helios-catalog=<extension-name>".
 
 ## Understading the catalog files.
 
 A catalog file is just a plain file named in form "<extension-name>-catalog" which must be placed in the same related extension's directory.
 
-## Understanding the "src/hstd.listing"
+## Understanding the "src/hstd.base"
 
 When you add to Helios new features (E.g.: new toolsets or new common purpose codes) you need to do some registration in order
 to make your new stuff visible to helios install system. Basically you need to do two things:
 
-The first one is add to "src/hstd.listing" a new line in this form:
+The first one is add to "src/hstd.base" a new line in this form:
 
 # Extension name        # Extension's root directory
 extension-name          extension-root-directory/

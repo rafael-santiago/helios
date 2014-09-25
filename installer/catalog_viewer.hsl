@@ -1,0 +1,23 @@
+#
+# catalog_viewer.hsl (C) Copyright 2014 Rafael Santiago
+#
+# Description: Functions to catalog handling.
+#
+
+function view_extension_catalog(extension type string,
+                                extensions type list,
+                                extensions_root_dir type list) : result type none {
+    var extension_index type int;
+    $extension_index = $extensions.index_of($extension);
+    if ($extension_index == -1) {
+        hefesto.sys.echo("WARNING: unable to find an extension named " + $extension + " in hstd.base.\n");
+    } else {
+        var extension_catalog_fpath type string;
+        var extension_root_dir type string;
+        $extension_root_dir = $extensions_root_dir.item($extension_index);
+        $extension_catalog_fpath = hefesto.sys.make_path($extension_root_dir, $extension + "-catalog");
+        var catalog_data type string;
+        $catalog_data = hefesto.sys.lines_from_file($extension_catalog_fpath, ".*");
+        hefesto.sys.echo("\n____\n" + $catalog_data + "\n____");
+    }
+}

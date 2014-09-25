@@ -1,0 +1,24 @@
+#
+# main.hsl (C) Copyright 2014 Rafael Santiago
+#
+# Description: Helios entry point.
+#
+include installer/catalog_viewer.hsl
+include installer/hstd_base_reader.hsl
+
+function helios_main(extensions type list, extensions_root_dir type list) : result type int
+{
+    var helios_catalog_option type list;
+    var option_item type string;
+    var o type int;
+    $helios_catalog_option = hefesto.sys.get_option("helios-catalog");
+    if ($helios_catalog_option.count() > 0) {
+        $o = 0;
+        while ($o < $helios_catalog_option.count()) {
+            $option_item = $helios_catalog_option.item($o);
+            view_extension_catalog($option_item, $extensions, $extensions_root_dir);
+        }
+    }
+
+    result 0;
+}

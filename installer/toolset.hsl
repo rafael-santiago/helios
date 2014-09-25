@@ -1,0 +1,5 @@
+include main.hsl
+
+toolset "helios-installer"
+    forge function "helios_main" :
+$
