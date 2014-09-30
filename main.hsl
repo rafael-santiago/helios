@@ -19,6 +19,14 @@ function helios_main(extensions type list, extensions_root_dir type list) : resu
             view_extension_catalog($option_item, $extensions, $extensions_root_dir);
             $o = $o + 1;
         }
+    } else {
+        hefesto.sys.echo("____\nH e l i o s  install system usage tip:\n\n");
+        hefesto.sys.echo("In order to know a little about an extension => hefesto --helios-catalog=<extension-name>\n");
+        hefesto.sys.echo("In order to check your new extension integration => hefesto --new-stuff-sanity-check=<extension-name>\n");
+        hefesto.sys.echo("In order to check all code base integration => hefesto --hstd-check\n");
+        hefesto.sys.echo("In order to install an extension => hefesto --install-<extension-name>\n");
+        hefesto.sys.echo("In order to uninstall an extension => hefesto --uninstall-<extension-name>\n");
+        hefesto.sys.echo("____\n");
     }
 
     result 0;
