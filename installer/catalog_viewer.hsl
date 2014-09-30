@@ -10,14 +10,27 @@ function view_extension_catalog(extension type string,
     var extension_index type int;
     $extension_index = $extensions.index_of($extension);
     if ($extension_index == -1) {
-        hefesto.sys.echo("WARNING: unable to find an extension named " + $extension + " in hstd.base.\n");
+        hefesto.sys.echo("WARNING: unable to find an extension named \"" + $extension + "\" in hstd.base.\n");
     } else {
         var extension_catalog_fpath type string;
         var extension_root_dir type string;
         $extension_root_dir = $extensions_root_dir.item($extension_index);
-        $extension_catalog_fpath = hefesto.sys.make_path($extension_root_dir, $extension + "-catalog");
-        var catalog_data type string;
+        $extension_catalog_fpath = hefesto.sys.make_path("src", $extension_root_dir);
+        $extension_catalog_fpath = hefesto.sys.make_path($extension_catalog_fpath, $extension + "-catalog");
+        hefesto.sys.echo($extension_catalog_fpath + "\n");
+        var catalog_data type list;
         $catalog_data = hefesto.sys.lines_from_file($extension_catalog_fpath, ".*");
-        hefesto.sys.echo("\n____\n" + $catalog_data + "\n____");
+        if ($catalog_data.count() > 0) {
+            var l type int;
+            $l = 0;
+            hefesto.sys.echo("____\n");
+            while ($l < $catalog_data.count()) {
+                hefesto.sys.echo($catalog_data.item($l) + "\n");
+                $l = $l + 1;
+            }
+            hefesto.sys.echo("\n____\n");
+        } else {
+            hefesto.sys.echo("____\nWARNING: unable to find a catalog file related with this extension.\n____\n");
+        }
     }
 }

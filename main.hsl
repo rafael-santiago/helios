@@ -17,6 +17,7 @@ function helios_main(extensions type list, extensions_root_dir type list) : resu
         while ($o < $helios_catalog_option.count()) {
             $option_item = $helios_catalog_option.item($o);
             view_extension_catalog($option_item, $extensions, $extensions_root_dir);
+            $o = $o + 1;
         }
     }
 
