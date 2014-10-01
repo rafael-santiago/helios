@@ -48,13 +48,12 @@ function sanity_check(extension_name type string, extensions type list, extensio
         var catalog_fpath type string;
         $catalog_fpath = hefesto.sys.make_path("src", $extensions_root_dir.item($extension_index));
         $catalog_fpath = hefesto.sys.make_path($catalog_fpath, $extension_name + "-catalog");
-        var fp2 type file;
-        $fp2 = hefesto.sys.fopen($catalog_fpath, "rb");
-        if ($fp2 == 0) {
+        $fp = hefesto.sys.fopen($catalog_fpath, "rb");
+        if ($fp == 0) {
             $is_ok = 0;
             hefesto.sys.echo("sanity check ERROR: catalog file " + $catalog_fpath + " is lacking.\n");
         } else {
-            hefesto.sys.fclose($fp2);
+            hefesto.sys.fclose($fp);
         }
     }
     result $is_ok;

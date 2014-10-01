@@ -1,0 +1,15 @@
+include installer/toolset.hsl
+include installer/hstd_base_reader.hsl
+
+var extensions type list;
+var extensions_root_dir type list;
+
+project helios-manager : toolset "helios-installer" : $extensions, $extensions_root_dir ;
+
+helios-manager.prologue() {
+    var retval type int;
+    $retval = load_hstd_base($extensions, $extensions_root_dir);
+    if ($retval == 0) {
+        hefesto.project.abort(1);
+    }
+}

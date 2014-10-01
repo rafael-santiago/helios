@@ -4,7 +4,7 @@
 
 Helios is an acronym for [He]festo [li]brary and [o]ther [s]tuffs.
 
-This project is destinated to gather HSL codes which can be useful to integrate on [Hefesto](https://github.com/rafael-santiago/hefesto.git)
+This project is destinated to gather HSL codes which can be useful to integrate with [Hefesto](https://github.com/rafael-santiago/hefesto.git)
 as extensions for the standard library besides the own standard library.
 
 When you install [Hefesto](https://github.com/rafael-santiago/hefesto.git) a very basic library is copied to your system and
