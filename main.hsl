@@ -5,12 +5,21 @@
 #
 include installer/catalog_viewer.hsl
 include installer/hstd_base_reader.hsl
+include installer/sanity_check.hsl
 
 function helios_main(extensions type list, extensions_root_dir type list) : result type int
 {
+    var exit_code type int;
+
+    $exit_code = 0;
+
     var helios_catalog_option type list;
+    var hstd_check_option type list;
+    var new_stuff_sanity_check_option type list;
+
     var option_item type string;
     var o type int;
+
     $helios_catalog_option = hefesto.sys.get_option("helios-catalog");
     if ($helios_catalog_option.count() > 0) {
         $o = 0;
@@ -19,7 +28,35 @@ function helios_main(extensions type list, extensions_root_dir type list) : resu
             view_extension_catalog($option_item, $extensions, $extensions_root_dir);
             $o = $o + 1;
         }
-    } else {
+    }
+
+    $hstd_check_option = hefesto.sys.get_option("hstd-check");
+    if ($hstd_check_option.count() > 0) {
+        if (hstd_base_check_all($extensions, $extensions_root_dir) == 0) {
+            hefesto.sys.echo("ERROR: hstd-check failed.\n");
+            $exit_code = 1;
+        } else {
+            hefesto.sys.echo("SUCCESS: the hstd.base seems ok :)\n");
+        }
+    }
+
+    $new_stuff_sanity_check_option = hefesto.sys.get_option("new-stuff-sanity-check");
+    if ($new_stuff_sanity_check_option.count() > 0) {
+        $o = 0;
+        while ($o < $new_stuff_sanity_check_option.count() > 0 && $exit_code == 0) {
+            $option_item = $new_stuff_sanity_check_option.item($o);
+            if (sanity_check($option_item, $extensions, $extensions_root_dir) == 0) {
+                $exit_code = 1;
+            } else {
+                hefesto.sys.echo("SUCCESS: the extension \"" + $option_item + "\" seems ok :)\n");
+            }
+            $o = $o + 1;
+        }
+    }
+
+    if ($helios_catalog_option.count() == 0 &&
+        $hstd_check_option.count() == 0 &&
+        $new_stuff_sanity_check_option.count() == 0) {
         hefesto.sys.echo("____\nH e l i o s  install system usage tip:\n\n");
         hefesto.sys.echo("In order to know a little about an extension => hefesto --helios-catalog=<extension-name>\n");
         hefesto.sys.echo("In order to check your new extension integration => hefesto --new-stuff-sanity-check=<extension-name>\n");
@@ -29,5 +66,5 @@ function helios_main(extensions type list, extensions_root_dir type list) : resu
         hefesto.sys.echo("____\n");
     }
 
-    result 0;
+    result $exit_code;
 }
