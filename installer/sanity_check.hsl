@@ -1,0 +1,75 @@
+# "sanity_check.hsl"    (C) Copyright 2014 Rafael Santiago
+#
+# Description: sanity checks for new extensions
+#              integrations.
+#
+
+function sanity_check(extension_name type string, extensions type list, extensions_root_dir type list) : result type int {
+    var is_ok type int;
+    var extension_index type int;
+    $is_ok = 1;
+    # The extension must exists.
+    $extension_index = $extensions.index_of($extension_name);
+    if ($extension_index == -1) {
+        hefesto.sys.echo("sanity check ERROR: unknown extension \"" + $extension_name + "\".\n");
+        $is_ok = 0;
+    }
+    # The .files file must exist and have at least one file listed inside.
+    if ($is_ok) {
+        var extension_files_fpath type string;
+        $extension_files_fpath = hefesto.sys.make_path("src", $extension_name + ".files");
+        var files_db type list;
+        $files_db = hefesto.sys.lines_from_file($extension_files_fpath, ".*");
+        if ($files_db.count() == 0) {
+            $is_ok = 0;
+            hefesto.sys.echo("sanity check ERROR: the extension seems not have any file or " + $extension_files_fpath + " is unaccessible.\n");
+        }
+    }
+    # All listed files must be accessible.
+    if ($is_ok) {
+        var fpath type string;
+        var fp type file;
+        var f type int;
+        $f = 0;
+        while ($f < $files_db.count() && $is_ok) {
+            $fpath = hefesto.sys.make_path("src", $files_db.item($f));
+            $fp = hefesto.sys.fopen($fpath, "rb");
+            if ($fp == 0) {
+                $is_ok = 0;
+                hefesto.sys.echo("sanity check ERROR: unable to open file " + $fpath + ".\n");
+            } else {
+                hefesto.sys.fclose($fp);
+            }
+            $f = $f + 1;
+        }
+    }
+    # The extesion must have an catalog file.
+    if ($is_ok) {
+        var catalog_fpath type string;
+        $catalog_fpath = hefesto.sys.make_path("src", $extensions_root_dir.item($extension_index));
+        $catalog_fpath = hefesto.sys.make_path($catalog_fpath, $extension_name + "-catalog");
+        var fp2 type file;
+        $fp2 = hefesto.sys.fopen($catalog_fpath, "rb");
+        if ($fp2 == 0) {
+            $is_ok = 0;
+            hefesto.sys.echo("sanity check ERROR: catalog file " + $catalog_fpath + " is lacking.\n");
+        } else {
+            hefesto.sys.fclose($fp2);
+        }
+    }
+    result $is_ok;
+}
+
+function hstd_base_check_all(extensions type list, extensions_root_dir type list) : result type int {
+    var e type int;
+    var is_ok type int;
+    var extension_name type string;
+    $e = 0;
+    $is_ok = 1;
+    while ($e < $extensions.count() && $is_ok) {
+        $extension_name = $extensions.item($e);
+        $is_ok = sanity_check($extension_name, $extensions, $extensions_root_dir);
+        $e = $e + 1;
+    }
+    result $is_ok;
+}
