@@ -53,13 +53,13 @@ Or still: "hefesto --hstd-check"
 
 ## How to install new things to my working standard library
 
-Being inside Helios' root directory just type: "hefesto --install-<extension-name-listed-on-helios-catalog>".
+Being inside Helios' root directory just type: "hefesto --install=<extension-name-listed-on-helios-catalog>[,...,extension-Z]".
 
 ## How to uninstall things from my working standard library
 
-Being inside Helios' root directory just type: "hefesto --uninstall-<extension-name-listed-on-helios-catalog>".
+Being inside Helios' root directory just type: "hefesto --uninstall=<extension-name-listed-on-helios-catalog>[,...,extension-Z]".
 
-Warning: this operation doesn't take in consideration any dependency among other installed extensions in your system.
+Warning: this operation doesn't take in consideration any dependency among others installed extensions in your system.
 
 ## How to contribute
 
