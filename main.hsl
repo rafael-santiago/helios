@@ -14,8 +14,9 @@ function helios_main(extensions type list, extensions_root_dir type list) : resu
     $exit_code = 0;
 
     var helios_catalog_option type list;
-    var hstd_check_option type list;
+    var check_hstd_base_option type list;
     var new_stuff_sanity_check_option type list;
+    var show_hstd_base_option type list;
 
     var option_item type string;
     var o type int;
@@ -30,8 +31,8 @@ function helios_main(extensions type list, extensions_root_dir type list) : resu
         }
     }
 
-    $hstd_check_option = hefesto.sys.get_option("hstd-check");
-    if ($hstd_check_option.count() > 0) {
+    $check_hstd_base_option = hefesto.sys.get_option("check-hstd-base");
+    if ($check_hstd_base_option.count() > 0) {
         if (hstd_base_check_all($extensions, $extensions_root_dir) == 0) {
             hefesto.sys.echo("ERROR: hstd-check failed.\n");
             $exit_code = 1;
@@ -54,15 +55,30 @@ function helios_main(extensions type list, extensions_root_dir type list) : resu
         }
     }
 
+    $show_hstd_base_option = hefesto.sys.get_option("show-hstd-base");
+    if ($show_hstd_base_option.count() > 0) {
+        hefesto.sys.echo("Available extensions\n____\n");
+        $o = 0;
+        while ($o < $extensions.count()) {
+            hefesto.sys.echo("\t" + $extensions.item($o) + "\n");
+            $o = $o + 1;
+        }
+        hefesto.sys.echo("____\n");
+    }
+
     if ($helios_catalog_option.count() == 0 &&
-        $hstd_check_option.count() == 0 &&
-        $new_stuff_sanity_check_option.count() == 0) {
-        hefesto.sys.echo("____\nH e l i o s  install system usage tip:\n\n");
+        $check_hstd_base_option.count() == 0 &&
+        $new_stuff_sanity_check_option.count() == 0 &&
+        $show_hstd_base_option.count() == 0) {
+        hefesto.sys.echo("H e l i o s  install system usage tip:\n____\n");
+        hefesto.sys.echo("In order to get a listing of available extensions => hefesto --show-hstd-base\n");
         hefesto.sys.echo("In order to know a little about an extension => hefesto --helios-catalog=<extension-name>\n");
         hefesto.sys.echo("In order to check your new extension integration => hefesto --new-stuff-sanity-check=<extension-name>\n");
-        hefesto.sys.echo("In order to check all code base integration => hefesto --hstd-check\n");
-        hefesto.sys.echo("In order to install an extension => hefesto --install-<extension-name>\n");
-        hefesto.sys.echo("In order to uninstall an extension => hefesto --uninstall-<extension-name>\n");
+        hefesto.sys.echo("In order to check all code base integration => hefesto --check-hstd-base\n");
+        hefesto.sys.echo("In order to install an extension => hefesto --install=<extension-name>[,...,<extension-name>]\n");
+        hefesto.sys.echo("In order to uninstall an extension => hefesto --uninstall=<extension-name>[,...,<extension-name>]\n");
+        hefesto.sys.echo("In order to know the difference between your local hstd-base and helios' base => hefesto --hstd-base-diff\n");
+        hefesto.sys.echo("In order to indicate the hefesto's includes home => hefesto --hefesto-includes-home=<fullpath to your hefesto's includes>\n");
         hefesto.sys.echo("____\n");
     }
 
