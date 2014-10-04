@@ -17,7 +17,6 @@ function view_extension_catalog(extension type string,
         $extension_root_dir = $extensions_root_dir.item($extension_index);
         $extension_catalog_fpath = hefesto.sys.make_path("src", $extension_root_dir);
         $extension_catalog_fpath = hefesto.sys.make_path($extension_catalog_fpath, $extension + "-catalog");
-        hefesto.sys.echo($extension_catalog_fpath + "\n");
         var catalog_data type list;
         $catalog_data = hefesto.sys.lines_from_file($extension_catalog_fpath, ".*");
         if ($catalog_data.count() > 0) {

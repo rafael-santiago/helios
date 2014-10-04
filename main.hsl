@@ -6,6 +6,7 @@
 include installer/catalog_viewer.hsl
 include installer/hstd_base_reader.hsl
 include installer/sanity_check.hsl
+include installer/hstd_base_differ.hsl
 
 function helios_main(extensions type list, extensions_root_dir type list) : result type int
 {
@@ -17,9 +18,12 @@ function helios_main(extensions type list, extensions_root_dir type list) : resu
     var check_hstd_base_option type list;
     var new_stuff_sanity_check_option type list;
     var show_hstd_base_option type list;
+    var hstd_base_diff_option type list;
 
     var option_item type string;
     var o type int;
+
+    var non_installed_extensions type list;
 
     $helios_catalog_option = hefesto.sys.get_option("helios-catalog");
     if ($helios_catalog_option.count() > 0) {
@@ -57,19 +61,50 @@ function helios_main(extensions type list, extensions_root_dir type list) : resu
 
     $show_hstd_base_option = hefesto.sys.get_option("show-hstd-base");
     if ($show_hstd_base_option.count() > 0) {
-        hefesto.sys.echo("Available extensions\n____\n");
+        hefesto.sys.echo("Well, you got these current available extensions in your copy:\n____\n");
         $o = 0;
         while ($o < $extensions.count()) {
             hefesto.sys.echo("\t" + $extensions.item($o) + "\n");
             $o = $o + 1;
         }
+        hefesto.sys.echo("____\nIf you want to know more about some extension you should try this command: hefesto --helios-catalog=<extension-name>\n");
+    }
+
+    $hstd_base_diff_option = hefesto.sys.get_option("hstd-base-diff");
+    if ($hstd_base_diff_option.count() > 0) {
+        var diff_nr type int;
+        hefesto.sys.echo("hstd-base Diff\n____\n");
+        $diff_nr = hstd_base_diff($extensions, $extensions_root_dir, $non_installed_extensions);
         hefesto.sys.echo("____\n");
+        if ($diff_nr > 0) {
+            hefesto.sys.echo("Total of differences between your local base and helios' base: " + $diff_nr + "\n");
+            if ($diff_nr > 1) {
+                hefesto.sys.echo("The non installed extensions that diff system found are: ");
+            } else {
+                hefesto.sys.echo("The non installed extension that diff system found is: ");
+            }
+            $o = 0;
+            while ($o < $non_installed_extensions.count()) {
+                hefesto.sys.echo("\"" + $non_installed_extensions.item($o) + "\"");
+                $o = $o + 1;
+                if ($o < $non_installed_extensions.count()) {
+                    hefesto.sys.echo(", ");
+                } else {
+                    hefesto.sys.echo(".\n");
+                }
+            }
+        } else {
+            if ($diff_nr == 0) {
+                hefesto.sys.echo("Your hefesto installation seems have the same hstd.base structure, but feel free to update already installed extensions if you want to.\n");
+            }
+        }
     }
 
     if ($helios_catalog_option.count() == 0 &&
         $check_hstd_base_option.count() == 0 &&
         $new_stuff_sanity_check_option.count() == 0 &&
-        $show_hstd_base_option.count() == 0) {
+        $show_hstd_base_option.count() == 0 &&
+        $hstd_base_diff_option.count() == 0) {
         hefesto.sys.echo("H e l i o s  install system usage tip:\n____\n");
         hefesto.sys.echo("In order to get a listing of available extensions => hefesto --show-hstd-base\n");
         hefesto.sys.echo("In order to know a little about an extension => hefesto --helios-catalog=<extension-name>\n");

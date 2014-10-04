@@ -1,0 +1,85 @@
+#
+# hstd_base_differ.hsl  (C) Copyright 2014 Rafael Santiago
+#
+# Description: codes related with the feature which implements
+#              local base diff against helios base.
+#
+
+function hstd_base_diff(extensions type list, extensions_root_dir type list, non_installed_extensions type list) : result type int {
+    var hefesto_includes_home type string;
+    var old_cwd type string;
+    $hefesto_includes_home = hefesto.sys.env("HEFESTO_INCLUDES_HOME");
+    $old_cwd = hefesto.sys.pwd();
+    if (hefesto.sys.cd($hefesto_includes_home) == 1) {
+        hefesto.sys.cd($old_cwd);
+    } else {
+        $hefesto_includes_home = "";
+    }
+    if ($hefesto_includes_home.len() == 0) {
+        var hefesto_includes_home_option type list;
+        $hefesto_includes_home_option = hefesto.sys.get_option("hefesto-includes-home");
+        if ($hefesto_includes_home_option.count() == 0) {
+            hefesto.sys.echo("WARNING: You don't have HEFESTO_INCLUDES_HOME environment variable defined " +
+                             "on your system or there are several directories defined within it. Please use " +
+                             "--hefesto-includes-home option to indicate the fullpath of master hefesto's " +
+                             "includes directory.\n");
+            result -1;
+        } else {
+            $hefesto_includes_home = $hefesto_includes_home_option.item(0);
+            if (hefesto.sys.cd($hefesto_includes_home) == 1) {
+                hefesto.sys.cd($old_cwd);
+            } else {
+                hefesto.sys.echo("ERROR: the directory \"" + $hefesto_includes_home + "\" is inaccessible. Please check and try again later.\n");
+                result -1;
+            }
+        }
+    }
+    var diff_count type int;
+    var e type int;
+    var extension type string;
+    $diff_count = 0;
+    $e = 0;
+    while ($e < $extensions.count()) {
+        $extension = $extensions.item($e);
+        hefesto.sys.echo("\tNow looking for a local copy of " + $extension + "... ");
+        if (has_extension_local_copy($extension, $hefesto_includes_home)) {
+            hefesto.sys.echo("you have already a copy of it in your system.\n");
+        } else {
+            hefesto.sys.echo("you *** don't have *** a copy of it in your system.\n");
+            $diff_count = $diff_count + 1;
+            $non_installed_extensions.add_item($extension);
+        }
+        $e = $e + 1;
+    }
+    hefesto.sys.byref($non_installed_extensions);
+    result $diff_count;
+}
+
+local function has_extension_local_copy(extension type string, hefesto_includes_home type string) : result type int {
+    var extension_files_fpath type string;
+    var extension_files type list;
+    $extension_files_fpath = hefesto.sys.make_path("src", $extension + ".files");
+    $extension_files = hefesto.sys.lines_from_file($extension_files_fpath, ".*");
+    if ($extension_files.count() == 0) {
+        hefesto.sys.echo("ERROR: extension " + $extension + " has empty or inaccessible \".files\" file.\n");
+        result -1;
+    }
+    var has type int;
+    var f type int;
+    var extension_filepath type string;
+    var fp type file;
+    $has = 1;
+    $f = 0;
+    while ($f < $extension_files.count() && $has) {
+        $extension_filepath = $extension_files.item($f);
+        $extension_filepath.replace("^includes/", "");
+        $fp = hefesto.sys.fopen(hefesto.sys.make_path($hefesto_includes_home, $extension_filepath), "rb");
+        if ($fp == 0) {
+            $has = 0;
+        } else {
+            hefesto.sys.fclose($fp);
+        }
+        $f = $f + 1;
+    }
+    result $has;
+}
