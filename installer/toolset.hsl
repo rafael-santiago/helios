@@ -1,4 +1,4 @@
-include main.hsl
+include installer/main.hsl
 
 toolset "helios-installer"
     forge function "helios_main" :

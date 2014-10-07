@@ -1,0 +1,57 @@
+#
+# install_extension.hsl      (C) Copyright 2014 Rafael Santiago
+#
+# Description: Installation stuffs.
+#
+
+include src/includes/fsutil.hsl
+
+function install_extension(extension type string, extension_root_dir type string) : result type int {
+    var success type int;
+    $success = 0;
+    var extension_files type list;
+    $extension_files = hefesto.sys.lines_from_file(hefesto.sys.make_path("src", $extension + ".files"), ".*");
+    if ($extension_files.count() == 0) {
+        hefesto.sys.echo(" ERROR: \"" + $extension + "\" extension seems not exists...");
+        result 0;
+    }
+    var hefesto_includes_home type string;
+    var old_cwd type string;
+    $hefesto_includes_home = hefesto.sys.env("HEFESTO_INCLUDES_HOME");
+    $old_cwd = hefesto.sys.pwd();
+    if (hefesto.sys.cd($hefesto_includes_home) == 0) {
+        $hefesto_includes_home = "";
+    } else {
+        hefesto.sys.cd($old_cwd);
+    }
+    if ($hefesto_includes_home.len() == 0) {
+        var hefesto_includes_home_option type list;
+        $hefesto_includes_home_option = hefesto.sys.get_option("hefesto-includes-home");
+        if ($hefesto_includes_home_option.count() != 0) {
+            $hefesto_includes_home = $hefesto_includes_home_option.item(0);
+        } else {
+            hefesto.sys.echo("ERROR: there's no HEFESTO_INCLUDES_HOME defined in your system or there are many directories defined there, please try again using --hefesto-includes-home option.\n");
+            result 0;
+        }
+    }
+    var ef type int;
+    $ef = 0;
+    $success = 1;
+    var dst_path type string;
+    var src_path type string;
+    while ($success && $ef < $extension_files.count()) {
+        $src_path = $extension_files.item($ef);
+        $src_path = hefesto.sys.make_path("src", $src_path);
+        $dst_path = $extension_files.item($ef);
+        $dst_path.replace("includes/", "");
+        $dst_path = hefesto.sys.make_path($hefesto_includes_home, $dst_path);
+        $success = mktree(pathfromfilepath($dst_path));
+        if ($success) {
+            $success = hefesto.sys.cp($src_path, $dst_path);
+        } else {
+            hefesto.sys.echo("ERROR: while the destination path \"" + pathfromfilepath($dst_path) + "\" was being created.\n");
+        }
+        $ef = $ef + 1;
+    }
+    result $success;
+}

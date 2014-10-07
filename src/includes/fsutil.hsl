@@ -46,10 +46,10 @@ function pathfromfilepath(filepath type string) : result type string {
             if ($filepath.at($fe) == "\\" ||
                 $filepath.at($fe) == "/") {
                 break;
-            } else {
-                if ($filepath.at($fe) == "/") {
-                    break;
-                }
+            }
+        } else {
+            if ($filepath.at($fe) == "/") {
+                break;
             }
         }
         $fe = $fe - 1;
