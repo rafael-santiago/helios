@@ -1,12 +1,12 @@
 #
-# install_extension.hsl      (C) Copyright 2014 Rafael Santiago
+# uninstall_extension.hsl      (C) Copyright 2014 Rafael Santiago
 #
-# Description: Installation stuffs.
+# Description: Uinstallation stuffs.
 #
 
 include src/includes/fsutil.hsl
 
-function install_extension(extension type string) : result type int {
+function uninstall_extension(extension type string) : result type int {
     var success type int;
     $success = 0;
     var extension_files type list;
@@ -38,18 +38,17 @@ function install_extension(extension type string) : result type int {
     $ef = 0;
     $success = 1;
     var dst_path type string;
-    var src_path type string;
     while ($success && $ef < $extension_files.count()) {
-        $src_path = $extension_files.item($ef);
-        $src_path = hefesto.sys.make_path("src", $src_path);
         $dst_path = $extension_files.item($ef);
         $dst_path.replace("includes/", "");
         $dst_path = hefesto.sys.make_path($hefesto_includes_home, $dst_path);
-        $success = mktree(pathfromfilepath($dst_path));
-        if ($success) {
-            $success = hefesto.sys.cp($src_path, $dst_path);
-        } else {
-            hefesto.sys.echo("ERROR: while the destination path \"" + pathfromfilepath($dst_path) + "\" was being created.\n");
+        if (isfile($dst_path)) {
+            $success = (hefesto.sys.rm($dst_path) == 0);
+            if ($success) {
+                rmtree(pathfromfilepath($dst_path));
+            } else {
+                hefesto.sys.echo("ERROR: while the file  at \"" + $dst_path + "\" was being removed.\n");
+            }
         }
         $ef = $ef + 1;
     }

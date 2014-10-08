@@ -3,11 +3,13 @@
 #
 # Description: Helios entry point.
 #
+
 include installer/catalog_viewer.hsl
 include installer/hstd_base_reader.hsl
 include installer/sanity_check.hsl
 include installer/hstd_base_differ.hsl
 include installer/install_extension.hsl
+include installer/uninstall_extension.hsl
 
 function helios_main(extensions type list, extensions_root_dir type list) : result type int
 {
@@ -21,9 +23,11 @@ function helios_main(extensions type list, extensions_root_dir type list) : resu
     var show_hstd_base_option type list;
     var hstd_base_diff_option type list;
     var install_option type list;
+    var uninstall_option type list;
 
     var option_item type string;
     var o type int;
+    var success type int;
 
     var non_installed_extensions type list;
 
@@ -105,17 +109,12 @@ function helios_main(extensions type list, extensions_root_dir type list) : resu
     $install_option = hefesto.sys.get_option("install");
     if ($install_option.count() > 0) {
         hefesto.sys.echo("Installing... Please wait...\n____\n");
-        var success type int;
-        var extension_root_dir type string;
-        var extension_index type int;
         $o = 0;
         $success = 1;
         while ($success && $o < $install_option.count()) {
             $option_item = $install_option.item($o);
             hefesto.sys.echo("\tNow installing \"" + $option_item + "\"...");
-            $extension_index = $extensions_root_dir.index_of($option_item);
-            $extension_root_dir = $extensions_root_dir.item($extension_index);
-            $success = install_extension($option_item, $extension_root_dir);
+            $success = install_extension($option_item);
             if ($success) {
                 hefesto.sys.echo(" ok.\n");
             } else {
@@ -126,16 +125,36 @@ function helios_main(extensions type list, extensions_root_dir type list) : resu
         if ($success) {
             hefesto.sys.echo("____\nAll was installed with success.\n");
         } else {
-            hefesto.sys.echo("____\nError during the installation process.\n");
+            hefesto.sys.echo("____\nError during installation process.\n");
         }
     }
 
-    if ($helios_catalog_option.count() == 0 &&
-        $check_hstd_base_option.count() == 0 &&
-        $new_stuff_sanity_check_option.count() == 0 &&
-        $show_hstd_base_option.count() == 0 &&
-        $hstd_base_diff_option.count() == 0 &&
-        $install_option.count() == 0) {
+    $uninstall_option = hefesto.sys.get_option("uninstall");
+    if ($uninstall_option.count() > 0) {
+        hefesto.sys.echo("Uninstalling... Please wait...\n____\n");
+        $o = 0;
+        $success = 1;
+        while ($success && $o < $uninstall_option.count()) {
+            $option_item = $uninstall_option.item($o);
+            hefesto.sys.echo("\tNow uninstalling \"" + $option_item + "\"...");
+            $success = uninstall_extension($option_item);
+            if ($success) {
+                hefesto.sys.echo(" ok.\n");
+            } else {
+                hefesto.sys.echo(" error...\n");
+            }
+            $o = $o + 1;
+        }
+        if ($success) {
+            hefesto.sys.echo("____\nAll was uninstalled with success.\n");
+        } else {
+            hefesto.sys.echo("____\nError during uinstallation process.\n");
+        }
+    }
+
+    if ($helios_catalog_option.count() == 0 && $check_hstd_base_option.count() == 0 &&
+        $new_stuff_sanity_check_option.count() == 0 && $show_hstd_base_option.count() == 0 &&
+        $hstd_base_diff_option.count() == 0 && $install_option.count() == 0 && $uninstall_option.count() == 0) {
         hefesto.sys.echo("H e l i o s  install system usage tip:\n____\n");
         hefesto.sys.echo("In order to get a listing of available extensions => hefesto --show-hstd-base\n");
         hefesto.sys.echo("In order to know a little about an extension => hefesto --helios-catalog=<extension-name>\n");
