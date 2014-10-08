@@ -1,7 +1,7 @@
 # Extension                             Root directory
-conversion-utils                        includes/
-filesystem-utils                        includes/
-list-utils                              includes/
-option-utils                            includes/
-string-utils                            includes/
+conversion-utils                        include/
+filesystem-utils                        include/
+list-utils                              include/
+option-utils                            include/
+string-utils                            include/
 

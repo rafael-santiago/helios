@@ -4,7 +4,7 @@
 # Description: Installation stuffs.
 #
 
-include src/includes/fsutil.hsl
+include src/include/fsutil.hsl
 
 function install_extension(extension type string) : result type int {
     var success type int;
@@ -43,7 +43,7 @@ function install_extension(extension type string) : result type int {
         $src_path = $extension_files.item($ef);
         $src_path = hefesto.sys.make_path("src", $src_path);
         $dst_path = $extension_files.item($ef);
-        $dst_path.replace("includes/", "");
+        $dst_path.replace("^include/", "");
         $dst_path = hefesto.sys.make_path($hefesto_includes_home, $dst_path);
         $success = mktree(pathfromfilepath($dst_path));
         if ($success) {

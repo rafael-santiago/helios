@@ -4,7 +4,7 @@
 # Description: Uinstallation stuffs.
 #
 
-include src/includes/fsutil.hsl
+include src/include/fsutil.hsl
 
 function uninstall_extension(extension type string) : result type int {
     var success type int;
@@ -40,7 +40,7 @@ function uninstall_extension(extension type string) : result type int {
     var dst_path type string;
     while ($success && $ef < $extension_files.count()) {
         $dst_path = $extension_files.item($ef);
-        $dst_path.replace("includes/", "");
+        $dst_path.replace("^include/", "");
         $dst_path = hefesto.sys.make_path($hefesto_includes_home, $dst_path);
         if (isfile($dst_path)) {
             $success = (hefesto.sys.rm($dst_path) == 0);

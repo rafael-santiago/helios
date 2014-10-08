@@ -72,7 +72,7 @@ local function has_extension_local_copy(extension type string, hefesto_includes_
     $f = 0;
     while ($f < $extension_files.count() && $has) {
         $extension_filepath = $extension_files.item($f);
-        $extension_filepath.replace("^includes/", "");
+        $extension_filepath.replace("^include/", "");
         $fp = hefesto.sys.fopen(hefesto.sys.make_path($hefesto_includes_home, $extension_filepath), "rb");
         if ($fp == 0) {
             $has = 0;
