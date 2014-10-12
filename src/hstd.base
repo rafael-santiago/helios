@@ -7,5 +7,5 @@ string-utils                            include/
 gnu-asm-toolset                         include/toolsets/
 ide-prj-generators                      include/generators/
 c-dep-scanner                           include/toolsets/common/utils/lang/c/
-
+forge-bootstrapper                      include/toolsets/utils/
 
