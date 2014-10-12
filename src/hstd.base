@@ -4,4 +4,5 @@ filesystem-utils                        include/
 list-utils                              include/
 option-utils                            include/
 string-utils                            include/
+gnu-asm-toolset                         include/toolsets/
 

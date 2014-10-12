@@ -52,5 +52,15 @@ function uninstall_extension(extension type string) : result type int {
         }
         $ef = $ef + 1;
     }
+    if ($success) {
+        $ef = $ef - 1;
+        while ($ef > -1) {
+            $dst_path = $extension_files.item($ef);
+            $dst_path.replace("^include/", "");
+            $dst_path = hefesto.sys.make_path($hefesto_includes_home, $dst_path);
+            rmtree(pathfromfilepath($dst_path));
+            $ef = $ef - 1;
+        }
+    }
     result $success;
 }

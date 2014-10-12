@@ -1,0 +1,25 @@
+#                               (C) Copyright Rafael Santiago 2014
+#
+# "gas-app.hsl" (The user's toolset definitions).
+#
+#                                  Wed 17 Sep 2014 01:40:42 PM BRT
+#
+#  Description: A minimal GNU Assembler Hefesto toolset to
+#               build applications.
+#
+include ~/toolsets/gas/forges/gas_app_forge.hsl
+
+toolset "gas-app" forge function "gas_app_forge" : forge helpers "mk_gas_compilation_cmdline", "gas_applink":
+    command "as_release" : SOURCE, OBJECT, INCLUDES, CFLAGS <
+        as -o $OBJECT $SOURCE $INCLUDES $CFLAGS
+    >
+    command "as_debug" : SOURCE, OBJECT, INCLUDES, CFLAGS <
+        as -o $OBJECT $SOURCE $INCLUDES $CFLAGS -gstabs
+    >
+    command "ld_shared" : APPNAME, OBJECTS, LIBRARIES, LDFLAGS <
+        ld -Bdynamic $OBJECTS $LIBRARIES $LDFLAGS -o $APPNAME
+    >
+    command "ld_static" : APPNAME, OBJECTS, LIBRARIES, LDFLAGS <
+        ld -Bstatic $OBJECTS $LIBRARIES $LDFLAGS -o $APPNAME
+    >
+$

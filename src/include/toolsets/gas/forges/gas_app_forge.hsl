@@ -1,0 +1,331 @@
+#                               (C) Copyright Rafael Santiago 2014
+#
+# "gas_app_forge.hsl" (The forge stuff).
+#
+#                                  Wed 17 Sep 2014 01:37:43 PM BRT
+#
+#  Description: A minimal GNU Assembler Hefesto toolset to
+#               build applications.
+#
+include ~/fsutil.hsl
+include ~/conv.hsl
+
+function gas_app_forge(sources type list,
+                       includes type list,
+                       cflags type list,
+                       libraries type list,
+                       ldflags type list,
+                       appname type string) : result type int {
+    var gas_toolset_help type list;
+    $gas_toolset_help = hefesto.sys.get_option("gas-toolset-help");
+    if ($gas_toolset_help.count() > 0) {
+        gas_toolset_sinopsis();
+        result 0;
+    }
+    var retval type int;
+    $retval = 0;
+    hefesto.sys.echo("\n____\nGNU Assembler toolset version " + gas_version() + "\n\n");
+    #
+    # Reading sources files if it hadn't done before.
+    #
+    if ($sources.count() == 0) {
+        $sources.ls(".*\\.[sS]$");
+        if ($sources.count() == 0) {
+            hefesto.sys.echo(hefesto.project.toolset() + " ERROR: no sources to compile.\n");
+            hefesto.sys.echo("____\n");
+            result 1;
+        }
+    }
+    var compile_model_option type list;
+    var release type int;
+    $compile_model_option = hefesto.sys.get_option("compile-model");
+    $release = 1;
+    if ($compile_model_option.count() > 0) {
+        if ($compile_model_option.item(0) == "debug") {
+            $release = 0;
+        } else if ($compile_model_option.item(0) != "release") {
+            hefesto.sys.echo(hefesto.project.toolset() + " ERROR: unknown compile-model (must be \"release\" or \"debug\").\n");
+            hefesto.sys.echo("____\n");
+            result 1;
+        }
+    }
+    var address_model_option type list;
+    var address_model type string;
+    $address_model_option = hefesto.sys.get_option("address-model");
+    if ($address_model_option.count() > 0) {
+        $address_model = $address_model_option.item(0);
+    }
+    if ($address_model.len() > 0 && $address_model != "32" && $address_model != "64") {
+        hefesto.sys.echo(hefesto.project.toolset() + " ERROR: unknown address-model (must be \"32\" or \"64\").\n");
+        hefesto.sys.echo("____\n");
+        result 1;
+    }
+    #
+    # Preparing the environment to compilation process.
+    #
+    var obj_dir_option type list;
+    var obj_dir type string;
+    $obj_dir_option = hefesto.sys.get_option("obj-dir");
+    if ($obj_dir_option.count() > 0) {
+        $obj_dir = $obj_dir_option.item(0);
+    } else {
+        $obj_dir = "./";
+    }
+    var bin_dir_option type list;
+    var bin_dir type string;
+    $bin_dir_option = hefesto.sys.get_option("bin-dir");
+    if ($bin_dir_option.count() > 0) {
+        $bin_dir = $bin_dir_option.item(0);
+    } else {
+        $bin_dir = "./";
+    }
+    setup_compilation_environment($obj_dir, $bin_dir);
+    #
+    # Acquiring the name of object outputs based on source inputs.
+    #
+    var objects type list;
+    $objects = get_objects_filepaths($sources, $obj_dir);
+    #
+    # And then, compiling....
+    #
+    $retval = gas_compile($sources, $objects, $includes, $cflags, $address_model, $release);
+    if ($retval == 0) {
+        #
+        #  Linking.....
+        #
+        hefesto.sys.echo("\nNow linking, please wait...\n");
+        $retval = gas_applink($objects, $libraries, $ldflags, hefesto.sys.make_path($bin_dir, $appname));
+        if ($retval == 0) {
+            hefesto.sys.echo("Done < \"" + hefesto.sys.make_path($bin_dir, $appname) + "\" > .\n\n");
+        }
+    }
+    if ($retval == 0) {
+        hefesto.sys.echo("success.\n");
+    } else {
+        hefesto.sys.echo("failure.\n");
+    }
+    hefesto.sys.echo("____\n\n");
+    result $retval; # all done! ;)
+}
+
+local function gas_version() : result type string {
+    result "0.0.1.0";
+}
+
+local function gas_toolset_sinopsis() : result type none {
+    hefesto.sys.echo("____\n" + hefesto.project.toolset() + " version " + gas_version() + " command option synopsis\n\n");
+    hefesto.sys.echo("  [--compile-model] option specifies the compilation model. Should be \"release\" (default) or \"debug\".\n\n");
+    hefesto.sys.echo("  [--link-model] option specifies the linkage model. Should be \"shared\" (default) or \"static\".\n\n");
+    hefesto.sys.echo("  [--obj-dir] option specifies the output directory where the object files will be written (the default is the current directory).\n\n");
+    hefesto.sys.echo("  [--bin-dir] option specifies the binary directory where the resultant file from link-edition will be written (the default is the current directory).\n\n");
+    hefesto.sys.echo("  [--qsize option] is an internal hefesto's option which defines (when greater than one) or not concurrent compilation mode (the default is one).\n\n");
+    hefesto.sys.echo("  [--gas-toolset-help] option which requests these informations ;)\n\n");
+    hefesto.sys.echo("  [--with-libc] option which should be used when you use C library functions within your code\n\n");
+    hefesto.sys.echo("  [--address-model] option which should be used to specify the word-size (but this is useful only for i386)\n");
+    hefesto.sys.echo("____\n");
+}
+
+local function setup_compilation_environment(obj_dir type string, bin_dir type string) : result type none {
+    var oldcwd type string;
+    $oldcwd = hefesto.sys.pwd();
+    if (hefesto.sys.cd($obj_dir) == 0) {
+        mktree($obj_dir);
+    }
+    hefesto.sys.cd($oldcwd);
+    if (hefesto.sys.cd($bin_dir) == 0) {
+        mktree($bin_dir);
+    }
+    hefesto.sys.cd($oldcwd);
+}
+
+local function get_objects_filepaths(sources type list, obj_dir type string) : result type list {
+    var s type int;
+    var object_filepath type string;
+    var source_filepath type string;
+    var objs type list;
+    $s = 0;
+    while ($s < $sources.count()) {
+        $source_filepath = $sources.item($s);
+        $object_filepath = filenamefrompath($source_filepath);
+        $object_filepath.replace("\\.[s|S]$", ".o");
+        $object_filepath = hefesto.sys.make_path($obj_dir, $object_filepath);
+        $objs.add_item($object_filepath);
+        $s = $s + 1;
+    }
+    result $objs;
+}
+
+local function mk_includes_gas_option(includes type list) : result type string {
+    var i type int;
+    var str_inc type string;
+    $i = 0;
+    while ($i < $includes.count()) {
+        $str_inc = $str_inc + "-I" + $includes.item($i);
+        $i = $i + 1;
+    }
+    result $str_inc;
+}
+
+local function mk_libraries_ld_option(libraries type list) : result type string {
+    var l type int;
+    var str_lib type string;
+    $l = 0;
+    $str_lib = "";
+    while ($l < $libraries.count()) {
+        $str_lib = $str_lib + "-L" + $libraries.item($l);
+        $l = $l + 1;
+    }
+    result $str_lib;
+}
+
+local function mk_gas_compilation_cmdline(srcpath type string,
+                                          objpath type string,
+                                          includes type string,
+                                          cflags type string,
+                                          address_model type string,
+                                          release type int) : result type string {
+    var cmdline type string;
+    if ($release) {
+        $cmdline = hefesto.toolset.as_release($srcpath, $objpath, $includes, $cflags);
+    } else {
+        $cmdline = hefesto.toolset.as_debug($srcpath, $objpath, $includes, $cflags);
+    }
+    if ($address_model.len() > 0) {
+        $cmdline.replace("\n", "");
+        $cmdline = $cmdline + " --" + $address_model;
+    }
+    result $cmdline;
+}
+
+local function gas_option_list_serializer(optlist type list) : result type string {
+    var o type int;
+    var retval type string;
+    $o = 0;
+    while ($o < $optlist.count()) {
+        $retval = $retval + " " + $optlist.item($o);
+        $o = $o + 1;
+    }
+    result $retval;
+}
+
+local function gas_compile_sync(sources type list, objects type list, includes type list, cflags type list, address_model type string, release type int) : result type int {
+    var retval type int;
+    var includes_gas_option type string;
+    var cflags_gas_option type string;
+    var s type int;
+    var srcpath type string;
+    var objpath type string;
+    var cmdline type string;
+
+    $retval = 0;
+    $includes_gas_option = mk_includes_gas_option($includes);
+    $cflags_gas_option = gas_option_list_serializer($cflags);
+    $s = 0;
+
+    while ($retval == 0 && $s < $sources.count()) {
+        $srcpath = $sources.item($s);
+        $objpath = $objects.item($s);
+        hefesto.sys.echo("\tcompiling " + $srcpath + "...");
+        $cmdline = mk_gas_compilation_cmdline($srcpath, $objpath, $includes_gas_option, $cflags_gas_option, $address_model, $release);
+        $retval = hefesto.sys.run($cmdline);
+        if ($retval != 0) {
+            hefesto.sys.echo("\t" + $srcpath + " has errors.\n");
+        } else {
+            hefesto.sys.echo(" is ok.\n");
+        }
+        $s = $s + 1;
+    }
+
+    result $retval;
+}
+
+local function gas_compile_async(sources type list, objects type list, includes type list, cflags type list, address_model type string, release type int, qsize type int) : result type int {
+    var retval type int;
+    var includes_gas_option type string;
+    var cflags_gas_option type string;
+    var s type int;
+    var cmdlines type list;
+    var srcpath type string;
+    var objpath type string;
+    var q type int;
+    $retval = 0;
+    $s = 0;
+    $q = 0;
+    $includes_gas_option = mk_includes_gas_option($includes);
+    $cflags_gas_option = gas_option_list_serializer($cflags);
+    hefesto.sys.echo("\tcompiling in concurrent mode... please wait...\n");
+    while ($s < $sources.count() && $retval == 0) {
+        if ($q <  $qsize) {
+            $srcpath = $sources.item($s);
+            $objpath = $objects.item($s);
+            $cmdlines.add_item(mk_gas_compilation_cmdline($srcpath,
+                                                          $objpath,
+                                                          $includes_gas_option,
+                                                          $cflags_gas_option,
+                                                          $address_model,
+                                                          $release));
+            $s = $s + 1;
+            $q = $q + 1;
+        } else {
+            $retval = hefesto.sys.run($cmdlines);
+            $cmdlines.clear();
+        }
+    }
+    if ($cmdlines.count() > 0) {
+        $retval = hefesto.sys.run($cmdlines);
+    }
+    if ($retval == 0) {
+        hefesto.sys.echo("\tall done with success.\n");
+    } else {
+        hefesto.sys.echo("\tsome errors were found.\n");
+    }
+    result $retval;
+}
+
+local function gas_compile(sources type list, objects type list, includes type list, cflags type list, address_model type string, release type int) : result type int {
+    var qsize_option type list;
+    var qsize_item type string;
+    var qsize_value type int;
+    $qsize_value = 1;
+    $qsize_option = hefesto.sys.get_option("qsize");
+    if ($qsize_option.count() > 0) {
+        $qsize_item = $qsize_option.item(0);
+        $qsize_value = str2int($qsize_item);
+    }
+    if ($qsize_value <= 1) { # The compilation task will be processed in a single processing line
+        result gas_compile_sync($sources, $objects, $includes, $cflags, $address_model, $release);
+    }
+    result gas_compile_async($sources, $objects, $includes, $cflags, $address_model, $release, $qsize_value); # The user asked for multiple processing lines, so we gonna do it
+}
+
+local function gas_applink(objects type list, libraries type list, ldflags type list, appname type string) : result type int {
+    var ldflags_gas_option type string;
+    var objects_gas_option type string;
+    var libraries_gas_option type string;
+    $ldflags_gas_option = gas_option_list_serializer($ldflags);
+    $objects_gas_option = gas_option_list_serializer($objects);
+    $libraries_gas_option = mk_libraries_ld_option($libraries);
+    var link_model_option type list;
+    $link_model_option = hefesto.sys.get_option("link-model");
+    var static type int;
+    $static = 0;
+    if ($link_model_option.count() > 0) {
+        $static = ($link_model_option.item(0) == "static");
+        if ($static == 0 && $link_model_option.item(0) != "shared") {
+            hefesto.sys.echo(hefesto.project.toolset() + " ERROR: unkown link-model (it must be \"shared\" or \"static\").\n");
+            result 1;
+        }
+    }
+    var with_libc_option type list;
+    $with_libc_option = hefesto.sys.get_option("with-libc");
+    if ($with_libc_option.count() > 0) {
+        $ldflags_gas_option = $ldflags_gas_option + " -lc -dynamic-linker /lib/ld-linux.so.2";
+    }
+    var linker_cmdline type string;
+    if ($static) {
+        $linker_cmdline = hefesto.toolset.ld_static($appname, $objects_gas_option, $libraries_gas_option, $ldflags_gas_option);
+    } else {
+        $linker_cmdline = hefesto.toolset.ld_shared($appname, $objects_gas_option, $libraries_gas_option, $ldflags_gas_option);
+    }
+    result hefesto.sys.run($linker_cmdline);
+}

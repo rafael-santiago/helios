@@ -220,7 +220,7 @@ function rmtree(dtree type string) : result type int {
     }
     $d = 0;
     while ($d < $dtree.len()) {
-        if ($dtree.at($d) == $sep) {
+        if ($dtree.at($d) == $sep && $dtemp.len() > 0) {
             if ($dtree.at($d-1) == ":") {
                 $dtemp = $dtemp + $dtree.at($d);
             } else {
