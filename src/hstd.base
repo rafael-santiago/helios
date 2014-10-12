@@ -5,4 +5,5 @@ list-utils                              include/
 option-utils                            include/
 string-utils                            include/
 gnu-asm-toolset                         include/toolsets/
+ide-prj-generators                      include/generators/
 

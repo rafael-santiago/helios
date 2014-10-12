@@ -1,0 +1,3 @@
+include/generators/codeblocks_project_generator.hsl
+include/generators/devcpp_project_generator.hsl
+include/generators/visualstudio_project_generator.hsl
