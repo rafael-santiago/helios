@@ -1,7 +1,7 @@
 # The Hefesto's LaTeX toolset
 
 The Hefesto's LaTeX toolset assist you on basic .dvi generation
-and also genarates the pdf too.
+and also genarates the pdf.
 
 To start to use it you need to include the toolset definition:
 
