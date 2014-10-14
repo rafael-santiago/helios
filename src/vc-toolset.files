@@ -1,0 +1,13 @@
+include/toolsets/vc/README.md
+include/toolsets/vc/vc100-app.hsl
+include/toolsets/vc/vc100-lib.hsl
+include/toolsets/vc/vc110-app.hsl
+include/toolsets/vc/vc110-lib.hsl
+include/toolsets/vc/common/vssetupenv.hsl
+include/toolsets/vc/vcvarsall/vcvarsall_100.hsl
+include/toolsets/vc/vcvarsall/vcvarsall_110.hsl
+include/toolsets/vc/forges/common/vcutils.hsl
+include/toolsets/vc/forges/vc100_app_forge.hsl
+include/toolsets/vc/forges/vc100_lib_forge.hsl
+include/toolsets/vc/forges/vc110_app_forge.hsl
+include/toolsets/vc/forges/vc100_lib_forge.hsl
