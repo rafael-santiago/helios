@@ -11,3 +11,5 @@ forge-bootstrapper                      include/toolsets/utils/
 LaTeX-toolset                           include/toolsets/
 gnu-c-toolset                           include/toolsets/
 vc-toolset                              include/toolsets/
+hc-functions                            include/hc/
+

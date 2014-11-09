@@ -1,0 +1,34 @@
+#
+# hc.hsl                < Sat 08 Nov 2014 12:25:04 PM BRST >
+#
+#       By Rafael Santiago
+#
+# Description: this is the place to put things that controls things globally,
+#              try to be careful.
+
+var __hc_system_config_should_abort_on_fail type int;
+
+function hc_set_abort_on_fail() : result type int {
+    $__hc_system_config_should_abort_on_fail = 1;
+}
+
+function hc_unset_abort_on_fail() : result type int {
+    $__hc_system_config_should_abort_on_fail = 0;
+}
+
+function hc_should_abort_on_fail() : result type int {
+    result $__hc_system_config_should_abort_on_fail;
+}
+
+function hc_print_result(caller_name type string,
+                         retval type int,
+                         error_message type string, success_message type string) : result type none {
+    if ($retval == 0) {
+        hefesto.sys.echo($caller_name + " ERROR: " + $error_message + "\n");
+    } else if ($success_message.len() > 0) {
+        hefesto.sys.echo($caller_name + " INFO: " + $success_message + "\n");
+    }
+    if ($retval == 0 && hc_should_abort_on_fail()) {
+        hefesto.project.abort(1);
+    }
+}

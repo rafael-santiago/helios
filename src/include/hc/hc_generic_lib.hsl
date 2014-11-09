@@ -1,0 +1,51 @@
+#
+# hc_generic_lib.hsl
+#
+#       by Rafael Santiago
+#
+# Description: verifies if the desired lib exists in the current build environment.
+#
+include ~/fsutil.hsl
+include ~/hc/hc.hsl
+
+function hc_generic_lib(lib_directories type list,
+                libname type string,
+                version_suffixes type list,
+                error_message type string,
+                success_message type string) : result type int {
+    if (hefesto.sys.os_name() == "linux" ||
+        hefesto.sys.os_name() == "freebsd") {
+        $lib_directories.add_item("/usr/lib");
+        $lib_directories.add_item("/usr/local/lib");
+    }
+    var ld type int;
+    var vs type int;
+    var lib_directory type string;
+    var lib_filepath type string;
+    var exists type int;
+    $exists = 0;
+    $ld = 0;
+    if ($version_suffixes.count() > 0) {
+        while ($exists == 0 && $ld < $lib_directories.count()) {
+            $vs = 0;
+            $lib_directory = $lib_directories.item($ld);
+            while ($exists == 0 && $vs < $version_suffixes.count()) {
+                $lib_filepath = hefesto.sys.make_path($lib_directory, $libname);
+                $lib_filepath = $lib_filepath + $version_suffixes.item($vs);
+                $exists = isfile($lib_filepath);
+                $vs = $vs + 1;
+            }
+            $ld = $ld + 1;
+        }
+    } else {
+        while ($exists == 0 && $ld < $lib_directories.count()) {
+            $vs = 0;
+            $lib_directory = $lib_directories.item($ld);
+            $lib_filepath = hefesto.sys.make_path($lib_directory, $libname);
+            $exists = isfile($lib_filepath);
+            $ld = $ld + 1;
+        }
+    }
+    hc_print_result("hc_generic_lib", $exists, $error_message, $success_message);
+    result $exists;
+}

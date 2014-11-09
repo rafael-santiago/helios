@@ -1,0 +1,16 @@
+#
+# hc_python_export.hsl          < Sat 08 Nov 2014 10:43:19 AM BRST >
+#
+#       by Rafael Santiago
+#
+# Description: this hsl intends to check the python exportation
+#
+include ~/hc/hc.hsl
+
+function hc_python_export(error_message type string, success_message type string) : result type int {
+    var retval type int;
+    $retval = 0;
+    $retval = (hefesto.sys.run("python --version") == 0);
+    hc_print_result("hc_python_export", $retval, $error_message, $success_message);
+    result $retval;
+}

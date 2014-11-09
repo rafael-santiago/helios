@@ -1,0 +1,11 @@
+include/hc/README.md
+include/hc/hc.hsl
+include/hc/hc_boost_version.hsl
+include/hc/hc_gcc_export.hsl
+include/hc/hc_gcc_version.hsl
+include/hc/hc_generic_lib.hsl
+include/hc/hc_javac_export.hsl
+include/hc/hc_jvm_export.hsl
+include/hc/hc_perl_export.hsl
+include/hc/hc_python_export.hsl
+include/hc/hc_type_socklen_t.hsl

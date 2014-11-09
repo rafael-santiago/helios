@@ -1,0 +1,7 @@
+===
+=== hc functions
+===
+
+Description: Hefesto check functions is a collection of HSL codes destinated to verify if a build environment
+has all requirements needed to run a forge task. Things like look for some software exportation,
+library installation, library versioning, software versioning and so on.

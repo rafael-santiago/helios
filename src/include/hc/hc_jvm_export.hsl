@@ -1,0 +1,16 @@
+#
+# hc_jvm_export.hsl
+#
+#       by Rafael Santiago
+#
+# Description: it tries to verify JVM exportation.
+#
+include ~/hc/hc.hsl
+
+function hc_jvm_export(error_message type string, success_message type string) : result type int {
+    var retval type int;
+    $retval = 0;
+    $retval = (hefesto.sys.run("java") == 0);
+    hc_print_result("hc_jvm_export", $retval, $error_message, $success_message);
+    result $retval;
+}

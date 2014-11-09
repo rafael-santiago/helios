@@ -1,0 +1,25 @@
+#
+# "hc_gcc_export.hsl"           < Sat 08 Nov 2014 09:48:59 AM BRST >
+#
+#   by Rafael Santiago
+#
+#       Description: this hsl code verifies the GCC exportation.
+#
+include ~/hc/hc.hsl
+
+function hc_gcc_export(error_message type string, success_message type string) : result type int {
+    var code type string;
+    $code = "int main(int argc, char **argv) { return 0; }";
+    var code_fp type file;
+    $code_fp = hefesto.sys.fopen(".hc_gcc_export.c", "wb");
+    if ($code_fp != 0) {
+        hefesto.sys.fwrite($code, $code.len(), $code_fp);
+        hefesto.sys.fclose($code_fp);
+    }
+    var retval type int;
+    $retval = (hefesto.sys.run("gcc -ohc_gcc_export .hc_gcc_export.c") == 0);
+    hefesto.sys.rm(".hc_gcc_export.c");
+    hefesto.sys.rm("hc_gcc_export");
+    hc_print_result("hc_gcc_export", $retval, $error_message, $success_message);
+    result $retval;
+}

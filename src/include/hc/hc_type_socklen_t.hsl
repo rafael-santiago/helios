@@ -1,0 +1,30 @@
+#
+# hc_type_socklen_t
+#
+#       by Rafael Santiago
+#
+# Description: check if the type socklen_t is defined.
+#
+include ~/hc/hc.hsl
+
+function hc_type_socklen_t(error_message type string, success_message type string) : result type int {
+    var code type string;
+    var code_fd type file;
+    var retval type int;
+    $retval = 0;
+    $code = "#include <sys/types.h>\n" +
+            "#include <sys/socket.h>\n" +
+            "int main(int argc, char **argv) { socklen_t len = 0; return 0; }";
+    $code_fd = hefesto.sys.fopen(".hc_type_socklen_t.c", "wb");
+    if ($code_fd != 0) {
+        hefesto.sys.fwrite($code, $code.len(), $code_fd);
+        hefesto.sys.fclose($code_fd);
+        $retval = hefesto.sys.run("gcc -ohc_type_socklen_t .hc_type_socklen_t.c");
+        $retval = ($retval == 0);
+        hefesto.sys.rm("hc_type_socklen_t");
+        hefesto.sys.rm(".hc_type_socklen_t.c");
+    }
+    hc_print_result("hc_type_socklen_t", $retval, $error_message, $success_message);
+    result $retval;
+}
+

@@ -1,0 +1,15 @@
+#
+# hc_javac_export.hsl
+#
+#       by Rafael Santiago
+#
+# Description: this hsl attemps to test the java compiler exportation.
+#
+include ~/hc/hc.hsl
+
+function hc_javac_export(error_message type string, success_message type string) : result type int {
+    var retval type int;
+    $retval = (hefesto.sys.run("javac -version") == 0);
+    hc_print_result("hc_javac_export", $retval, $error_message, $success_message);
+    result $retval;
+}

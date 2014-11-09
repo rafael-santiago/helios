@@ -1,0 +1,70 @@
+#
+# hc_boost_version.hsl
+#
+#       by Rafael Santiago
+#
+# Description: this HSL verifies the current Boost version.
+#
+include ~/conv.hsl
+include ~/fsutil.hsl
+include ~/hc/hc.hsl
+
+function hc_boost_version(operator type string, wanted_version type string, boost_root_path type string,
+    error_message type string, success_message type string) : result type int {
+    var recognized_ops type list;
+    $recognized_ops.add_item("=");
+    $recognized_ops.add_item(">");
+    $recognized_ops.add_item("<");
+    $recognized_ops.add_item(">=");
+    $recognized_ops.add_item("<=");
+    $recognized_ops.add_item("!=");
+    if ($recognized_ops.index_of($operator) == -1) {
+        hefesto.sys.echo("hc_boost_version ERROR: unrecognized operator \"" + $operator + "\".\n");
+        result 0;
+    }
+    var retval type int;
+    $retval = 0;
+    var version_hpp_filepath type string;
+    if ($boost_root_path.len() == 0) {
+        if (hefesto.sys.os_name() != "windows") {
+            $version_hpp_filepath = "/usr/include/boost/version.hpp";
+            if (isfile($version_hpp_filepath) == 0) {
+                $version_hpp_filepath = "/usr/local/include/boost/version.hpp";
+            }
+        } else {
+            hefesto.sys.echo("hc_boost_version ERROR: on windows you must pass a valid boost root... there's no default places to look!!.....\n");
+            result 0;
+        }
+    } else {
+        $version_hpp_filepath = hefesto.sys.make_path($boost_root_path, "version.hpp");
+    }
+    var version_hpp_lines type list;
+    $version_hpp_lines = hefesto.sys.lines_from_file($version_hpp_filepath, "^#define.*BOOST_LIB_VERSION.*\"$");
+    if ($version_hpp_lines.count() == 1) {
+        var s_boost_version type string;
+        $s_boost_version = $version_hpp_lines.item(0);
+        $s_boost_version.replace("^#define.*BOOST_LIB_VERSION.*\"", "");
+        $s_boost_version.replace("\"$","");
+        $s_boost_version.replace("_", "");
+        var i_boost_version type int;
+        $i_boost_version = str2int($s_boost_version);
+        var i_wanted_version type int;
+        $wanted_version.replace("_", "");
+        $i_wanted_version = str2int($wanted_version);
+        if ($operator == "=") {
+            $retval = ($i_wanted_version == $i_boost_version);
+        } else if ($operator == ">") {
+            $retval = ($i_boost_version > $i_wanted_version);
+        } else if ($operator == "<" ) {
+            $retval = ($i_boost_version < $i_wanted_version);
+        } else if ($operator == ">=") {
+            $retval = ($i_boost_version >= $i_wanted_version);
+        } else if ($operator == "<=") {
+            $retval = ($i_boost_version <= $i_wanted_version);
+        } else if ($operator == "!=") {
+            $retval = ($i_wanted_version != $i_boost_version);
+        }
+    }
+    hc_print_result("hc_boost_version", $retval, $error_message, $success_message);
+    result $retval;
+}

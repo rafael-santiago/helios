@@ -1,0 +1,77 @@
+#
+# "hc_gcc_version.hsl"          < Sat 08 Nov 2014 09:50:07 AM BRST >
+#
+#       by Rafael Santiago
+#
+# Description: this hsl attempts to check the GCC's version.
+#
+include ~/conv.hsl
+include ~/hc/hc.hsl
+
+function hc_gcc_version(operator type string, wanted_version type string,
+    error_message type string, success_message type string) : result type int {
+
+    var recognized_ops type list;
+
+    $recognized_ops.add_item("=");
+    $recognized_ops.add_item(">");
+    $recognized_ops.add_item("<");
+    $recognized_ops.add_item(">=");
+    $recognized_ops.add_item("<=");
+    $recognized_ops.add_item("!=");
+
+    if ($recognized_ops.index_of($operator) == -1) {
+        hefesto.sys.echo("hc_gcc_version ERROR: unrecognized operator \"" + $operator + "\".\n");
+        result 0;
+    }
+
+    var i_wanted_version type int;
+    var gcc_version type int;
+
+    $i_wanted_version = hc_gcc_version_str_version_to_int($wanted_version);
+    $gcc_version = hc_gcc_version_get_version();
+
+    var retval type int;
+
+    $retval = 0;
+
+    if ($operator == "=") {
+        $retval = ($i_wanted_version == $gcc_version);
+    } else if ($operator == ">") {
+        $retval = ($gcc_version > $i_wanted_version);
+    } else if ($operator == "<") {
+        $retval = ($gcc_version < $i_wanted_version );
+    } else if ($operator == ">=") {
+        $retval = ($gcc_version >= $i_wanted_version);
+    } else if ($operator == "<=") {
+        $retval = ($gcc_version <= $i_wanted_version);
+    } else if ($operator == "!=") {
+        $retval = ($i_wanted_version != $gcc_version);
+    }
+
+    hc_print_result("hc_gcc_version", $retval, $error_message, $success_message);
+
+    result $retval;
+}
+
+local function hc_gcc_version_get_version() : result type int {
+    var gcc_version type int;
+    $gcc_version = -1;
+    if (hefesto.sys.run("gcc -dumpversion>.hc_gcc_version") == 0) {
+        var temp_file_line type list;
+        $temp_file_line = hefesto.sys.lines_from_file(".hc_gcc_version", ".*");
+        hefesto.sys.rm(".hc_gcc_version");
+        if ($temp_file_line.count() == 1) {
+            var temp_file_data type string;
+            $temp_file_data = $temp_file_line.item(0);
+            $gcc_version = hc_gcc_version_str_version_to_int($temp_file_data);
+        }
+    }
+    result $gcc_version;
+}
+
+local function hc_gcc_version_str_version_to_int(s_version type string) : result type int {
+    $s_version.replace("\\.", "");
+    result str2int($s_version);
+}
+

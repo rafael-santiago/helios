@@ -1,0 +1,15 @@
+#
+# hc_perl_export.hsl
+#
+#       by Rafael Santiago
+#
+# Description: it verifies the perl exportation.
+#
+include ~/hc/hc.hsl
+
+function hc_perl_export(error_message type string, success_message type string) : result type int {
+    var retval type int;
+    $retval = (hefesto.sys.run("perl --version") == 0);
+    hc_print_result("hc_perl_export", $retval, $error_message, $success_message);
+    result $retval;
+}
