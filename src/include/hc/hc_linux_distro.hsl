@@ -21,27 +21,29 @@ function hc_linux_distro(wanted_distros type list, nocase type int,
     var distro_info type list;
     var etc_data_resource type list;
     var temp type string;
-    $temp = hefesto.sys.pwd();
-    if (hefesto.sys.cd("/etc")) {
-        $etc_data_resource.ls(".*(-version|_version|_release|-release)$");
-        hefesto.sys.cd($temp);
-    }
-    if ($etc_data_resource.count() > 0) {
-        $temp = $etc_data_resource.item(0);
-        $distro_info = hefesto.sys.lines_from_file($temp, ".*");
-        if ($distro_info.count() > 0) {
-            $temp = $distro_info.item(0);
-            $temp.replace(" .*$", "");
-            var w type int;
-            var distro type string;
-            $w = 0;
-            while ($w < $wanted_distros.count()) {
-                $distro = $wanted_distros.item($w);
-                if (__distro_cmp($temp, $distro, $nocase)) {
-                    hc_print_result("hc_linux_distro", 1, $error_message, $success_message);
-                    result $w;
+    if (hefesto.sys.os_name() == "linux") {
+        $temp = hefesto.sys.pwd();
+        if (hefesto.sys.cd("/etc")) {
+            $etc_data_resource.ls(".*(-version|_version|_release|-release)$");
+            hefesto.sys.cd($temp);
+        }
+        if ($etc_data_resource.count() > 0) {
+            $temp = $etc_data_resource.item(0);
+            $distro_info = hefesto.sys.lines_from_file($temp, ".*");
+            if ($distro_info.count() > 0) {
+                $temp = $distro_info.item(0);
+                $temp.replace(" .*$", "");
+                var w type int;
+                var distro type string;
+                $w = 0;
+                while ($w < $wanted_distros.count()) {
+                    $distro = $wanted_distros.item($w);
+                    if (__distro_cmp($temp, $distro, $nocase)) {
+                        hc_print_result("hc_linux_distro", 1, $error_message, $success_message);
+                        result $w;
+                    }
+                    $w = $w + 1;
                 }
-                $w = $w + 1;
             }
         }
     }
