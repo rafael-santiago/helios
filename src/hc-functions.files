@@ -9,3 +9,4 @@ include/hc/hc_jvm_export.hsl
 include/hc/hc_perl_export.hsl
 include/hc/hc_python_export.hsl
 include/hc/hc_type_socklen_t.hsl
+include/hc/hc_linux_distro.hsl
