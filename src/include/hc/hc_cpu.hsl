@@ -1,0 +1,55 @@
+#
+# hc_cpu.hsl   < Sun 23 Nov 2014 05:47:24 PM BRST >
+#
+#       by Rafael Santiago
+#
+# Verifies the CPU architecture.
+#
+
+include ~/hc/hc.hsl
+
+local function __is64() : result type int {
+    var retval type int;
+    $retval = 0;
+    if (hefesto.sys.os_name() == "linux") {
+        hefesto.sys.run("lscpu > .lscpu_opmode.out");
+        var opmodes type list;
+        var data type string;
+        $opmodes = hefesto.sys.lines_from_file(".lscpu_opmode.out", "^CPU op-mode\\(s\\):.*");
+        hefesto.sys.rm(".lscpu_opmode.out");
+        $data = "";
+        if ($opmodes.count() > 0) {
+            $data = $opmodes.item(0);
+        }
+        $retval = $data.match("64-bit");
+    } else if (hefesto.sys.os_name() == "windows") {
+        var processor_identifier type string;
+        $processor_identifier = hefesto.sys.env("WINREG:HKLM\\SYSTEM\\CurrentControlSet\\Control\\SessionManager\\Environment\\PROCESSOR_ARCHITECTURE");
+        $retval = ($processor_identifier != "x86");
+    } else if (hefesto.sys.os_name() == "freebsd") {
+        hefesto.sys.run("sysctl -a | egrep -i \"hw.machine|hw.model|hw.ncpu\" > .cpuinfo.out");
+        var machine_arch type list;
+        var arch type string;
+        $machine_arch = hefesto.sys.lines_from_file(".cpuinfo.out", "^hw.machine_arch:.*");
+        $arch = "";
+        if ($machine_arch.count() > 0) {
+            $arch = $machine_arch.item(0);
+        }
+        $retval = $arch.match("64");
+    }
+    result $retval;
+}
+
+function hc_cpu32(error_message type string, success_message type string) : result type int {
+    var is32 type int;
+    $is32 = (__is64() == 0);
+    hc_print_result("hc_cpu32()", $is32, $error_message, $success_message);
+    result $is32;
+}
+
+function hc_cpu64(error_message type string, success_message type string) : result type int {
+    var is64 type int;
+    $is64 =  __is64();
+    hc_print_result("hc_cpu64()", $is64, $error_message, $success_message);
+    result $is64;
+}
