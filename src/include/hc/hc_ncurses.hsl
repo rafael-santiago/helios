@@ -1,0 +1,32 @@
+#
+# hc_ncurses.hsl         < Mon 24 Nov 2014 08:50:15 PM BRST >
+#
+#       by Rafael Santiago
+#
+# Verifies if a ncurses code can be compiled in the current system environment.
+#
+
+include ~/hc/hc.hsl
+
+function hc_ncurses(error_message type string, success_message type string) : result type int {
+    var code type string;
+    $code = "#include <curses.h>\n" +
+            "int main(int argc, char **argv) {\n" +
+            "\tinitscr();\n" +
+            "\tendwin();\n" +
+            "\treturn 0;\n" +
+            "}\n";
+    var fp type file;
+    var retval type int;
+    $retval = 0;
+    $fp = hefesto.sys.fopen(".hc_ncurses-test.c", "w");
+    if ($fp != 0) {
+        hefesto.sys.fwrite($code, $code.len(), $fp);
+        hefesto.sys.fclose($fp);
+        $retval = (hefesto.sys.run("gcc -o.hc_ncurses-test .hc_ncurses-test.c -lncurses") == 0);
+    }
+    hefesto.sys.rm(".hc_ncurses-test");
+    hefesto.sys.rm(".hc_ncurses-test.c");
+    hc_print_result("hc_ncurses", $retval, $error_message, $success_message);
+    result $retval;
+}

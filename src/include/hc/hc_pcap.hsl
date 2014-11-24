@@ -1,0 +1,28 @@
+#
+# hc_pcap.hsl
+#
+#       by Rafael Santiago
+#
+# Verifies if a libpcap dependent code can be compiled in the current system environment.
+#
+
+include ~/hc/hc.hsl
+
+function hc_pcap(error_message type string, success_message type string) : result type int {
+    var retval type int;
+    $retval = 0;
+    var fp type file;
+    $fp = hefesto.sys.fopen(".hc_pcap.c", "w");
+    if ($fp != 0) {
+        var code type string;
+        $code = "#include <pcap.h>\n" +
+                "void main() {\n" +
+                "\tpcap_lookupdev(NULL);\n" +
+                "}\n";
+        hefesto.sys.fwrite($code, $code.len(), $fp);
+        hefesto.sys.fclose($fp);
+    }
+    $retval = (hefesto.sys.run("gcc .hc_pcap.c -o.hc_pcap -lpcap") == 0);
+    hc_print_result("hc_pcap()", $retval, $error_message, $success_message);
+    result $retval;
+}

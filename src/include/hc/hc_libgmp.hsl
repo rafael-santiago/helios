@@ -1,0 +1,31 @@
+#
+# hc_libgmp.hsl         < Mon 24 Nov 2014 09:03:39 PM BRST >
+#
+#       by Rafael Santiago
+#
+# Verifies if an application which uses libgmp can be compiled in the current system environment.
+#
+
+include ~/hc/hc.hsl
+
+function hc_libgmp(error_message type string, success_message type string) : result type int {
+    var retval type int;
+    $retval = 0;
+    var code type string;
+    $code = "#include <gmp.h>\n" +
+            "void main() {\n" +
+            "\tmpz_ptr a, b, c;\n" +
+            "\tmpz_add(a, b, c);\n" +
+            "}\n";
+    var fp type file;
+    $fp = hefesto.sys.fopen(".hc_libgmp.c", "w");
+    if ($fp != 0) {
+        hefesto.sys.fwrite($code, $code.len(), $fp);
+        hefesto.sys.fclose($fp);
+    }
+    $retval = (hefesto.sys.run("gcc .hc_libgmp.c -o.hc_libgmp -lgmp") == 0);
+    hefesto.sys.rm(".hc_libgmp.c");
+    hefesto.sys.rm(".hc_libgmp");
+    hc_print_result("hc_libgmp()", $retval, $error_message, $success_message);
+    result $retval;
+}
