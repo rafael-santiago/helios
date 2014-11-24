@@ -1,5 +1,5 @@
 #
-# hc_pcap.hsl
+# hc_libpcap.hsl
 #
 #       by Rafael Santiago
 #
@@ -8,7 +8,7 @@
 
 include ~/hc/hc.hsl
 
-function hc_pcap(error_message type string, success_message type string) : result type int {
+function hc_libpcap(error_message type string, success_message type string) : result type int {
     var retval type int;
     $retval = 0;
     var fp type file;
@@ -23,6 +23,8 @@ function hc_pcap(error_message type string, success_message type string) : resul
         hefesto.sys.fclose($fp);
     }
     $retval = (hefesto.sys.run("gcc .hc_pcap.c -o.hc_pcap -lpcap") == 0);
+    hefesto.sys.rm(".hc_pcap.c");
+    hefesto.sys.rm(".hc_pcap");
     hc_print_result("hc_pcap()", $retval, $error_message, $success_message);
     result $retval;
 }

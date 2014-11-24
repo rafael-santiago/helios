@@ -1,0 +1,28 @@
+#
+# hc_libcrypt.hsl       < Mon 24 Nov 2014 09:44:19 PM BRST >
+#
+#       by Rafael Santiago
+#
+# Verifies if a code which is libcrypt dependent can be compiled in the current system environment.
+#
+
+include ~/hc/hc.hsl
+
+function hc_libcrypt(error_message type string, success_message type string) : result type int {
+    var retval type int;
+    $retval = 0;
+    var dump type file;
+    $dump = hefesto.sys.fopen(".hc_libcrypt.c", "w");
+    if ($dump != 0) {
+        var code type string;
+        $code = "#include <crypt.h>\nvoid main() {\n\tchar *pl = 0;\n\tencrypt(pl, 0);\n}\n";
+        hefesto.sys.fwrite($code, $code.len(), $dump);
+        hefesto.sys.fclose($dump);
+    }
+    $retval = (hefesto.sys.run("gcc .hc_libcrypt.c -o.hc_libcrypt -lcrypt") == 0);
+    hefesto.sys.rm(".hc_libcrypt.c");
+    hefesto.sys.rm(".hc_libcrypt");
+    hc_print_result("hc_libcrypt()", $retval, $error_message, $success_message);
+    result $retval;
+}
+

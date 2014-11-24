@@ -1,0 +1,31 @@
+#
+# hc_libpthread.hsl        < Mon 24 Nov 2014 09:16:48 PM BRST >
+#
+#       by Rafael Santiago
+#
+# Verifies if the current system environment is able to compile codes that use posix threads.
+#
+
+include ~/hc/hc.hsl
+
+function hc_libpthread(error_message type string, success_message type string) : result type int {
+    var retval type int;
+    $retval = 0;
+    var code type string;
+    var fp type file;
+    $fp = hefesto.sys.fopen(".hc_pthread.c", "w");
+    if ($fp != 0) {
+        $code = "#include <pthread.h>\n" +
+                "void main() {\n" +
+                "\tpthread_t t;\n" +
+                "\tpthread_join(t, NULL);\n" +
+                "}\n";
+        hefesto.sys.fwrite($code, $code.len(), $fp);
+        hefesto.sys.fclose($fp);
+    }
+    $retval = (hefesto.sys.run("gcc .hc_pthread.c -o.hc_pthread -lpthread") == 0);
+    hefesto.sys.rm(".hc_pthread.c");
+    hefesto.sys.rm(".hc_pthread");
+    hc_print_result("hc_pthread()", $retval, $error_message, $success_message);
+    result $retval;
+}

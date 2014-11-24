@@ -1,5 +1,5 @@
 #
-# hc_ncurses.hsl         < Mon 24 Nov 2014 08:50:15 PM BRST >
+# hc_libncurses.hsl         < Mon 24 Nov 2014 08:50:15 PM BRST >
 #
 #       by Rafael Santiago
 #
@@ -8,7 +8,7 @@
 
 include ~/hc/hc.hsl
 
-function hc_ncurses(error_message type string, success_message type string) : result type int {
+function hc_libncurses(error_message type string, success_message type string) : result type int {
     var code type string;
     $code = "#include <curses.h>\n" +
             "int main(int argc, char **argv) {\n" +
