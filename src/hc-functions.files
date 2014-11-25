@@ -11,6 +11,8 @@ include/hc/hc_python_export.hsl
 include/hc/hc_type_socklen_t.hsl
 include/hc/hc_linux_distro.hsl
 include/hc/hc_cpu.hsl
-include/hc/hc_ncurses.hsl
+include/hc/hc_libncurses.hsl
 include/hc/hc_libgmp.hsl
-include/hc/hc_pcap.hsl
+include/hc/hc_libpcap.hsl
+include/hc/hc_libpthread.hsl
+include/hc/hc_libcrypt.hsl
