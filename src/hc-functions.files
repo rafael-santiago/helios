@@ -16,3 +16,4 @@ include/hc/hc_libgmp.hsl
 include/hc/hc_libpcap.hsl
 include/hc/hc_libpthread.hsl
 include/hc/hc_libcrypt.hsl
+include/hc/hc_user_account.hsl

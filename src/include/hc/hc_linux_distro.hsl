@@ -18,35 +18,30 @@ local function __distro_cmp(needle type string, haystack type string, nocase typ
 
 function hc_linux_distro(wanted_distros type list, nocase type int,
                          error_message type string, success_message type string) : result type int {
-    var distro_info type list;
-    var etc_data_resource type list;
+    var etc_os_release type list;
     var temp type string;
     if (hefesto.sys.os_name() == "linux") {
         $temp = hefesto.sys.pwd();
         if (hefesto.sys.cd("/etc")) {
-            $etc_data_resource.ls(".*(-version|_version|_release|-release)$");
+            $etc_os_release = hefesto.sys.lines_from_file("/etc/os-release", "^ID=.*$");
             hefesto.sys.cd($temp);
         }
-        if ($etc_data_resource.count() > 0) {
-            $temp = $etc_data_resource.item(0);
-            $distro_info = hefesto.sys.lines_from_file($temp, ".*");
-            if ($distro_info.count() > 0) {
-                $temp = $distro_info.item(0);
-                $temp.replace(" .*$", "");
-                var w type int;
-                var distro type string;
-                $w = 0;
-                while ($w < $wanted_distros.count()) {
-                    $distro = $wanted_distros.item($w);
-                    if (__distro_cmp($temp, $distro, $nocase)) {
-                        hc_print_result("hc_linux_distro", 1, $error_message, $success_message);
-                        result $w;
-                    }
-                    $w = $w + 1;
+        if ($etc_os_release.count() > 0) {
+            $temp = $etc_os_release.item(0);
+            $temp.replace("ID=", "");
+            var distro type string;
+            var w type int;
+            $w = 0;
+            while ($w < $wanted_distros.count()) {
+                $distro = $wanted_distros.item($w);
+                if (__distro_cmp($temp, $distro, $nocase)) {
+                    hc_print_result("hc_linux_distro()", 1, $error_message, $success_message);
+                    result $w;
                 }
+                $w = $w + 1;
             }
         }
     }
-    hc_print_result("hc_linux_distro", 0, $error_message, $success_message);
+    hc_print_result("hc_linux_distro()", 0, $error_message, $success_message);
     result -1;
 }

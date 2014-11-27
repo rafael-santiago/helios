@@ -1,0 +1,29 @@
+#
+# hc_user_account.hsl           < Wed 26 Nov 2014 09:52:01 PM BRST >
+#
+#       by Rafael Santiago
+#
+# This HSL verifies if an user account exists in an unix-like system.
+#
+
+include ~/hc/hc.hsl
+
+function hc_user_account(username type string, error_message type string, success_message type string) : result type int {
+    var etc_passwd_lines type list;
+    var line type string;
+    var retval type int;
+    var regex type string;
+    $retval = 0;
+    $regex = "^" + $username + ":";
+    if (hefesto.sys.os_name() == "linux" ||
+        hefesto.sys.os_name() == "freebsd") {
+        $etc_passwd_lines = hefesto.sys.lines_from_file("/etc/passwd", ".*");
+        while ($retval == 0 && $etc_passwd_lines.count() > 0) {
+            $line = $etc_passwd_lines.item(0);
+            $retval = $line.match($regex);
+            $etc_passwd_lines.del_index(0);
+        }
+    }
+    hc_print_result("hc_user_account()", $retval, $error_message, $success_message);
+    result $retval;
+}
