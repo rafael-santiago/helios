@@ -1,0 +1,16 @@
+#
+# "tulip.hls"
+#       by Rafael Santiago
+#
+# Description: a Tulip toolset.
+#
+include ~/toolsets/tulip/forge/tulip_forge.hls
+
+toolset "tulip" forge function "tulip_forge": forge helpers "should_process_tlp":
+    command "compile": SOURCE <
+        tulip $SOURCE
+    >
+    command "maketab": SOURCE, OUTPUT <
+        tulip $SOURCE $OUTPUT
+    >
+$

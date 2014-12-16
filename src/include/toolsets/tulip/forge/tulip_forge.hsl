@@ -1,0 +1,103 @@
+#
+# "tulip_forge.hls"
+#       by Rafael Santiago
+#
+# Description: Tulip forge
+#
+# Options: "--tlp-compile" (compile tlps but doesn't generate anything).
+#
+include ~/toolsets/tulip/get_tlp_deps.hls
+
+function get_tab_names_from_tlp_list(tlps type list) : result type list {
+    var t type int;
+    var curr_tlp type string;
+    var outs type list;
+    
+    $t = 0;
+    while ($t < $tlps.count()) {
+    
+        $curr_tlp = $tlps.item($t);
+        
+        $curr_tlp.replace("\\.tlp$", "\\.txt");
+    
+        $outs.add_item($curr_tlp);
+    
+        $t = $t + 1;
+    
+    }
+    
+    result $outs;
+}
+
+function should_process_tlp(tlp type string, maketab type int) : result type int {
+    var should_process type int;
+    $should_process = 0;
+    if ($maketab == 1) {
+        var out type string;
+        $out = get_tlpname($tlp);
+        $out.replace("\\.tlp$", "\\.txt$");        
+        $should_process = (hefesto.toolset.file_has_change($tlp)) || (hefesto.sys.ls($out) == 0);
+    } else {
+        $should_process = hefesto.toolset.file_has_change($tlp);
+    }
+    result $should_process;
+}
+
+function tulip_forge(tlps type list) : result type int {
+    var tlpcompile type list;
+    var outs type list;
+    var maketab type int;
+    
+    $tlpcompile = hefesto.sys.get_option("tlp-compile");
+    
+    if ($tlpcompile.count() == 0) {
+        $maketab = 1;
+        $outs = get_tab_names_from_tlp_list($tlps);
+    } else {
+        $maketab = 0;
+    }
+    
+    hefesto.sys.echo("*** Processing tlp's please wait...\n");
+    
+    var t type int;
+    var curr_tlp type string;
+    var curr_out type string;
+    var tulip_command type string;
+    var exit_code type int;
+    var processed type list;
+    
+    $t = 0;
+    $exit_code = 1;
+    
+    while ($t < $tlps.count() && $exit_code == 1) {
+        $curr_tlp = $tlps.item($t);
+        if (should_process_tlp($curr_tlp, ($maketab))) {
+            if ($maketab == 1) {
+                $curr_out = $outs.item($t);
+                $tulip_command = hefesto.toolset.maketab($curr_tlp, $curr_out);
+            } else {
+                $tulip_command = hefesto.toolset.compile($curr_tlp);
+            }
+            $exit_code = hefesto.sys.run($tulip_command);
+            if ($exit_code == 1) $processed.add_item($curr_tlp);
+        } else {
+            hefesto.sys.echo("\t" + $curr_tlp + " is updated.\n");
+        }
+        $t = $t + 1;        
+    }
+    
+    if ($exit_code == 1) {
+        hefesto.toolset.base_refresh($processed);
+        hefesto.sys.echo("*** All tlp's successfully processed.\n");        
+    } else {
+        hefesto.sys.echo("*** Error(s).\n");
+    }
+    
+    if ($exit_code == 1) {
+        $exit_code = 0;
+    } else {
+        $exit_code = 1;
+    }
+    
+    result $exit_code;
+}
