@@ -1,0 +1,5 @@
+===
+=== The not operations extension
+===
+
+Description: A set of functions that allows the usage of logical-not operator in if/while constructions besides the bitwise-not.

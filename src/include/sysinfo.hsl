@@ -1,0 +1,48 @@
+#
+# "sysinfo.hsl"         Thu 25 Dec 2014 11:14:07 AM BRST
+#
+#       by Rafael Santiago
+#
+# Description: a set of HSL codes which deals with some system environment aspect.
+#
+
+function sysinfo_is64() : result type int {
+    var retval type int;
+    $retval = 0;
+    if (hefesto.sys.os_name() == "linux") {
+        hefesto.sys.run("lscpu > .lscpu_opmode.out");
+        var opmodes type list;
+        var data type string;
+        $opmodes = hefesto.sys.lines_from_file(".lscpu_opmode.out", "^CPU op-mode\\(s\\):.*");
+        hefesto.sys.rm(".lscpu_opmode.out");
+        $data = "";
+        if ($opmodes.count() > 0) {
+            $data = $opmodes.item(0);
+        }
+        $retval = $data.match("64-bit");
+    } else if (hefesto.sys.os_name() == "windows") {
+        var processor_identifier type string;
+        $processor_identifier = hefesto.sys.env("WINREG:HKLM\\SYSTEM\\CurrentControlSet\\Control\\SessionManager\\Environment\\PROCESSOR_ARCHITECTURE");
+        $retval = ($processor_identifier != "x86");
+    } else if (hefesto.sys.os_name() == "freebsd") {
+        hefesto.sys.run("sysctl -a | egrep -i \"hw.machine|hw.model|hw.ncpu\" > .cpuinfo.out");
+        var machine_arch type list;
+        var arch type string;
+        $machine_arch = hefesto.sys.lines_from_file(".cpuinfo.out", "^hw.machine_arch:.*");
+        $arch = "";
+        if ($machine_arch.count() > 0) {
+            $arch = $machine_arch.item(0);
+        }
+        $retval = $arch.match("64");
+    }
+    result $retval;
+}
+
+function sysinfo_cpu_wsize() : result type int {
+    var arch type int;
+    $arch = 32;
+    if (sysinfo_is64()) {
+        $arch = 64;
+    }
+    result $arch;
+}

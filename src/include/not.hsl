@@ -1,0 +1,41 @@
+#
+# "not.hsl"             Thu 25 Dec 2014 11:12:20 AM BRST
+#       by Rafael Santiago
+#
+# Description: a not operator equivalent.
+#
+include ~/sysinfo.hsl
+
+function not(value type int) : result type int
+{
+    if ($value == 0) result 1;
+    result 0;
+}
+
+function bitwise_not(value type int, signed type int) : result type int
+{
+    var int_size type int;
+    var curr_bit type  int;
+    var comp_value type int;
+    var nosig_mask type int;
+    $int_size = sysinfo_cpu_wsize() - 1;
+    if ($signed == 0) {
+        $nosig_mask = 0x7FFFFFFF;
+        if ($int_size == 64) {
+            $int_size = ($int_size << 32);
+        }
+    }
+    $comp_value = 0;
+    while ($int_size >= 0) {
+        $curr_bit = ($value >> $int_size) & 1;
+        $comp_value = $comp_value << 1;
+        if ($curr_bit != 1) {
+            $comp_value = $comp_value | 1;
+        }
+        $int_size = $int_size - 1;
+    }
+    if ($signed == 0) {
+        $comp_value = ($comp_value & $nosig_mask);
+    }
+    result $comp_value;
+}
