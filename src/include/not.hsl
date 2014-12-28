@@ -22,7 +22,7 @@ function bitwise_not(value type int, signed type int) : result type int
     if ($signed == 0) {
         $nosig_mask = 0x7FFFFFFF;
         if ($int_size == 64) {
-            $int_size = ($int_size << 32);
+            $int_size = ($int_size << 32) | 0x00000000FFFFFFFF;
         }
     }
     $comp_value = 0;
