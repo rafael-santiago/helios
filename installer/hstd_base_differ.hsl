@@ -4,6 +4,7 @@
 # Description: codes related with the feature which implements
 #              local base diff against helios base.
 #
+include ~/diff.hsl
 
 function hstd_base_diff(extensions type list, extensions_root_dir type list, non_installed_extensions type list) : result type int {
     var hefesto_includes_home type string;
@@ -67,17 +68,21 @@ local function has_extension_local_copy(extension type string, hefesto_includes_
     var has type int;
     var f type int;
     var extension_filepath type string;
+    var base_extension_filepath type string;
     var fp type file;
     $has = 1;
     $f = 0;
     while ($f < $extension_files.count() && $has) {
         $extension_filepath = $extension_files.item($f);
         $extension_filepath.replace("^include/", "");
-        $fp = hefesto.sys.fopen(hefesto.sys.make_path($hefesto_includes_home, $extension_filepath), "rb");
+        $extension_filepath = hefesto.sys.make_path($hefesto_includes_home, $extension_filepath);
+        $fp = hefesto.sys.fopen($extension_filepath, "rb");
         if ($fp == 0) {
             $has = 0;
         } else {
             hefesto.sys.fclose($fp);
+            $base_extension_filepath = hefesto.sys.make_path("src", $extension_files.item($f));
+            $has = (diff($base_extension_filepath, $extension_filepath) == 0);
         }
         $f = $f + 1;
     }

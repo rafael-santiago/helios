@@ -4,7 +4,7 @@
 # Description: Uinstallation stuffs.
 #
 
-include src/include/fsutil.hsl
+include ~/fsutil.hsl
 
 function uninstall_extension(extension type string) : result type int {
     var success type int;

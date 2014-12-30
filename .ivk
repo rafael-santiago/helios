@@ -1,1 +1,1 @@
---forgefiles=helios.hsl --helios-projects=helios-manager
+--forgefiles=helios.hsl --helios-projects=helios-manager --user-includes-home=src/include
