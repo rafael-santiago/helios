@@ -1,0 +1,18 @@
+#
+# "diff.hsl"            Tue 30 Dec 2014 10:19:04 AM BRST
+#
+#       by Rafael Santiago
+#
+# Description: a diff algorithm based on 16 bit one's complement.
+#
+include ~/chsum.hsl
+include ~/lsutil.hsl
+
+function diff(filepath_a type string, filepath_b type string) : result type int {
+    var chsum_a type int;
+    var data type list;
+    $data = hefesto.sys.lines_from_file($filepath_a, ".*");
+    $chsum_a = eval_buffer_chsum(0, ls2str($data));
+    $data = hefesto.sys.lines_from_file($filepath_b, ".*");
+    result (eval_buffer_chsum($chsum_a, ls2str($data)) != 0);
+}

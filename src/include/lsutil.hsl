@@ -12,3 +12,14 @@
 function lsdup(lst type list) : result type list {
     result $lst;
 }
+
+function ls2str(lst type list) : result type string {
+    var str type string;
+    var l type int;
+    $l = 0;
+    while ($l < $lst.count()) {
+        $str = $str + $lst.item($l) + "\n";
+        $l = $l + 1;
+    }
+    result $str;
+}

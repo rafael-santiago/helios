@@ -1,0 +1,31 @@
+#
+# "chsum.hsl"  Mon 29 Dec 2014 12:10:27 PM BRST
+#
+#       by Rafael Santiago
+#
+# Description: evaluates two complements of one.
+#
+include ~/not.hsl
+
+function eval_buffer_chsum(previous_chsum type int, buffer type string) : result type int {
+    var sum type int;
+    var b type int;
+    var hi_byte type int;
+    var lo_byte type int;
+    $sum = $previous_chsum;
+    $b = 0;
+    while ($b < $buffer.len()) {
+        $hi_byte = $buffer.at($b);
+        $lo_byte = 0;
+        $b = $b + 1;
+        if ($b < $buffer.len()) {
+            $lo_byte = $buffer.at($b);
+            $b = $b + 1;
+        }
+        $sum = $sum + ((($hi_byte << 8) | $lo_byte));
+    }
+    while ($sum>>16) {
+        $sum = ($sum>>16) + ($sum & 0xffff);
+    }
+    result (bitwise_not($sum, 0) & 0xffff);
+}

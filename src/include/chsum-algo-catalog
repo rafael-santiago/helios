@@ -1,0 +1,5 @@
+===
+=== The checksum algorithm extension
+===
+
+Description: An implementation of 16 bit one's complement algorithm (The IP checksum).
