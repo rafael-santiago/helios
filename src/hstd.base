@@ -15,3 +15,5 @@ hc-functions                            include/hc/
 tlp-toolset                             include/toolsets
 not-operations                          include/
 sysinfo-utils                           include/
+chsum-algo                              include/
+diff-algos                              include/
