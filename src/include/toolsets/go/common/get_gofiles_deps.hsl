@@ -1,0 +1,17 @@
+#
+# "get_gofiles_deps.hsl"                Thu 01 Jan 2015 11:27:16 PM BRST
+#       by Rafael Santiago
+#
+
+function get_gofiles_deps() : result type string {
+    var gofiles type list;
+    var deps type string;
+    var g type int;
+    $g = 0;
+    $gofiles.ls(".*\\.go$");
+    while ($g < $gofiles.count()) {
+        $deps = $deps + $gofiles.item($g) + ": " + $gofiles.item($g) + ";\n";
+        $g = $g + 1;
+    }
+    result $deps;
+}

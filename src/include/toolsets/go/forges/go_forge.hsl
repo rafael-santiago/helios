@@ -1,0 +1,73 @@
+#
+# "go_forge.hsl"        Thu 01 Jan 2015 10:42:40 PM BRST
+#       by Rafael Santiago
+#
+include ~/toolsets/go/common/get_main_pkgs.hsl
+include ~/toolsets/go/common/should_build_gosrc.hsl
+include ~/toolsets/go/common/goclean.hsl
+include ~/lsutil.hsl
+
+local function go_get_full_srcpath(go_source type string) : result type string {
+    if ($go_source.len() == 0) {
+        result "";
+    }
+    var pwd_regex type string;
+    $pwd_regex = hefesto.sys.pwd();
+    $pwd_regex.replace("\\\\", "\\\\");
+    $pwd_regex.replace("\\$", "\\$");
+    $pwd_regex.replace("\\]", "\\]");
+    $pwd_regex.replace("\\[", "\\[");
+    $pwd_regex.replace("\\)", "\\)");
+    $pwd_regex.replace("\\(", "\\(");
+    $go_source.replace($pwd_regex, "");
+    result hefesto.sys.make_path(hefesto.sys.pwd(), $go_source);
+}
+
+function go_forge(go_sources type list) : result type int {
+    var exit_code type int;
+    var goclean_option type list;
+    hefesto.sys.echo("___\nbuilding gofiles... wait...\n\n");
+    $exit_code = 0;
+    if ($go_sources.count() == 0) {
+        $go_sources = get_main_pkgs();
+    }
+    $goclean_option = hefesto.sys.get_option("goclean");
+    if ($goclean_option.count() > 0) {
+        goclean($go_sources);
+        hefesto.sys.echo("\t(clean)\n\n___\n");
+        result 0;
+    }
+    if ($go_sources.count() > 0) {
+        var gs type int;
+        var go_source type string;
+        var not_built type list;
+        var should_build type int;
+        $not_built = lsdup($go_sources);
+        $gs = 0;
+        while ($gs < $go_sources.count() && $exit_code == 0) {
+            $go_source = $go_sources.item($gs);
+            $go_source = go_get_full_srcpath($go_source);
+            $should_build = should_build_gosrc($go_source);
+            hefesto.sys.echo("\tnow building \"" + $go_source + "\"... ");
+            if ($should_build) {
+                $exit_code = hefesto.sys.run(hefesto.toolset.build($go_source));
+            }
+            if ($exit_code == 0) {
+                $not_built.del_item($go_source);
+                if ($should_build) {
+                    hefesto.sys.echo("built.\n");
+                } else {
+                    hefesto.sys.echo("no changes.\n");
+                }
+            } else {
+                hefesto.sys.echo("error...\n");
+            }
+            $gs = $gs + 1;
+        }
+    } else {
+        hefesto.sys.echo("\t(nothing to build here)\n");
+    }
+    hefesto.toolset.base_refresh($not_built);
+    hefesto.sys.echo("\n___\n");
+    result $exit_code;
+}

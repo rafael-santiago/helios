@@ -1,0 +1,15 @@
+#
+# "should_build_gosrc.hsl"              Thu 01 Jan 2015 11:38:08 PM BRST
+#       by Rafael Santiago
+#
+
+function should_build_gosrc(gosrcpath type string) : result type int {
+    var should type int;
+    $should = hefesto.toolset.file_has_change($gosrcpath);
+    if ($should == 0) {
+        var binpath type string;
+        $gosrcpath.replace("\\.go$", "");
+        $should = (hefesto.sys.ls($gosrcpath + "$") == 0);
+    }
+    result $should;
+}

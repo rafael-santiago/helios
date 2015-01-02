@@ -1,0 +1,12 @@
+#
+# "go.hsl"                      Thu 01 Jan 2015 10:38:02 PM BRST
+#       by Rafael Santiago
+#
+include ~/toolsets/go/forges/go_forge.hsl
+include ~/toolsets/go/common/should_build_gosrc.hsl
+
+toolset "go" forge function "go_forge" : forge helpers "should_build_gosrc" :
+    command "build": SOURCE <
+        go build $SOURCE
+    >
+$

@@ -12,7 +12,8 @@ LaTeX-toolset                           include/toolsets/
 gnu-c-toolset                           include/toolsets/
 vc-toolset                              include/toolsets/
 hc-functions                            include/hc/
-tlp-toolset                             include/toolsets
+tlp-toolset                             include/toolsets/
+go-toolset                              include/toolsets/
 not-operations                          include/
 sysinfo-utils                           include/
 chsum-algo                              include/

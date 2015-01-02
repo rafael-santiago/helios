@@ -1,0 +1,17 @@
+#
+# "goclean.hsl"                 Thu 01 Jan 2015 11:47:27 PM BRST
+#
+#
+
+function goclean(gosources type list) : result type none {
+    var gosource type string;
+    var g type int;
+    $g = 0;
+    while ($g < $gosources.count()) {
+        $gosource = $gosources.item($g);
+        if ($gosource.replace("\\.go$", "") > 0) {
+            hefesto.sys.rm($gosource);
+        }
+        $g = $g + 1;
+    }
+}

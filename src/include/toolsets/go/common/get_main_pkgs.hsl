@@ -1,0 +1,35 @@
+#
+# "get_main_pkgs.hsl"           Thu 01 Jan 2015 10:47:32 PM BRST
+#       by Rafael Santiago
+#
+
+function get_main_pkgs() : result type list {
+    var packages type list;
+    var go_files type list;
+    $go_files.ls(".*\\.go$");
+    var go_file_lines type list;
+    var gf type int;
+    $gf = 0;
+    while ($gf < $go_files.count()) {
+        var has_main type int;
+        var gfl type int;
+        var line type string;
+        var gofilepath type string;
+        var glp type int;
+        $gofilepath = $go_files.item($gf);
+        $go_file_lines = hefesto.sys.lines_from_file($gofilepath, ".*package[ \\t]+main.*");
+        $has_main = 0;
+        $gfl = 0;
+        while ($has_main == 0 && $gfl < $go_file_lines.count()) {
+            $line = $go_file_lines.item($gfl);
+            $line.replace("[ |\\t]", "");
+            $has_main = ($line == "packagemain");
+            $gfl = $gfl + 1;
+        }
+        if ($has_main) {
+            $packages.add_item($go_files.item($gf));
+        }
+        $gf = $gf + 1;
+    }
+    result $packages;
+}
