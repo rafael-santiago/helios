@@ -1,9 +1,9 @@
 # The Go toolset
 
-With this toolset you can automate the "go build" command don't worry about if there are several go programs in the
+With this toolset you can automate the "go build" command don't worrying about if there are several go programs in the
 current working directory.
 
-For example, supposing that we have this directory status
+For example, supposing that we have this directory status:
 
     root@zephyr:~/src/1-2-3-go# ls -1
     for.go
@@ -26,7 +26,7 @@ So, if you try:
 
     root@zephyr:~/src/1-2-3-go# go build
 
-You'll get an error based on something like "main redeclared... blah-blah..."
+You'll get an error based on something like "main redeclared... blah-blah..."...
 
 With this Go toolset you can generate each binary without any problem, look:
 
@@ -69,10 +69,10 @@ Ok, then we try:
     variadic*
     variadic.go
 
-Now we got our binaries... but there is an inconvenience here: if you try to invoke the project forge again... all will build
-again but without any necessity.
+Now we got our binaries... but there is an inconvenience here... if you try to invoke the project forge again...
+all will build again but without any necessity.
 
-The Go toolset supports the dep-chain too. Let's edit the "Forgefile.hsl" from last example:
+Fortunately, this go toolset supports the dep-chain too. Let's edit the "Forgefile.hsl" from last sample:
 
     # Forgefile.hsl
 
@@ -89,24 +89,26 @@ The Go toolset supports the dep-chain too. Let's edit the "Forgefile.hsl" from l
         $gofiles = hefesto.sys.get_option("gofiles");
     }
 
-Now, if you call hefesto again... All go files will be built... but if you call it again none of them will, because there is
-no change since the last assisted forge.
+Now, if you call hefesto again... all go files will be built... but if you call it over again, none of them will be built...
+because no changes were detected since the last assisted forge.
 
-Another thing useful to create is an .ivk file with this content:
+Based on our state of things, another useful thing to create is an ".ivk" file with this content:
 
     --forgefiles=Forgefile.hsl --Forgefile-projects=go-sample
 
-And then to call go-sample's forge now is easy:
+After this, we can call go-sample's forge in an easier way:
 
     root@zephyr:~/src/1-2-3-go# hefesto
 
+## Toolset options
+
 This toolset has only to user-options:
 
-    - gofiles=gofile_a.go,gofile_b.go,(...),gofile_y.go,gofile_z.go
-    - goclean
+    * gofiles=gofile_a.go,gofile_b.go,(...),gofile_y.go,gofile_z.go
+    * goclean
 
 The option "gofiles" is used to specify which files in the current directory will be built. If this option is not supplied
-the toolset internally includes all go files from current directory. So that alien line in the "Forgefile.hsl" is now
+the toolset internally includes all go files from current directory, so that alien line in the "Forgefile.hsl" is now
 understood:
 
     # Forgefile.hsl
@@ -121,12 +123,12 @@ understood:
 
     go-samples.prologue() {
         $deps = get_gofiles_deps();
-        $gofiles = hefesto.sys.get_option("gofiles"); # Oh! My God, Rafael is a really crazy guy... tsc, tsc....
+        $gofiles = hefesto.sys.get_option("gofiles"); # Oh! My God, Rafael is a crazy guy... tsc, tsc....
     }
 
 Follows a gofiles option usage:
 
-    root@zephyr:~/src/1-2-3-go# hefesto --gofiles=for.go,func.go,map.go,variadic.go
+    Napoleon@zephyr:~/src/1-2-3-go# hefesto --gofiles=for.go,func.go,map.go,variadic.go
 
 
 The option "goclean" is used if you want to delete all generate binaries in the current directory. If there is a pratical
@@ -147,7 +149,7 @@ The option "goclean" is used if you want to delete all generate binaries in the 
     variables.go
     variadic.go
 
-Easy, no?
+Easy...
 
 You need to know that the "goclean" option has precedence over the "gofiles" option.
 
@@ -155,5 +157,3 @@ Now you master all about this simple Go toolset :)
 
 Enjoy!
 
-Rafael Santiago
---
