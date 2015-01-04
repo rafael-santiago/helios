@@ -446,3 +446,20 @@ If your project need a specific user account... you can use it to check this acc
 
     }
 
+
+## "hc/hc_execinfo.hsl"
+
+If your project generates GCC's backtraces the execinfo library is necessary, then to verify if the current build
+environment can handle codes with this:
+
+    include ~/hc/hc.hsl
+    include ~/hc/hc_execinfo.hsl
+
+    my-segfault-random-generator.preloading() {
+
+        hc_set_abort_on_fail();
+
+        hc_execinfo("NO execinfo... the toolset won't be loaded... bye!",
+                    "Nice... execinfo is here... now I'll load the toolset.");
+
+    }

@@ -1,0 +1,41 @@
+#
+#                              Copyright (C) 2015 by Rafael Santiago
+#
+# This is free software. You can redistribute it and/or modify under
+# the terms of the GNU General Public License version 2.
+#
+#
+# "hc_execinfo.hsl"                             Sun 04 Jan 2015 11:03:43 AM BRST
+#       by Rafael Santiago
+#
+# Description: verifies if it's possible link gcc applications
+#              which uses backtraces (libexecinfo).
+#
+#
+
+include ~/hc/hc.hsl
+
+function hc_execinfo(error_message type string, success_message type string) : result type int {
+    var test_program type string;
+    $test_program = "#include <stdlib.h>\n" +
+                    "#include <execinfo.h>\n" +
+                    "void main() {\n" +
+                    "size_t size;\n" +
+                    "void *array[50];\n" +
+                    "size = backtrace(array, 50);\n" +
+                    "backtrace_symbols_fd(array, size, 0);\n" +
+                    "}";
+    var test_program_file type file;
+    var ok type int;
+    $test_program_file = hefesto.sys.fopen(".execinfo-test.c", "w");
+    hefesto.sys.fwrite($test_program, $test_program.len(), $test_program_file);
+    hefesto.sys.fclose($test_program_file);
+    $ok = (hefesto.sys.run("gcc .execinfo-test.c -o.execinfo-test") == 0);
+    if ($ok == 0) {
+        $ok = (hefesto.sys.run("gcc .execinfo-test.c -o.execinfo-test -lexecinfo") == 0);
+    }
+    hefesto.sys.rm(".execinfo-test.c");
+    hefesto.sys.rm(".execinfo-test");
+    hc_print_result("hc_execinfo()", $ok, $error_message, $success_message);
+    result $ok;
+}
