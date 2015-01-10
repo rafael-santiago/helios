@@ -4,12 +4,12 @@
 # This is free software. You can redistribute it and/or modify under
 # the terms of the GNU General Public License version 2.
 #
-# "tulip.hls"
+# "tulip.hsl"
 #       by Rafael Santiago
 #
 # Description: a Tulip toolset.
 #
-include ~/toolsets/tulip/forge/tulip_forge.hls
+include ~/toolsets/tulip/forge/tulip_forge.hsl
 
 toolset "tulip" forge function "tulip_forge": forge helpers "should_process_tlp":
     command "compile": SOURCE <
