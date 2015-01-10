@@ -24,7 +24,7 @@
 #          always use the the toolset. ;)
 #
 
-local function get_src_file_without_ext(main_src_file type string) :
+function get_src_file_without_ext(main_src_file type string) :
             result type string {
     var m type int;
     var no_ext type string;
@@ -44,7 +44,7 @@ local function get_src_file_without_ext(main_src_file type string) :
     result $no_ext;
 }
 
-local function get_ltx_options() : result type string {
+function get_ltx_options() : result type string {
     var ltx_options type string;
     var ltx_options_lst type list;
     var o type int;
@@ -66,6 +66,7 @@ function latex_src_forge(main_src_file type string) :
     var mkpdf_opt type list;
     var usr_ltx_options type string;
     var keepclean_opt type list;
+
     $res_code = 0;
     hefesto.sys.echo("== " + hefesto.project.toolset() + " INFO: compile and generating the DVI.\n==\n\n");
     $usr_ltx_options = get_ltx_options();
