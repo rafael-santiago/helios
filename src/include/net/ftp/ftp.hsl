@@ -1,0 +1,202 @@
+#
+#                              Copyright (C) 2015 by Rafael Santiago
+#
+# This is free software. You can redistribute it and/or modify under
+# the terms of the GNU General Public License version 2.
+#
+#                               Sun 25 Jan 2015 07:29:25 PM BRST
+#
+# "ftp.hsl"
+#       by Rafael Santiago
+#
+# Description: HSL codes to manage basic ftp operations.
+#
+
+function ftp_execute(session_buffer type string, rlog type string) : result type int {
+    var ftp_script type file;
+    var ftp_script_filename type string;
+    $ftp_script_filename = ".ftp-script-data";
+    $ftp_script = hefesto.sys.fopen($ftp_script_filename, "w");
+    if ($ftp_script == 0) {
+        result 0;
+    }
+    var written_bytes type int;
+    $written_bytes = hefesto.sys.fwrite($session_buffer, $session_buffer.len(), $ftp_script);
+    hefesto.sys.fclose($ftp_script);
+    var exit_code type int;
+    $exit_code = 1;
+    if ($written_bytes == $session_buffer.len()) {
+        hefesto.sys.run("ftp -inv < " + $ftp_script_filename + " > " + $ftp_script_filename + "-out");
+        var ftp_out_content type list;
+        var temp type string;
+        $temp = $ftp_script_filename + "-out";
+        $ftp_out_content = hefesto.sys.lines_from_file($temp,
+                             "^(202|421|426|450|500|501|503|530|550|553|666|777|999) ");
+        hefesto.sys.rm($ftp_script_filename + "-out");
+        $exit_code = 0;
+        while ($exit_code < $ftp_out_content.count()) {
+            $temp = $ftp_out_content.item($exit_code);
+            if ($temp.match("^(202|421|426|450|500|501|503|530|550|553|666|777|999) bytes")) {
+                $ftp_out_content.del_index($exit_code);
+            } else {
+                $exit_code = $exit_code + 1;
+            }
+        }
+        $exit_code = $ftp_out_content.count();
+        if ($exit_code > 0) {
+            var c type int;
+            $rlog = "";
+            $c = 0;
+            while ($c < $ftp_out_content.count()) {
+                $rlog = $rlog + $ftp_out_content.item($c) + "\n";
+                $c = $c + 1;
+            }
+            hefesto.sys.byref($rlog);
+        }
+    }
+    hefesto.sys.rm($ftp_script_filename);
+    result ($exit_code == 0);
+}
+
+function ftp_login(session_buffer type string,
+                   server type string, port type int, user type string, passwd type string) : result type none {
+    $session_buffer = $session_buffer + "open " + $server + " " + $port + "\n";
+    $session_buffer = $session_buffer + "user " + $user + " " + $passwd + "\n";
+    hefesto.sys.byref($session_buffer);
+}
+
+function ftp_cd(session_buffer type string, ndir type string) : result type none {
+    $session_buffer = $session_buffer + "cd " + $ndir + "\n";
+    hefesto.sys.byref($session_buffer);
+}
+
+function ftp_mkdir(session_buffer type string, dirname type string) : result type none {
+    $session_buffer = $session_buffer + "mkdir " + $dirname + "\n";
+    hefesto.sys.byref($session_buffer);
+}
+
+function ftp_delete(session_buffer type string, filename type string) : result type none {
+    $session_buffer = $session_buffer + "delete " + $filename + "\n";
+    hefesto.sys.byref($session_buffer);
+}
+
+function ftp_rmdir(session_buffer type string, dirname type string) : result type none {
+    $session_buffer = $session_buffer + "rmdir " + $dirname + "\n";
+    hefesto.sys.byref($session_buffer);
+}
+
+function ftp_get(session_buffer type string, filename type string) : result type none {
+    $session_buffer = $session_buffer + "get " + $filename + "\n";
+    hefesto.sys.byref($session_buffer);
+}
+
+function ftp_mget(session_buffer type string, filenames type list) : result type none {
+    if ($filenames.count() > 0) {
+        var f type int;
+        $f = 0;
+        $session_buffer = $session_buffer + "mget ";
+        while ($f < $filenames.count()) {
+            var filename type string;
+            $filename = $filenames.item($f);
+            $session_buffer = $session_buffer + $filename;
+            $f = $f + 1;
+            if ($f < $filenames.count()) {
+                $session_buffer = $session_buffer + " ";
+            }
+        }
+        $session_buffer = $session_buffer + "\n";
+        hefesto.sys.byref($session_buffer);
+    }
+}
+
+function ftp_put(session_buffer type string, filename type string) : result type none {
+    $session_buffer = $session_buffer + "put " + $filename + "\n";
+    hefesto.sys.byref($session_buffer);
+}
+
+function ftp_mput(session_buffer type string, filenames type list) : result type none {
+    if ($filenames.count() > 0) {
+        var f type int;
+        $f = 0;
+        $session_buffer = $session_buffer + "mput ";
+        while ($f < $filenames.count()) {
+            var filename type string;
+            $filename = $filenames.item($f);
+            $session_buffer = $session_buffer + $filename;
+            $f = $f + 1;
+            if ($f < $filenames.count()) {
+                $session_buffer = $session_buffer + " ";
+            }
+        }
+        $session_buffer = $session_buffer + "\n";
+        hefesto.sys.byref($session_buffer);
+    }
+}
+
+function ftp_prompt(session_buffer type string) : result type none {
+    $session_buffer = $session_buffer + "prompt\n";
+}
+
+function ftp_binary(session_buffer type string) : result type none {
+    $session_buffer = $session_buffer + "binary\n";
+    hefesto.sys.byref($session_buffer);
+}
+
+function ftp_ascii(session_buffer type string) : result type none {
+    $session_buffer = $session_buffer + "ascii\n";
+    hefesto.sys.byref($session_buffer);
+}
+
+function ftp_chmod(session_buffer type string, filename type string) : result type none {
+    $session_buffer = $session_buffer + "chmod " + $filename + "\n";
+    hefesto.sys.byref($session_buffer);
+}
+
+function ftp_mdelete(session_buffer type string, filenames type list) : result type none {
+    if ($filenames.count() > 0) {
+        var f type int;
+        $f = 0;
+        $session_buffer = $session_buffer + "mdelete ";
+        while ($f < $filenames.count()) {
+            $session_buffer = $session_buffer + $filenames.item($f) + " ";
+            $f = $f + 1;
+        }
+        $session_buffer = $session_buffer + "\n";
+        hefesto.sys.byref($session_buffer);
+    }
+}
+
+function ftp_rename(session_buffer type string, filename type string) : result type none {
+    $session_buffer = $session_buffer + "rename " + $filename + "\n";
+    hefesto.sys.byref($session_buffer);
+}
+
+function ftp_quote(session_buffer type string, arbitrary_command type string) : result type none {
+    $session_buffer = $session_buffer + "quote " + $arbitrary_command + "\n";
+    hefesto.sys.byref($session_buffer);
+}
+
+function ftp_lcd(session_buffer type string, dirname type string) : result type int {
+    var retval type int;
+    $retval = hefesto.sys.cd($dirname);
+    if ($retval) {
+        $session_buffer = $session_buffer + "lcd " + $dirname + "\n";
+        hefesto.sys.byref($session_buffer);
+    }
+    result $retval;
+}
+
+function ftp_disconnect(session_buffer type string) : result type none {
+    $session_buffer = $session_buffer + "disconnect\n";
+    hefesto.sys.byref($session_buffer);
+}
+
+function ftp_bye(session_buffer type string) : result type none {
+    $session_buffer = $session_buffer + "bye\n";
+    hefesto.sys.byref($session_buffer);
+}
+
+function ftp_newer(session_buffer type string, remote_file type string, local_file type string) : result type none {
+    $session_buffer = $session_buffer + "newer " + $remote_file + " " + $local_file + "\n";
+    hefesto.sys.byref($session_buffer);
+}
