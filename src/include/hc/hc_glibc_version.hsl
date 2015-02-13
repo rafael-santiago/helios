@@ -1,0 +1,63 @@
+#
+#                                           Copyright (C) 2015 by Rafael Santiago
+#
+# This is free software. You can redistribute it and/or modify under
+# the terms of the GNU General Public License version 2.
+#
+#                                            < Thu 12 Feb 2015 10:10:43 PM BRST >
+#
+# hc_glibc_version.hsl
+#       by Rafael Santiago
+#
+# Description: this code checks for glibc version.
+#
+
+include ~/hc/hc.hsl
+include ~/conv.hsl
+
+local function glibc_version_compare(op type string, expected_version type string, current_version type string) 
+                                                : result type int {
+    $current_version.replace("\\.", "");
+    var c type int;
+    $c = str2int($current_version);
+    $expected_version.replace("\\.", "");
+    var e type int;
+    $e = str2int($expected_version);
+    if ($op == ">") {
+        result ($c > $e);
+    } else if ($op == "<") {
+        result ($c < $e);
+    } else if ($op == ">=") {
+        result ($c >= $e);
+    } else if ($op == "<=") {
+        result ($c <= $e);
+    } else if ($op == "=") {
+        result ($c == $e);
+    } else if ($op == "!=") {
+        result ($c != $e);
+    } else {
+        hefesto.sys.echo("hc_glibc_version WARNING: unknown operator \"" + $op + "\".\n");
+    }
+    result 0;
+}
+
+function hc_glibc_version(op type string, version type string, error_message type string, success_message type string) : result type int {
+    var exit_code type int;
+    var retval type int;
+    $exit_code = hefesto.sys.run("ldd --version > .hc_glibc_version.out");
+    $retval = 0;
+    if ($exit_code == 0) {
+        var lines type list;
+        $lines = hefesto.sys.lines_from_file(".hc_glibc_version.out", "^ldd.*$");
+        $exit_code = 1;
+        if ($lines.count() > 0) {
+            var glibc_v type string;
+            $glibc_v = $lines.item(0);
+            $glibc_v.replace("^ldd.*\\) ", "");
+            $retval = glibc_version_compare($op, $version, $glibc_v);
+        }
+        hefesto.sys.rm(".hc_glibc_version.out");
+    }
+    hc_print_result("hc_glibc_version", $retval, $error_message, $success_message);
+    result $retval;
+}

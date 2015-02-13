@@ -463,3 +463,20 @@ environment can handle codes with this:
                     "Nice... execinfo is here... now I'll load the toolset.");
 
     }
+
+## "hc/hc_glibc_version.hsl"
+
+Supposing that you need to check for the glibc version. You should try this:
+
+    include ~/hc/hc.hsl
+    include ~/hc/hc_glibc_version.hsl
+
+    my-glibc-dependant-project.prologue() {
+
+        hc_set_abort_on_fail();
+
+        hc_glibc_version(">", "2.11.1", "Your glibc is less than 2.11.2...",
+                                        "Congrats! You have a glibc greater or equals to 2.11.2.");
+    }
+
+You can use other operators besides "greater than" which are: "<", ">=", "<=", "=", "!=".
