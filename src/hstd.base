@@ -19,3 +19,4 @@ sysinfo-utils                           include/
 chsum-algo                              include/
 diff-algos                              include/
 net-utils                               include/net/
+scm-utils                               include/scm/

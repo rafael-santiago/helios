@@ -1,0 +1,46 @@
+#
+#                              Copyright (C) 2015 by Rafael Santiago
+#
+# This is free software. You can redistribute it and/or modify under
+# the terms of the GNU General Public License version 2.
+#
+#                                       < Mon 16 Feb 2015 11:28:05 PM BRST >
+# git.hsl
+#       by Rafael Santiago
+#
+
+function git_pull() : result type int {
+    result hefesto.sys.run("git pull");
+}
+
+function git_clone(from type string, to type string) : result type int {
+    result hefesto.sys.run("git clone " + $from + " " + $to);
+}
+
+function git_push() : result type int {
+    result hefesto.sys.run("git push");
+}
+
+function git_add(filepath type string) : result type int {
+    result hefesto.sys.run("git add " + $filepath);
+}
+
+function git_checkout(filepath type string) : result type int {
+    result hefesto.sys.run("git checkout " + $filepath);
+}
+
+function git_rm(filepath type string) : result type int {
+    result hefesto.sys.run("git rm " + $filepath);
+}
+
+function git_branch(branch type string) : result type int {
+    result hefesto.sys.run("git branch " + $branch);
+}
+
+function git_tag(tag type string, commit_id type string) : result type int {
+    result hefesto.sys.run("git tag " + $tag + " " + $commit_id);
+}
+
+function git_commit(message type string) : result type int {
+    result hefesto.sys.run("git commit -a -m \"" + $message + "\"");
+}

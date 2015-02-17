@@ -1,0 +1,33 @@
+#
+#                              Copyright (C) 2015 by Rafael Santiago
+#
+# This is free software. You can redistribute it and/or modify under
+# the terms of the GNU General Public License version 2.
+#
+#                                       < Mon 16 Feb 2015 11:38:17 PM BRST >
+# svn.hsl
+#       by Rafael Santiago
+#
+
+function svn_checkout(user type string, pass type string, repo type string) : result type int {
+    result hefesto.sys.run("svn co " + $repo + " --username " + $user + " --password " +
+                                $pass + " --non-interactive");
+}
+
+function svn_update(user type string, pass type string) : result type int {
+    result hefesto.sys.run("svn update --username " + $user + " --password " +
+                                $pass + " --non-interactive");
+}
+
+function svn_commit(user type string, pass type string, message type string) : result type int {
+    result hefesto.sys.run("svn commit -m \"" + $message + "\" --username " + $user + " --password " +
+                                $pass + " --non-interactive");
+}
+
+function svn_add(filepath type string) : result type int {
+    result hefesto.sys.run("svn add " + $filepath);
+}
+
+function svn_delete(filepath type string) : result type int {
+    result hefesto.sys.run("svn delete " + $filepath);
+}
