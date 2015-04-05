@@ -20,3 +20,5 @@ chsum-algo                              include/
 diff-algos                              include/
 net-utils                               include/net/
 scm-utils                               include/scm/
+null-toolset                            include/toolsets/
+java-toolset                            include/toolsets/

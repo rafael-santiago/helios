@@ -1,0 +1,2 @@
+include/scm/git.hsl
+include/scm/svn.hsl
