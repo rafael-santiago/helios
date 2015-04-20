@@ -1,6 +1,6 @@
 # A simple ffmpeg toolset
 
-The idea under this toolset is be extensible. So, "from factory" you will find few automations for commons tasks
+The idea under this toolset is to be extensible. So, "from factory" you will find few automations for commons tasks
 that anybody could do using ffmpeg tool, which covers:
 
 - A *MP4* conversor (internal task-name: ``mp4conversor``)
@@ -11,7 +11,7 @@ that anybody could do using ffmpeg tool, which covers:
 
 ## So, how to use it?
 
-Personally, I like to letting a forge directory prepared with an invocation file in order to make my life easy, because
+Personally, I like letting a forge directory prepared with an invocation file in order to make my life easy, because
 commonly the use of ``ffmpeg`` tends to be sudden. Follows my forge project file:
 
         # "Forgefile.hsl"
@@ -32,13 +32,13 @@ Follows the ``.ivk`` file which resides in the same forge project file directory
         --forgefiles=Forgefile.hsl --Forgefile-projects=my-ffmpeg-butler
 
 Now, you have to consider the internal task-name of the operation that you want to perform. If this operation
-does not exist yet, you should extend the toolset by your own and it can be very intersting too.
+not exists yet, you should extend the toolset by your own and it can be very intersting too.
 
 Supposing that you want to convert a *.WMV* video to *.MP4*:
 
 >``hefesto --input=the-wmv-input.wmv --output=the-mp4-output.mp4 --ffmpeg-task=mp4conversor``
 
-Do want to extract some audio from a video?
+Do you want to extract some audio from a video?
 
 >``hefesto --input=the-mp4-output.mp4 --ffmpeg-task=mp3fromvideo
 
@@ -47,6 +47,10 @@ The toolset can infers the output file names if you do not inform them.
 *Windows* users, if you need to supply a input file path with spaces you have to escape it. Look:
 
 >``hefesto --input="\"C:\\Another\\Folder\\From Outer space\\sample.wmv\"" --output=here.mp4 --ffmpeg-task=mp4conversor
+
+You can pass several files to be processed by the same task too:
+
+>``hefesto --ffmpeg-task=mp3fromvideo --input=show-001.mp4,show-002.mp4,show-003.mp4 --output=song-001.mp3,song-002.mp3,song-003.mp3``
 
 That is it!
 Enjoy.
