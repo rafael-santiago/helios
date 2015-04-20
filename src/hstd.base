@@ -22,3 +22,4 @@ net-utils                               include/net/
 scm-utils                               include/scm/
 null-toolset                            include/toolsets/
 java-toolset                            include/toolsets/
+ffmpeg-toolset                          include/toolsets/
