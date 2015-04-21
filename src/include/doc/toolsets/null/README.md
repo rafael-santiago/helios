@@ -10,6 +10,8 @@ The basic usage of it includes:
 Follows an example:
 
         # ``test.hsl``
+        include ~/toolsets/null/null.hsl
+
         project hsl-tester : toolset "no-tool-any-set" : 0;
 
         function function_to_be_tested() : result type none {
