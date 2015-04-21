@@ -1,4 +1,4 @@
-include/toolsets/go/README.md
+include/doc/toolsets/go/README.md
 include/toolsets/go/go.hsl
 include/toolsets/go/common/get_gofiles_deps.hsl
 include/toolsets/go/common/get_main_pkgs.hsl

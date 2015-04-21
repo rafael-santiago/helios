@@ -1,4 +1,4 @@
-include/hc/README.md
+include/doc/hc/README.md
 include/hc/hc.hsl
 include/hc/hc_boost_version.hsl
 include/hc/hc_gcc_export.hsl

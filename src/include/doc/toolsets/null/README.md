@@ -12,7 +12,7 @@ Follows an example:
         # ``test.hsl``
         project hsl-tester : toolset "no-tool-any-set" : 0;
 
-        function function_to_be_tested() : result none {
+        function function_to_be_tested() : result type none {
             hefesto.sys.echo("Some stuff goes here.\n");
         }
 

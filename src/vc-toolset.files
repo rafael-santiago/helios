@@ -1,4 +1,4 @@
-include/toolsets/vc/README.md
+include/doc/toolsets/vc/README.md
 include/toolsets/vc/vc100-app.hsl
 include/toolsets/vc/vc100-lib.hsl
 include/toolsets/vc/vc110-app.hsl
