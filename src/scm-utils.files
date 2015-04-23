@@ -1,2 +1,3 @@
 include/scm/git.hsl
 include/scm/svn.hsl
+include/doc/scm/git.md
