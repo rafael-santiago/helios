@@ -1,10 +1,10 @@
-# The scm.hsl module
+# The git.hsl module
 
-This is a collection of wrappers for common git commands. The wrappers which do not receive any argument must be executed under the git repository path.
+This is a collection of wrappers for common [``git``](http://git-scm.org) commands. The wrappers which do not receive any argument must be executed under the ``git`` repository path.
 
 ## Default location of this module
 
->``include ~/scm/scm.hsl``
+>``include ~/scm/git.hsl``
 
 ## The ``git_pull()`` function
 
