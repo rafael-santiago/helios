@@ -18,10 +18,10 @@ And yes, it can be understood as an official Hefesto's extensions repository.
 ## Understanding the Helio's basic directory structure
 
     helios/                                     [The Helios' root directory.]
-          doc/                                  [A place destinated to documentation.]
           installer/                            [All installer/uninstaller infrastructure is here]
           src/                                  [The Helios' src root directory]
                includes/                        [Here the common purpose HSL code can be placed or at least subdirectories containing it...]
+                       doc/                     [A place dedicated for documentation.]
                        toolsets/                [...but HSL codes which composes toolsets must be placed here.]
                                 common/         [Sometimes toolsets can share a code base so here is a place for it.]
                modules/                         [Modules (E.g.: HSL codes which uses a native code portion) must be placed here.]

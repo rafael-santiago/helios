@@ -4,14 +4,14 @@ Hefesto check functions is a collection of HSL codes destinated to verify if a b
 has all requirements needed to run a forge task. Things like look for some software exportation,
 library installation, library versioning, software versioning and so on.
 
-All functions of this collection have names prefixed by "hc_" and are int/boolean functions which
-means return 1 for ok results otherwise 0.
+All functions from this collection have names prefixed by "hc_" and are int/boolean functions. It means
+that them return 1 for ok results otherwise 0.
 
 Functions can receive a variable number of arguments but two arguments are default: error and success messages.
 
 Success messages can be suppressed if passed empty otherwise error messages will never be suppressed.
 
-By standard the last two arguments of hc functions are respectively the error message and the success message:
+By default the last two arguments from "hc-type" functions are respectively the error message and the success message:
 
     include ~/hc/hc_gcc_version.hsl
     (...)
@@ -23,7 +23,7 @@ By standard the last two arguments of hc functions are respectively the error me
 
 All hc functions are under the "hc" include directory.
 
-Following you'll find descriptions about the main hc functions and how to use them.
+Following you will find descriptions about the main hc functions and how to use them.
 
 # More about some hc functions
 
@@ -33,13 +33,13 @@ about and an example. So...
 
 ## "hc/hc.hsl"
 
-This file doesn't have anything special (except two functions, ok, so there are things) to be used by hc function users,
+This file does not have anything special (except two functions, ok, so there are things) to be used by hc function users,
 because here is coded common functions which can be used by another hc modules.
 
 ### hc_set_abort_on_fail()
 
-The default behavior when a hc check fails is continue the following checks, letting to user at the end of the checking
-process to decide if it's better abort the build process or not.
+The default behavior when a hc check fails is continue the following checks, letting user at the end of the checking
+process to decide if it is better abort the build process or not.
 
 If you want to abort you need to call hc_set_abort_on_fail() before start any hc check, something like this:
 
@@ -56,7 +56,7 @@ If you want to abort you need to call hc_set_abort_on_fail() before start any hc
 
 ### hc_unset_abort_on_fail()
 
-It does the opposite of hc_set_abort_on_fail(), so when some hc check fails, the whole (main) process still continue.
+It performs the opposite of hc_set_abort_on_fail(), so when some hc check fails the whole (main) process still continue.
 
     include ~/hc/hc.hsl
 
@@ -75,7 +75,7 @@ It does the opposite of hc_set_abort_on_fail(), so when some hc check fails, the
 
 ### hc_should_abort_on_fail()
 
-It returns 1 if the process should be aborted otherwise 0. With hc_should_abort_on_fail() returning 0, it means that you need
+It returns 1 if the process should be aborted otherwise 0. With hc_should_abort_on_fail() returning 0 means that you need
 to control what specifically to do in this situation... try to fix the environment, to adapt your build... It depends on you.
 
     include ~/hc/hc.hsl
@@ -117,7 +117,7 @@ to control what specifically to do in this situation... try to fix the environme
 
 ### hc_print_result()
 
-This function should be used by hc modules developers. It's used to print error or success messages and abort the process
+This function should be used by hc modules developers. It is used to print error or success messages and abort the process
 when necessary (on errors of course).
 
     # meanwhile inside some hc module source code...
@@ -151,10 +151,10 @@ when necessary (on errors of course).
 
 ## "hc/hc_gcc_export.hsl"
 
-In this file you'll find the function hc_gcc_export(), which verifies if gcc can be called without any problems from the
+In this file you will find the function hc_gcc_export(), which verifies if gcc can be called without any problems from the
 current working directory in order to generate a very basic binary.
 
-So the usage of it:
+So the usage of this:
 
     include ~/hc/hc_gcc_export.hsl
     include ~/hc/hc.hsl
@@ -213,7 +213,7 @@ In order to verify if in current build enviroment we can link applications that 
         hc_set_abort_on_fail();
 
         hc_libpthread("No way to build this innovative college sample without Pthreads library.",
-                      "Ok, after you'll master all things about Multithreading.");
+                      "Ok, after you will master all things about Multithreading.");
 
     }
 
@@ -228,16 +228,16 @@ In order to verify the presence of python:
 
         hc_set_abort_on_fail();
 
-        hc_python_export("I can't make coffee without python... We'll die!!! Please, pleeeease install it!",
-                         "Python is here, I don't need to say THAT word....\n- Ni?...\nArrghhhhhh!!!");
+        hc_python_export("I can not make coffee without python... We will die!!! Please, pleeeease install it!",
+                         "Python is here, I do not need to say THAT word....\n- Ni?...\nArrghhhhhh!!!");
 
     }
 
 ## "hc/boost_version.hsl"
 
-Ok, you're use boost, so what version you're using... Hummm and you need to THAT version... all right?...
+Ok, you use boost... so what version are you using? Hummm and you need to THAT version... all right?...
 
-There's a way:
+There is a way:
 
     include ~/hc/hc.hsl
     include ~/hc/hc_boost_version.hsl
@@ -249,17 +249,17 @@ There's a way:
         hc_boost_version("=",
                          "1_42",
                          "I need boost 1.42 dumb human...",
-                         "Ok, you got what I need... you're still alive...");
+                         "Ok, you got what I need... by now you are still alive...");
 
     }
 
 The first argument is releated with the type of version checking... it can be: "=", ">", ">=", "<", "<="  or "!=".
 
-The second is the version, formatted as defined in "boost_version.hpp" header file.
+The second is the version, formatted as defined in "boost_version.hpp" header file. Yes quite ugly.
 
 ## "hc/gcc_version.hsl"
 
-Sometimes is needed compile things using specific GCC version (oh God... why?!!)....
+Sometimes is necessary compile things using specific GCC version (oh God... why?!!)....
 
 So for crazy situations, you could include this.....madness:
 
@@ -308,7 +308,7 @@ If your application uses libcurses, use it to check if it can be well-linked on 
 
         hc_set_abort_on_fail();
 
-        hc_libncurses("Man... I need Ncurses... It's serious... otherwise you could cry...", ""); # Nothing will be said on ok situations.
+        hc_libncurses("Man... I need Ncurses... It is serious... otherwise you will cry...", ""); # Nothing will be said on ok situations.
 
     }
 
@@ -351,7 +351,6 @@ The first argument is a list containing all expected distros names.
 
 The second indicates that the name comparison is no-case (1).
 
-
 ## "hc/hc_type_socklen_t"
 
 This hc function is used to check if the type socklen_t is defined on the current system.
@@ -363,7 +362,7 @@ This hc function is used to check if the type socklen_t is defined on the curren
 
         hc_set_abort_on_fail();
 
-        hc_type_socklen_t("The socklen_t type isn't present, replace it for int.", "");
+        hc_type_socklen_t("The socklen_t type is not present, replace it for int.", "");
 
     }
 
@@ -403,7 +402,7 @@ This verifies the presence of libcrypt on the current build environment.
 
 ## "hc/hc_libpcap.hsl"
 
-To check if the current build environment can link applications that use libpcap. Try it:
+To check if the current build environment can link applications that use libpcap. Try this:
 
     include ~/hc/hc_libpcap.hsl
     include ~/hc/hc.hsl
@@ -428,7 +427,7 @@ If you need Perl for some reason, use it to verify if Perl is accessible:
 
         hc_set_abort_on_fail();
 
-        hc_perl_export("I couldn't find Perl.", "");
+        hc_perl_export("I could not find Perl.", "");
 
     }
 
@@ -449,7 +448,7 @@ If your project need a specific user account... you can use it to check this acc
 
 ## "hc/hc_execinfo.hsl"
 
-If your project generates GCC's backtraces the execinfo library is necessary, then to verify if the current build
+If your project generates GCC's backtraces the execinfo library is necessary. Then to verify if the current build
 environment can handle codes with this:
 
     include ~/hc/hc.hsl
@@ -459,8 +458,8 @@ environment can handle codes with this:
 
         hc_set_abort_on_fail();
 
-        hc_execinfo("NO execinfo... the toolset won't be loaded... bye!",
-                    "Nice... execinfo is here... now I'll load the toolset.");
+        hc_execinfo("NO execinfo... the toolset will not be loaded... bye!",
+                    "Nice... execinfo is here... now I will load the toolset.");
 
     }
 
