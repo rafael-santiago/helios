@@ -1,0 +1,86 @@
+#                                    Tue 16 Jun 2015 06:40:34 PM BRT
+#
+#                              Copyright (C) 2015 by Rafael Santiago
+#
+# This is free software. You can redistribute it and/or modify under
+# the terms of the GNU General Public License version 2.
+#
+include ~/scm/git.hsl
+include ~/fsutil.hsl
+
+function jekyll_forge() : result type int {
+    var options type list;
+    var exit_code type int;
+    var choice type string;
+    var things_done type int;
+
+    $things_done = 0;
+
+    $options = hefesto.sys.get_option("build");
+
+    if ($options.count() > 0) {
+        $things_done = $things_done + 1;
+        hefesto.sys.echo("*** building the site...\n___\n\n");
+        $exit_code = hefesto.sys.run(hefesto.toolset.build());
+        if ($exit_code == 0) {
+            hefesto.sys.echo("\n\n___\n*** the site was build.\n\n");
+        } else {
+            hefesto.sys.echo("\n\n___\n~~~ error when the site was being built.\n");
+            result $exit_code;
+        }
+    }
+
+    $options = hefesto.sys.get_option("preview");
+
+    if ($options.count() > 0) {
+        $things_done = $things_done + 1;
+        $choice = "r";
+        while ($choice == "r") {
+            hefesto.sys.echo("*** access your local server and verify if all is ok in order to continue...\n__\n\n");
+            hefesto.sys.run(hefesto.toolset.preview());
+            $choice = "";
+            hefesto.sys.echo("\n\n___\n");
+            while ($choice != "y" && $choice != "n" && $choice != "r") {
+                $choice = hefesto.sys.prompt("All ok? [(y)es / (n)o / (r)ebuild] ");
+                if ($choice == "r") {
+                    $exit_code = hefesto.sys.run(hefesto.toolset.build());
+                    if ($exit_code == 0) {
+                        hefesto.sys.echo("\n\n___\n*** the site was build.\n\n");
+                    } else {
+                        hefesto.sys.echo("\n\n___\n~~~ error when the site was being built.\n");
+                        result $exit_code;
+                    }
+                }
+            }
+        }
+        if ($choice == "n") {
+            hefesto.sys.echo("\n~~~ aborting.\n");
+            result 1;
+        }
+        hefesto.sys.echo("\n*** going ahead...\n\n");
+    }
+
+    $options = hefesto.sys.get_option("publish");
+
+    if ($options.count() > 0) {
+        $things_done = $things_done + 1;
+        hefesto.sys.echo("*** publishing the site...\n");
+        if (isdir("_site") == 0) {
+            hefesto.sys.echo("\n\n___\n~~~ \"_site\" folder not found.\n");
+            result 0;
+        }
+        git_add("_site/*");
+        if (isdir("_posts")) {
+            git_add("_posts/*");
+        }
+        $exit_code = git_commit("Publishing");
+    }
+
+    if ($things_done == 0) {
+        hefesto.sys.echo(hefesto.project.toolset() + " toolset WARNING: you should indicate what you intend to do: \"--build\", \"--preview\" or \"--publish\".\n");
+    } else {
+        hefesto.sys.echo("*** All done!\n");
+    }
+
+    result $exit_code;
+}

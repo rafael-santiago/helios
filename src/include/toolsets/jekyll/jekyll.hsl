@@ -1,0 +1,20 @@
+#                                    Tue 16 Jun 2015 06:33:48 PM BRT
+#
+#                              Copyright (C) 2015 by Rafael Santiago
+#
+# This is free software. You can redistribute it and/or modify under
+# the terms of the GNU General Public License version 2.
+#
+include ~/toolsets/jekyll/forge/jekyll_forge.hsl
+
+toolset "jekyll" forge function "jekyll_forge":
+    command "build": <
+        jekyll build
+    >
+    command "preview": <
+        jekyll serve
+    >
+    command "publish": <
+        git push
+    >
+$
