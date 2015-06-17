@@ -74,11 +74,17 @@ function jekyll_forge() : result type int {
             git_add("_posts/*");
         }
         $exit_code = git_commit("Publishing");
+        $exit_code = git_push();
+        if ($exit_code == 0) {
+            hefesto.sys.echo("\n\n___\n*** the content was published.\n\n");
+        } else {
+            hefesto.sys.echo("\n\n___\n~~~ error when the content was being published.\n");
+        }
     }
 
     if ($things_done == 0) {
         hefesto.sys.echo(hefesto.project.toolset() + " toolset WARNING: you should indicate what you intend to do: \"--build\", \"--preview\" or \"--publish\".\n");
-    } else {
+    } else if ($exit_code == 0) {
         hefesto.sys.echo("*** All done!\n");
     }
 
