@@ -26,6 +26,7 @@
 #  $my_depchain = $my_depchain + get_go_deps();
 #  hefesto.sys.cd($oldcwd);
 #
+include ~/fsutil.hsl
 
 function get_go_deps() : result type string {
     var gofiles type list;
