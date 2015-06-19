@@ -1,0 +1,138 @@
+#                                    Fri 19 Jun 2015 09:46:08 AM BRT
+#
+#                              Copyright (C) 2015 by Rafael Santiago
+#
+# This is free software. You can redistribute it and/or modify under
+# the terms of the GNU General Public License version 2.
+#
+# "dependency_scanner.hsl"
+#       by Rafael Santiago
+#
+# Description: a Golang dependency scanner.
+#
+# ------------------------------------------------------------------
+#
+# The basic usage is:
+#
+#  include ~/toolsets/common/utils/lang/go/dependency_scanner.hsl
+#  (...)
+#  $my_depchain = get_go_deps();
+#
+# Supposing that you have some code stuff in another directory and
+#                                              it must be watched:
+#
+#  $oldcwd = hefesto.sys.pwd();
+#  hefesto.sys.cd("another/directory");
+#  $my_depchain = $my_depchain + get_go_deps();
+#  hefesto.sys.cd($oldcwd);
+#
+
+function get_go_deps() : result type string {
+    var gofiles type list;
+    var g type int;
+    var gofile_path type string;
+    var depchain type string;
+    var gofile_imports type list;
+    var imported_gofile_path type string;
+    var added type list;
+    var gi type int;
+
+    $gofiles.ls(".*\\.go$");
+    $g = 0;
+
+
+    while ($g < $gofiles.count()) {
+        $gofile_path = $gofiles.item($g);
+        $gofile_imports = get_gofile_imports($gofile_path);
+        $depchain = $depchain + $gofile_path + ": ";
+        $gi = 0;
+        while ($gi < $gofile_imports.count()) {
+            $imported_gofile_path = $gofile_imports.item($gi);
+            $depchain = $depchain + $imported_gofile_path + " ";
+            $gi = $gi + 1;
+            if ($gi < $gofile_imports.count()) {
+                $depchain = $depchain + "& ";
+            }
+        }
+        $depchain = $depchain + ";\n";
+        $g = $g + 1;
+    }
+
+    result $depchain;
+}
+
+local function strip_redundant_imports(imports type list) : result type list {
+    var nondup type list;
+    var data type string;
+    var i type int;
+    $i = 0;
+    while ($i < $imports.count()) {
+        $data = $imports.item($i);
+        if ($nondup.index_of($data) == -1) {
+            $nondup.add_item($data);
+        }
+        $i = $i + 1;
+    }
+    result $nondup;
+}
+
+local function get_gofile_imports(gofile_path type string) : result type list {
+    var imports type list;
+    var i type int;
+    var gofile type file;
+    var token type string;
+    var t type string;
+    var total_read type int;
+
+    $gofile = hefesto.sys.fopen($gofile_path, "rb");
+
+    if ($gofile == 0) {
+        result $imports;
+    }
+
+    $total_read = hefesto.sys.fread($t, 1, $gofile);
+
+    while ($total_read == 1) {
+        if ($t == " " || $t == "\t" || $t == "\n" || $t == "\r" || $t == "(" || $t == ";" || $t == "/") {
+            if ($token == "import") {
+                while ($t != ")") {
+                    $total_read = hefesto.sys.fread($t, 1, $gofile);
+                    while ($t != "\"" && $t != ")") {
+                        $total_read = hefesto.sys.fread($t, 1, $gofile);
+                    }
+                    if ($t == ")") {
+                        break;
+                    }
+                    var imported_gofile type string;
+                    $imported_gofile = "";
+                    $total_read = hefesto.sys.fread($t, 1, $gofile);
+                    while ($t != "\"" && $t != ")") {
+                        $imported_gofile = $imported_gofile + $t;
+                        $total_read = hefesto.sys.fread($t, 1, $gofile);
+                    }
+                    if (isdir($imported_gofile)) {
+                        var oldcwd type string;
+                        $oldcwd = hefesto.sys.pwd();
+                        if (hefesto.sys.cd($imported_gofile)) {
+                            $imports.ls(".*\\.go$");
+                            hefesto.sys.cd($oldcwd);
+                        }
+                    } else if (isfile($imported_gofile)) {
+                        $imports.add_item($imported_gofile);
+                    } else if (isfile($imported_gofile + ".go")) {
+                        $imports.add_item($imported_gofile + ".go");
+                    }
+                }
+            }
+            $token = "";
+        } else {
+            $token = $token + $t;
+        }
+        $total_read = hefesto.sys.fread($t, 1, $gofile);
+    }
+
+    hefesto.sys.fclose($gofile);
+
+    result strip_redundant_imports($imports);
+
+}

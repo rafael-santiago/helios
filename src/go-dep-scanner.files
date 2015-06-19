@@ -1,0 +1,2 @@
+include/toolsets/common/utils/lang/go/dependency_scanner.hsl
+include/doc/toolsets/common/utils/lang/go/dependency_scanner.md

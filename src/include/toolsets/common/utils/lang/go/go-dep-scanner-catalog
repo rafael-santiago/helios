@@ -1,0 +1,5 @@
+===
+=== The golang dependency scanner
+===
+
+Description: A set of HSL codes which intends to help on dep-chains composition for Go projects.
