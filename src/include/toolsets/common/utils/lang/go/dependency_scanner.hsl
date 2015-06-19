@@ -38,6 +38,8 @@ function get_go_deps() : result type string {
     var added type list;
     var gi type int;
 
+    var subdirs type list;
+
     $gofiles.ls(".*\\.go$");
     $g = 0;
 
@@ -49,6 +51,7 @@ function get_go_deps() : result type string {
         $gi = 0;
         while ($gi < $gofile_imports.count()) {
             $imported_gofile_path = $gofile_imports.item($gi);
+            $subdirs.add_item(get_gofile_dirpath($imported_gofile_path));
             $depchain = $depchain + $imported_gofile_path + " ";
             $gi = $gi + 1;
             if ($gi < $gofile_imports.count()) {
@@ -59,7 +62,38 @@ function get_go_deps() : result type string {
         $g = $g + 1;
     }
 
+    var oldcwd type string;
+    $oldcwd = hefesto.sys.pwd();
+
+    $g = 0;
+    while ($g < $subdirs.count()) {
+        $imported_gofile_path = $subdirs.item($g);
+        if (hefesto.sys.cd($imported_gofile_path)) {
+            $depchain = $depchain + get_go_deps();
+        }
+        $g = $g + 1;
+    }
+
+    hefesto.sys.cd($oldcwd);
+
     result $depchain;
+}
+
+local function get_gofile_dirpath(gofile_path type string) : result type string {
+    $gofile_path.replace("\\.go$", "");
+    var g_bound type int;
+    $g_bound = $gofile_path.len() - 1;
+    while ($gofile_path.at($g_bound) != "/" && $gofile_path.at($g_bound) != "\\" && $g_bound > 0) {
+        $g_bound = $g_bound - 1;
+    }
+    var dirpath type string;
+    var g type int;
+    $g = 0;
+    while ($g < $g_bound) {
+        $dirpath = $dirpath + $gofile_path.at($g);
+        $g = $g + 1;
+    }
+    result $dirpath;
 }
 
 local function strip_redundant_imports(imports type list) : result type list {
