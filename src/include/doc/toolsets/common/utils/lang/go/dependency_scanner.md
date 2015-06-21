@@ -19,3 +19,24 @@ If there are more files in another subdirectory, you should try:
 >``$dep_chain = $dep_chain + get_go_deps();``
 >
 >``hefesto.sys.cd("..");``
+
+However, if you have this following directory layout for your golang project:
+
+        /proj/src/
+                 /pkg0
+                 /pkg1
+                 /pkgn
+                 /main.go
+
+and inside the file ``main.go`` you defined these imports:
+
+        import (
+                  "./pkg0"
+                  "./pkg1"
+                  "./pkgn"
+        )
+
+Now, supposing that you call ``get_go_deps()`` being inside ``/proj/src``. The dependencies
+inside the ``local packages`` will be detected by this call by default. You do not have to
+switch to these packages subdirectories in order to scan their dependencies. Being it
+automatically scanned by the ``get_go_deps()`` function.
