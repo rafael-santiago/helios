@@ -58,7 +58,10 @@ function get_go_deps() : result type string {
                 $depchain = $depchain + "& ";
             }
         }
-        $depchain = $depchain + ";\n";
+        if ($gi > 0) {
+            $depchain = $depchain + "& ";
+        }
+        $depchain = $depchain + hefesto.project.file_path() + ";\n";
         $g = $g + 1;
     }
 

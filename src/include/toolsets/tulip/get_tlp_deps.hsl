@@ -12,18 +12,18 @@
 
 function get_tlpname(tlp type string) : result type string {
     var t type int;
-    
+
     $t = $tlp.len() - 1;
-    
+
     while ($t > 0 && $tlp.at($t) != "\\" && $tlp.at($t) != "/") $t = $t - 1;
-    
+
     var tlpname type string;
     if ($t > 0) $t = $t + 1;
     while ($t < $tlp.len()) {
         $tlpname = $tlpname + $tlp.at($t);
         $t = $t + 1;
     }
-    
+
     result $tlpname;
 }
 
@@ -32,15 +32,15 @@ function get_tlp_deps(tlps type list) : result type string {
     var dep_chain type string;
     var t type int;
     var curr_tlp type string;
-    
+
     $t = 0;
     while ($t < $tlps.count()) {
         $curr_tlp = $tlps.item($t);
-        $dep_chain = $dep_chain + get_tlpname($curr_tlp) + ": " + $curr_tlp + ";\n";
+        $dep_chain = $dep_chain + get_tlpname($curr_tlp) + ": " + $curr_tlp + " & " + hefesto.project.file_path() + ";\n";
         $t = $t + 1;
     }
-    
+
     result $dep_chain;
-    
+
 }
 

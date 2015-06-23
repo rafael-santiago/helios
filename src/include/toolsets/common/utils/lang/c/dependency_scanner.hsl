@@ -104,7 +104,10 @@ function get_c_cpp_deps() : result type string { # A faster dependency scanner.
                     }
                 }
             }
-            $dep_chain = $dep_chain + ";\n";
+            if ($dep_nr > 0) {
+                $dep_chain = $dep_chain + "& ";
+            }
+            $dep_chain = $dep_chain + hefesto.project.file_path() + ";\n";
             $f = $f + 1;
         }
         $files.clear();
