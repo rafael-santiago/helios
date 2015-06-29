@@ -2,4 +2,4 @@
 === IDE's project generator
 ===
 
-Description: A collection of HSL codes destinated to assist you which want to generate project files in order to manage your application development through an IDE. This collection counts with codes that generate projects files for: Codeblocks, Dev-cpp, Visual Studio.
+Description: A collection of HSL codes destinated to assist you that want to generate project files in order to manage your application development through an IDE. This collection includes codes that generate projects files for: Codeblocks, Dev-cpp, Visual Studio.
