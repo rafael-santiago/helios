@@ -1,0 +1,5 @@
+===
+=== The background run extension
+===
+
+Description: This piece of code intends to run a command on operating system trying not to be noisy. Useful when you only need to check the exit code.

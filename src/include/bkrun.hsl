@@ -1,0 +1,29 @@
+#                                    Tue 07 Jul 2015 09:47:07 PM BRT
+#
+#                              Copyright (C) 2015 by Rafael Santiago
+#
+# This is free software. You can redistribute it and/or modify under
+# the terms of the GNU General Public License version 2.
+#
+# "bkrun.hsl"
+#       by Rafael Santiago
+#
+# Description: This piece of code intends to run a command on
+#              operating system trying not to be noisy.
+#
+#              Useful when you only need to check the exit code.
+#
+
+function bkrun(cmd string) : result type int {
+    var os_name type string;
+    var retval type int;
+    $retval = 1;
+    $os_name = hefesto.sys.os_name();
+    if ($os_name == "linux" ||
+        $os_name == "freebsd") {
+        $retval = hefesto.sys.run($cmd + " 1>/dev/null 2>1");
+    } else if ($os_name == "windows") {
+        $retval = hefesto.sys.run($cmd + " >nul 2>&1");
+    }
+    result $retval
+}
