@@ -21,7 +21,7 @@ function bkrun(cmd type string) : result type int {
     $os_name = hefesto.sys.os_name();
     if ($os_name == "linux" ||
         $os_name == "freebsd") {
-        $retval = hefesto.sys.run($cmd + " 1>/dev/null 2>1");
+        $retval = hefesto.sys.run($cmd + " 1>/dev/null 2>/dev/null");
     } else if ($os_name == "windows") {
         $retval = hefesto.sys.run($cmd + " >nul 2>&1");
     }
