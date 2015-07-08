@@ -14,7 +14,7 @@
 #              Useful when you only need to check the exit code.
 #
 
-function bkrun(cmd string) : result type int {
+function bkrun(cmd type string) : result type int {
     var os_name type string;
     var retval type int;
     $retval = 1;
@@ -25,5 +25,5 @@ function bkrun(cmd string) : result type int {
     } else if ($os_name == "windows") {
         $retval = hefesto.sys.run($cmd + " >nul 2>&1");
     }
-    result $retval
+    result $retval;
 }
