@@ -1,0 +1,17 @@
+#				         Thu 16 Jul 2015 08:57:12 AM BRT
+# "linux-module.hsl"
+#
+#	by Rafael Santiago
+#
+# Description: a basic toolset for Linux kernel modules.
+#
+
+include ~/toolsets/linux/forges/lnxkmod_forge.hsl
+
+toolset "linux-module" forge function "lnxkmod_forge" :
+    command "mk_kmodule": <
+	make
+    >
+$
+
+	

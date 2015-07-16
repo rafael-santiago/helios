@@ -1,0 +1,75 @@
+#		                          Thu 16 Jul 2015 09:42:14 AM BRT
+# "lnxkmod_forge.hsl"
+#
+#	by Rafael Santiago
+#
+# Description: Linux kernel module forge stuffs.
+#
+
+function lnxkmod_forge(main_src_file type string, kmod_name type string) : result type int {
+    var src_files type list;    
+    $src_files.ls(".*\\.c$");
+    if ($src_files.count() == 0) {
+	result 1;
+    }
+    var exit_code type int;
+    $exit_code = 1;
+    mkmakefile($src_files, $main_src_file, $kmod_name);
+    $exit_code = hefesto.sys.run(hefesto.toolset.mk_kmodule());
+    cleanup_kbuild_files();
+    if ($exit_code == 0) {
+	hefesto.sys.echo("\n\n___\n*** compilation success.\n");
+    } else {
+	hefesto.sys.echo("\n\n___\n~~~ compilation failure.\n");
+    }
+    result $exit_code;
+}
+
+local function getobj_file_name(filepath type string) : result type string {
+    $filepath.replace("\\.c$", ".o");
+    var f type int;
+    $f = $filepath.len() - 1;
+    while ($f > 0 && $filepath.at($f) != "/") {
+	$f = $f - 1;
+    }
+    if ($filepath.at($f) == "/") {
+	$f = $f + 1;
+    }
+    var retval type string;
+    while ($f < $filepath.len()) {
+	$retval = $retval + $filepath.at($f);
+	$f = $f + 1;
+    }
+    result $retval;
+}
+
+local function mkmakefile(srcs type list, main type string, kmod_name type string) : result type none {
+    var fp type file;    
+    $fp = hefesto.sys.fopen("Makefile", "w");
+    var objname type string;
+    var line type string;
+    var s type int;
+    $s = 0;
+    $line = "obj-m += " + $kmod_name + ".o\n";
+    hefesto.sys.fwrite($line, $line.len(), $fp);
+    if ($srcs.count() > 1) {
+        $line = $kmod_name + "-objs := ";
+        while ($s < $srcs.count()) {
+    	    $objname = $srcs.item($s);
+    	    $objname = "./" + getobj_file_name($objname);
+	    $line = $line + $objname + " ";
+	    $s = $s + 1;
+	}
+	$line = $line + "\n";
+	hefesto.sys.fwrite($line, $line.len(), $fp);
+    }
+    $line = "all:\n\tmake -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules\nclean:\n\tmake -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean\n";
+    hefesto.sys.fwrite($line, $line.len(), $fp);
+    hefesto.sys.fclose($fp);
+}
+
+local function cleanup_kbuild_files() : result type none {
+    hefesto.sys.rm("Makefile");
+    hefesto.sys.rm("Module.symvers");
+    hefesto.sys.rm("modules.order");
+}
