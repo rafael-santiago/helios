@@ -49,9 +49,9 @@ function hstd_base_diff(extensions type list, extensions_root_dir type list, non
         $extension = $extensions.item($e);
         hefesto.sys.echo("\tNow looking for a local copy of " + $extension + "... ");
         if (has_extension_local_copy($extension, $hefesto_includes_home)) {
-            hefesto.sys.echo("you have already a copy of it in your system.\n");
+            hefesto.sys.echo("you have already a copy of this on your system.\n");
         } else {
-            hefesto.sys.echo("you *** don't have *** a copy of it in your system.\n");
+            hefesto.sys.echo("you *** don't have *** a copy of this on your system.\n");
             $diff_count = $diff_count + 1;
             $non_installed_extensions.add_item($extension);
         }
