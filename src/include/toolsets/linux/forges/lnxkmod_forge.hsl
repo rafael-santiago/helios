@@ -52,17 +52,15 @@ local function mkmakefile(srcs type list, main type string, kmod_name type strin
     $s = 0;
     $line = "obj-m += " + $kmod_name + ".o\n";
     hefesto.sys.fwrite($line, $line.len(), $fp);
-    if ($srcs.count() > 1) {
-        $line = $kmod_name + "-objs := ";
-        while ($s < $srcs.count()) {
-    	    $objname = $srcs.item($s);
-    	    $objname = "./" + getobj_file_name($objname);
-	    $line = $line + $objname + " ";
-	    $s = $s + 1;
-	}
-	$line = $line + "\n";
-	hefesto.sys.fwrite($line, $line.len(), $fp);
+    $line = $kmod_name + "-objs := ";
+    while ($s < $srcs.count()) {
+        $objname = $srcs.item($s);
+        $objname = "./" + getobj_file_name($objname);
+        $line = $line + $objname + " ";
+        $s = $s + 1;
     }
+    $line = $line + "\n";
+    hefesto.sys.fwrite($line, $line.len(), $fp);
     $line = "all:\n\tmake -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules\nclean:\n\tmake -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean\n";
     hefesto.sys.fwrite($line, $line.len(), $fp);
     hefesto.sys.fclose($fp);
