@@ -45,8 +45,12 @@ If you need to force the compilation of all project source files, use the comman
 
 The toolsets used to compile/link libraries works in the same described way.
 
+In order to specify where to generate the object file use the option "--obj-output-dir=<path>".
+
+Also it is possible to specify the output directory for the binary using the option "--bin-output-dir=<path>".
+
 The toolset used to link static/shared libraries is named "gcc-c-lib" for C language and "gcc-cc-lib" for
-C++ language... And it is located under "toolsets/gcc/gcc-lib.hsl". 
+C++ language... And it is located under "toolsets/gcc/gcc-lib.hsl".
 
 If you want scan dependencies instead of hardcode it, you can use the dependency scanner located in
 "toolsets/common/utils/lang/c/dependency_scanner.hsl", the usage is fairly simple:

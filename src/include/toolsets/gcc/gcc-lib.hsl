@@ -33,8 +33,8 @@ toolset "gcc-c-lib" forge function "gcc_c_lib_forge" : forge helpers "gcc_compil
     command "ar": LIBNAME, OBJECTS <
         ar -r $LIBNAME $OBJECTS
     >
-    command "so": LIBNAME, OBJECTS <
-        gcc -shared $OBJECTS -o $LIBNAME
+    command "so": LIBNAME, OBJECTS, LIBRARIES, LDFLAGS <
+        gcc -shared $OBJECTS -o $LIBNAME $LIBRARIES $LDFLAGS
     >
 $
 
@@ -54,7 +54,7 @@ toolset "gcc-cc-lib" forge function "gcc_c_lib_forge" : forge helpers "gcc_compi
     command "ar": LIBNAME, OBJECTS <
         ar -r $LIBNAME $OBJECTS
     >
-    command "so": LIBNAME, OBJECTS <
-        g++ -shared $OBJECTS -o $LIBNAME
+    command "so": LIBNAME, OBJECTS, LIBRARIES, LDFLAGS <
+        g++ -shared $OBJECTS -o $LIBNAME $LIBRARIES $LDFLAGS
     >
 $

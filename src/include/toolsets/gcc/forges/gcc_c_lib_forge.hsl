@@ -14,7 +14,7 @@
 #
 #       Relevant command line options to interact with this piece of code:
 #
-#       --forge-anyway: forces to build anything involved in process.
+#       --forge-anyway: forces to build any forge involved in process.
 #       --qsize=<number>: number of paralel compilation tasks.
 #       --compile-model=<release|debug>: select for release or debug.
 #                                        (the default is release)
@@ -71,6 +71,7 @@ function gcc_compile_source_list(sources type list, includes type string, cflags
     var curr_src_file type string;
     var link_model type list;
     var is_static type int;
+#    var regex type string;
 
     $size = $sources.count();
     if ($size == 0) result 0;
@@ -106,6 +107,7 @@ function gcc_compile_source_list(sources type list, includes type string, cflags
         while ($i < $size && $exit_code == 0) {
             $ofile = $sources.item($i);
             $ofile = gcc_mk_ofile_name(filenamefrompath($ofile), $obj_dir);
+#            $regex = gcc_mk_regex_pattern_from_filepath($ofile);
             if (hefesto.toolset.file_has_change($sources.item($i)) == 1 || isfile($ofile) == 0) {
                 $gcc_c_project_forge_dirty_files_nr = $gcc_c_project_forge_dirty_files_nr + 1;
                 $curr_src_file = $sources.item($i);
@@ -129,6 +131,7 @@ function gcc_compile_source_list(sources type list, includes type string, cflags
         while ($i < $size) {
             $ofile = $sources.item($i);
             $ofile = gcc_mk_ofile_name(filenamefrompath($ofile), $obj_dir);
+#            $regex = gcc_mk_regex_pattern_from_filepath($ofile);
             if (hefesto.toolset.file_has_change($sources.item($i)) == 1 || isfile($ofile) == 0) {
                 $gcc_c_project_forge_dirty_files_nr = $gcc_c_project_forge_dirty_files_nr + 1;
                 $curr_src_file = $sources.item($i);
@@ -165,7 +168,7 @@ function gcc_compile_source_list(sources type list, includes type string, cflags
     result $exit_code;
 }
 
-function gcc_c_lib_forge(SOURCES type list, INCLUDES type list, CFLAGS type list, LIBNAME type string) : result type int {
+function gcc_c_lib_forge(SOURCES type list, INCLUDES type list, CFLAGS type list, LIBRARIES type list, LDFLAGS type list, LIBNAME type string) : result type int {
     var exit_code type int;
     var includes type string;
     var cflags type string;
@@ -243,6 +246,9 @@ function gcc_c_lib_forge(SOURCES type list, INCLUDES type list, CFLAGS type list
 
     $exit_code = gcc_compile_source_list($SOURCES, $includes, $cflags, $obj_dir);
 
+#    var regex type string;
+#    $regex = gcc_mk_regex_pattern_from_filepath($bin_output);
+
     if ($gcc_c_project_forge_dirty_files_nr == 0 && isfile($bin_output) == 0) {
         $gcc_c_project_forge_dirty_files_nr = 1;
     }
@@ -253,7 +259,11 @@ function gcc_c_lib_forge(SOURCES type list, INCLUDES type list, CFLAGS type list
         if ($is_static_library == 1) {
             $exit_code = gcc_ar_ofiles($bin_output, $objects);
         } else {
-            $exit_code = gcc_so_ofiles($bin_output, $objects);
+            var libraries type string;
+            var ldflags type string;
+            $libraries = gcc_mk_gcc_lib_str_opt($LIBRARIES);
+            $ldflags = gcc_mk_raw_str_opt($LDFLAGS);
+            $exit_code = gcc_so_ofiles($bin_output, $objects, $libraries, $ldflags);
         }
     }
 
@@ -270,6 +280,6 @@ function gcc_ar_ofiles(libname type string, objects type string) : result type i
     result hefesto.sys.run(hefesto.toolset.ar($libname, $objects));
 }
 
-function gcc_so_ofiles(libname type string, objects type string) : result type int {
-    result hefesto.sys.run(hefesto.toolset.so($libname, $objects));
+function gcc_so_ofiles(libname type string, objects type string, libraries type string, ldflags type string) : result type int {
+    result hefesto.sys.run(hefesto.toolset.so($libname, $objects, $libraries, $ldflags));
 }
