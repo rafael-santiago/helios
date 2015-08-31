@@ -2,5 +2,6 @@ include/toolsets/gcc/gcc-app.hsl
 include/toolsets/gcc/gcc-lib.hsl
 include/doc/toolsets/gcc/README.md
 include/toolsets/gcc/forges/common.hsl
+include/toolsets/gcc/forges/win_common.hsl
 include/toolsets/gcc/forges/gcc_c_app_forge.hsl
 include/toolsets/gcc/forges/gcc_c_lib_forge.hsl

@@ -34,6 +34,7 @@
 #
 
 include ~/toolsets/gcc/forges/common.hsl
+include ~/toolsets/gcc/forges/win_common.hsl
 include ~/fsutil.hsl
 include ~/lsutil.hsl
 
@@ -174,6 +175,12 @@ function gcc_link_ofiles(objects type string, libraries type string, ldflags typ
                 hefesto.sys.echo(hefesto.project.toolset() + " internal error: unknown link model: \"" + $link_model.item(0) + "\"\n");
                 result 1;
             }
+        }
+    }
+    if (hefesto.sys.os_name() == "windows") {
+        $exit_code = gcc_windres_ofiles($objects);
+        if ($exit_code != 0) {
+            result $exit_code;
         }
     }
     if ($is_static == 1) {

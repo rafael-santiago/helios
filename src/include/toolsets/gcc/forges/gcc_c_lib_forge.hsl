@@ -30,6 +30,7 @@
 
 
 include ~/toolsets/gcc/forges/common.hsl
+include ~/toolsets/gcc/forges/win_common.hsl
 include ~/fsutil.hsl
 include ~/lsutil.hsl
 
@@ -281,5 +282,12 @@ function gcc_ar_ofiles(libname type string, objects type string) : result type i
 }
 
 function gcc_so_ofiles(libname type string, objects type string, libraries type string, ldflags type string) : result type int {
+    if (hefesto.sys.os_name() == "windows") {
+        var exit_code type int;
+        $exit_code = gcc_windres_ofiles($objects);
+        if ($exit_code != 0) {
+            result $exit_code;
+        }
+    }
     result hefesto.sys.run(hefesto.toolset.so($libname, $objects, $libraries, $ldflags));
 }

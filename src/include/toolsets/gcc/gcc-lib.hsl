@@ -16,8 +16,9 @@
 #
 
 include ~/toolsets/gcc/forges/gcc_c_lib_forge.hsl
+include ~/toolsets/gcc/forges/win_common.hsl
 
-toolset "gcc-c-lib" forge function "gcc_c_lib_forge" : forge helpers "gcc_compile_source_list", "gcc_ar_ofiles", "gcc_so_ofiles", "gcc_mk_lib_compilation_command":
+toolset "gcc-c-lib" forge function "gcc_c_lib_forge" : forge helpers "gcc_compile_source_list", "gcc_ar_ofiles", "gcc_so_ofiles", "gcc_mk_lib_compilation_command",  "gcc_windres_ofiles":
     command "compile_static_r": SOURCE, OUTFILE, INCLUDES, CFLAGS <
         gcc -c $SOURCE $INCLUDES $CFLAGS -o $OUTFILE
     >
@@ -36,9 +37,12 @@ toolset "gcc-c-lib" forge function "gcc_c_lib_forge" : forge helpers "gcc_compil
     command "so": LIBNAME, OBJECTS, LIBRARIES, LDFLAGS <
         gcc -shared $OBJECTS -o $LIBNAME $LIBRARIES $LDFLAGS
     >
+	command "windres": RCOUTNAME, RCLIST <
+		windres -O coff -o $RCOUTNAME $RCLIST
+	>
 $
 
-toolset "gcc-cc-lib" forge function "gcc_c_lib_forge" : forge helpers "gcc_compile_source_list", "gcc_ar_ofiles", "gcc_so_ofiles", "gcc_mk_lib_compilation_command":
+toolset "gcc-cc-lib" forge function "gcc_c_lib_forge" : forge helpers "gcc_compile_source_list", "gcc_ar_ofiles", "gcc_so_ofiles", "gcc_mk_lib_compilation_command", "gcc_windres_ofiles":
     command "compile_static_r": SOURCE, OUTFILE, INCLUDES, CFLAGS <
         g++ -c $SOURCE $INCLUDES, $CFLAGS -o $OUTFILE
     >
@@ -57,4 +61,7 @@ toolset "gcc-cc-lib" forge function "gcc_c_lib_forge" : forge helpers "gcc_compi
     command "so": LIBNAME, OBJECTS, LIBRARIES, LDFLAGS <
         g++ -shared $OBJECTS -o $LIBNAME $LIBRARIES $LDFLAGS
     >
+	command "windres": RCOUTNAME, RCLIST <
+		windres -O coff -o $RCOUTNAME $RCLIST
+	>
 $
