@@ -6,6 +6,7 @@
 #
 # "win_common.hsl"
 #
+include ~/fsutil.hsl
 
 function gcc_windres_ofiles(objects type string) : result type int {
     var resource_files type list;
@@ -32,8 +33,8 @@ function gcc_windres_ofiles(objects type string) : result type int {
         }
         var rc_outname type string;
         $rc_outname = $resource_files.item(0);
-        $rc_outname.replace("\\.rc$", "\\.o");
-        $rc_outname = hefesto.sys.make_path($obj_dir, $rc_outname);
+        $rc_outname.replace("\\.rc$", ".o");
+        $rc_outname = hefesto.sys.make_path($obj_dir, filenamefrompath($rc_outname));
         $exit_code = hefesto.sys.run(hefesto.toolset.windres($rc_outname, $rc_files));
         if ($exit_code == 0) {
             $objects = $objects + " " + $rc_outname + " ";
