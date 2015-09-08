@@ -225,6 +225,11 @@ function vc_link_objects2app(sources type list, obj_dir type string,
     var objects type string;
     var mkpdb type list;
     $objects = vc_objs_from_srcs($sources, $obj_dir);
+	var exit_code type int;
+	$exit_code = compile_resource_files($objects);
+	if ($exit_code != 0) {
+		result $exit_code;
+	}
     $mkpdb = hefesto.sys.get_option("mk-pdb");
     if ($isrelease == 1 && $mkpdb.count() == 0) {
         $cmd = hefesto.toolset.link_release($appname, $objects, $libs, $ldflags);

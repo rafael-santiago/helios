@@ -204,3 +204,40 @@ function vcflags2string(flags type list) : result type string
     }
     result $s_flags;
 }
+
+function compile_resource_files(objects type string) : result type int {
+	var exit_code type int;
+	$exit_code = 1;
+	var obj_output_dir type list;
+	var obj_dir type string;
+	$obj_output_dir = hefesto.sys.get_option("obj-output-dir");
+	if ($obj_output_dir.count() > 0) {
+		$obj_dir = $obj_output_dir.item(0);
+	} else {
+		$obj_dir = hefesto.sys.pwd();
+	}
+	var resource_files type list;
+	$resource_files.ls(".*\\.rc");
+	if ($resource_files.count() > 0) {
+		var r type int;
+		var resource_filename type string;
+		var resource_outname type string;		
+		$r = 0;
+		$exit_code = 0;
+		while ($r < $resource_files.count() && $exit_code == 0) {
+			$resource_filename = $resource_files.item($r);
+			$resource_outname = filenamefrompath($resource_filename);
+			$resource_outname.replace("\\.rc", ".res");
+			$resource_outname = hefesto.sys.make_path($obj_dir, $resource_outname);
+			$exit_code = hefesto.sys.run(hefesto.toolset.resource_compile($resource_filename, $resource_outname));
+			if ($exit_code == 0) {
+				$objects = $objects + " " + $resource_outname;
+			}
+			$r = $r + 1;
+		}
+		if ($exit_code == 0) {
+			hefesto.sys.byref($objects);
+		}
+	}
+	result $exit_code;
+}

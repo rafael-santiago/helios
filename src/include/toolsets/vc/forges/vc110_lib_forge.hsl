@@ -222,6 +222,10 @@ function vc_link_objects2lib(sources type list,
     var objects type string;
     var retcode type int;
     $objects = vc_objs_from_srcs($sources, $obj_dir);
+	$retcode = compile_resource_files($objects);
+	if ($retcode != 0) {
+		result $retcode;
+	}
     $retcode = 1;
     if ($isstatic == 1) {
         $cmd = hefesto.toolset.lib($libname, $objects, $libs, $ldflags);

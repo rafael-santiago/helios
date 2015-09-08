@@ -13,7 +13,7 @@
 include ~/toolsets/vc/forges/vc110_lib_forge.hsl
 include ~/toolsets/vc/forges/common/vcutils.hsl
 
-toolset "vc110-lib" forge function "vc110_lib_forge" : forge helpers "vc_link_objects2lib", "vc_mk_compile_cmd", "vc_async_compile_srcs", "vc_should_compile":
+toolset "vc110-lib" forge function "vc110_lib_forge" : forge helpers "vc_link_objects2lib", "vc_mk_compile_cmd", "vc_async_compile_srcs", "vc_should_compile", "compile_resource_files":
     command "compile_debug_static": SOURCE, OBJECT, INCLUDES, CFLAGS <
         cl.exe $CFLAGS /nologo /MTd $INCLUDES /c $SOURCE /Zi /Fo$OBJECT
     >
@@ -35,4 +35,7 @@ toolset "vc110-lib" forge function "vc110_lib_forge" : forge helpers "vc_link_ob
     command "dll_release": DLLNAME, OBJS, LIBS, LDFLAGS <
         link.exe $LDFLAGS /NOLOGO /DLL /OUT:\\"$DLLNAME\\" $LIBS $OBJS
     >
+	command "resource_compile": RESOURCE, OUTNAME <
+		rc.exe /r /fo $OUTNAME $RESOURCE
+	>
 $
