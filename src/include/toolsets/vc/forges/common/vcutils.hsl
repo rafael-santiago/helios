@@ -207,7 +207,7 @@ function vcflags2string(flags type list) : result type string
 
 function compile_resource_files(objects type string) : result type int {
 	var exit_code type int;
-	$exit_code = 1;
+	$exit_code = 0;
 	var obj_output_dir type list;
 	var obj_dir type string;
 	$obj_output_dir = hefesto.sys.get_option("obj-output-dir");

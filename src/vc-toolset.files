@@ -3,7 +3,6 @@ include/toolsets/vc/vc100-app.hsl
 include/toolsets/vc/vc100-lib.hsl
 include/toolsets/vc/vc110-app.hsl
 include/toolsets/vc/vc110-lib.hsl
-include/toolsets/vc/common/vssetupenv.hsl
 include/toolsets/vc/common/vssetuputils.hsl
 include/toolsets/vc/vcvarsall/vcvarsall_100.hsl
 include/toolsets/vc/vcvarsall/vcvarsall_110.hsl
