@@ -38,6 +38,10 @@ function sanity_check(extension_name type string, extensions type list, extensio
         var f type int;
         $f = 0;
         while ($f < $files_db.count() && $is_ok) {
+            if ($files_db.item($f) == "\n") {
+                $f = $f + 1;
+                continue;
+            }
             $fpath = hefesto.sys.make_path("src", $files_db.item($f));
             $fp = hefesto.sys.fopen($fpath, "rb");
             if ($fp == 0) {
