@@ -44,12 +44,22 @@ function install_extension(extension type string) : result type int {
     $success = 1;
     var dst_path type string;
     var src_path type string;
+    if (hefesto.sys.os_name() == "windows") {
+        $hefesto_includes_home.replace("\\\\\\\\", "\\");
+    }
     while ($success && $ef < $extension_files.count()) {
         $src_path = $extension_files.item($ef);
+        if ($src_path.at(0) ==  "\n") {
+            $ef = $ef + 1;
+            continue;
+        }
         $src_path = hefesto.sys.make_path("src", $src_path);
         $dst_path = $extension_files.item($ef);
         $dst_path.replace("^include/", "");
         $dst_path = hefesto.sys.make_path($hefesto_includes_home, $dst_path);
+        if (hefesto.sys.os_name() == "windows") {
+            $dst_path.replace("/", "\\");
+        }
         $success = mktree(pathfromfilepath($dst_path));
         if ($success) {
             $success = hefesto.sys.cp($src_path, $dst_path);
