@@ -1,9 +1,4 @@
 #
-#                              Copyright (C) 2015 by Rafael Santiago
-#
-# This is free software. You can redistribute it and/or modify under
-# the terms of the GNU General Public License version 2.
-#
 # "go.hsl"                      Thu 01 Jan 2015 10:38:02 PM BRST
 #       by Rafael Santiago
 #
@@ -13,5 +8,8 @@ include ~/toolsets/go/common/should_build_gosrc.hsl
 toolset "go" forge function "go_forge" : forge helpers "should_build_gosrc" :
     command "build": SOURCE <
         go build $SOURCE
+    >
+    command "test_all": <
+        go test ./...
     >
 $

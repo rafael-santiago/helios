@@ -59,6 +59,14 @@ function go_forge(go_sources type list) : result type int {
                 } else {
                     hefesto.sys.echo("no changes.\n");
                 }
+                var skip_tests type list;
+                $skip_tests = hefesto.sys.get_option("skip-tests");
+                if ($skip_tests.count() == 0) {
+                    hefesto.sys.echo("\tnow running tests...\n");
+                    $exit_code = hefesto.sys.run(hefesto.toolset.test_all());
+                } else {
+                    hefesto.sys.echo("\ttests were skipped.\n");
+                }
             } else {
                 hefesto.sys.echo("error...\n");
             }

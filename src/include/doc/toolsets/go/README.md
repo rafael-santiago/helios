@@ -1,6 +1,6 @@
 # The Go toolset
 
-With this toolset you can automate the "go build" command don't worrying about if there are several go programs in the
+With this toolset you can automate the "go build" command not worrying about if there are several go programs in the
 current working directory.
 
 For example, supposing that we have this directory status:
@@ -22,11 +22,13 @@ Each file which resides in this directory has the following Go declaration:
 
     package main
 
+(Yes!!! A pretty mess...)
+
 So, if you try:
 
     root@zephyr:~/src/1-2-3-go# go build
 
-You'll get an error based on something like "main redeclared... blah-blah..."...
+You will get an error based on something like "main redeclared... blah-blah..."...
 
 With this Go toolset you can generate each binary without any problem, look:
 
@@ -102,10 +104,11 @@ After this, we can call go-sample's forge in an easier way:
 
 ## Toolset options
 
-This toolset has only to user-options:
+This toolset has only three user-options:
 
     * gofiles=gofile_a.go,gofile_b.go,(...),gofile_y.go,gofile_z.go
     * goclean
+    * skip-tests
 
 The option "gofiles" is used to specify which files in the current directory will be built. If this option is not supplied
 the toolset internally includes all go files from current directory, so that alien line in the "Forgefile.hsl" is now
@@ -152,6 +155,8 @@ The option "goclean" is used if you want to delete all generate binaries in the 
 Easy...
 
 You need to know that the "goclean" option has precedence over the "gofiles" option.
+
+The option "skip-tests" cancel the "go test ./..." command that by convetion is always executed.
 
 Now you master all about this simple Go toolset :)
 
