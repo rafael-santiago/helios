@@ -73,8 +73,10 @@ function get_c_cpp_deps() : result type string { # A faster dependency scanner.
                 $str = $includes.item($i);
                 $str.replace(".*#include.*(\"|<)", "");
                 $str.replace("(\"|>)$", "");
-                if (isfile($str) == 1) {
-                    $str = hefesto.sys.make_path($cwd, $str);
+#                hefesto.sys.echo("STR = " + $str + "\n");
+                if (islocalinclude($str) == 1) {
+#                    hefesto.sys.echo("LOCALINCLUDE = " + $str + "\n");
+#                    $str = hefesto.sys.make_path($cwd, $str);
                     if ($dep_nr > 0) {
                         $dep_chain = $dep_chain + "& ";
                     }
@@ -114,6 +116,25 @@ function get_c_cpp_deps() : result type string { # A faster dependency scanner.
         $e = $e + 1;
     }
     result $dep_chain;
+}
+
+function islocalinclude(basepath type string) : result type int {
+    var src_root type string;
+    var temp type string;
+    if (isfile($basepath) == 1) {
+        result 1;
+    }
+    $src_root = hefesto.sys.env("GET_C_CPP_DEPS_SRC_ROOT");
+    if ($src_root.len() == 0) {
+        result 0;
+    }
+    $temp = hefesto.sys.make_path($src_root, $basepath);
+#    hefesto.sys.echo("TEMP = " + $temp + "\n");
+    if (isfile($temp) == 1) {
+        hefesto.sys.byref($basepath);
+        result 1;
+    }
+    result 0;
 }
 
 # ---------------------- DEPRECATED THINGS ----------------------------
