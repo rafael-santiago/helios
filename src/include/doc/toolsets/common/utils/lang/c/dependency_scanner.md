@@ -35,7 +35,7 @@ that you have the following project ``src-tree``:
 For the previous showed project's ``src-tree`` you should the following before traversing all sub-directories calling
 ``get_c_cpp_deps()`` once per each one.
 
->``hefesto.sys.env("GET_C_CPP_DEPS_SRC_ROOT", hefesto.sys.pwd());``
+>``hefesto.sys.setenv("GET_C_CPP_DEPS_SRC_ROOT", hefesto.sys.pwd());``
 
 The code above will allow the dependency scanner find an ``C/C++ file`` defined in a specific sub-directory being
 inside other one.
