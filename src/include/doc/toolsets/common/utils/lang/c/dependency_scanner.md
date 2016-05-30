@@ -38,4 +38,4 @@ For the previous showed project's ``src-tree`` you should the following before t
 >``hefesto.sys.setenv("GET_C_CPP_DEPS_SRC_ROOT", hefesto.sys.pwd());``
 
 The code above will allow the dependency scanner find an ``C/C++ file`` defined in a specific sub-directory being
-inside other one.
+inside another one.
