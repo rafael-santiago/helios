@@ -99,6 +99,8 @@ function tulip_v3_forge(sources type list) : result type int {
         $basedir = hefesto.sys.pwd();
     }
 
+    tulip_v3_mkbasedir($basedir);
+
     hefesto.sys.echo("\n*** generating the tablatures (processor=" + $out_ext + ")... please wait...\n");
 
     $s = 0;
@@ -211,4 +213,14 @@ local function tulip_v3_need_to_process_it(tlp type string, out type string) : r
         }
     }
     result $need;
+}
+
+local function tulip_v3_mkbasedir(basedir type string) : result type none {
+    var oldcwd type string;
+    $oldcwd = hefesto.sys.pwd();
+    if (hefesto.sys.cd($basedir) == 0) {
+        hefesto.sys.mkdir($basedir);
+    } else {
+        hefesto.sys.cd($oldcwd);
+    }
 }
