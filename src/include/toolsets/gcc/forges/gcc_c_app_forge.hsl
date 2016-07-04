@@ -104,7 +104,7 @@ function gcc_compile_source_list(sources type list, includes type string, cflags
             $ofile = gcc_mk_ofile_name(filenamefrompath($ofile), $obj_dir);
             if (hefesto.toolset.file_has_change($sources.item($i)) == 1 || isfile($ofile) == 0) {
                 $gcc_c_project_forge_dirty_files_nr = $gcc_c_project_forge_dirty_files_nr + 1;
-                $curr_src_file = $sources.item($i);
+                $curr_src_file = "\"" + $sources.item($i) + "\"";
                 $exit_code = hefesto.sys.run(gcc_mk_app_compilation_command($curr_src_file, $ofile, $includes, $cflags, $is_release));
                 if ($exit_code == 0) {
                     $not_compiled.del_item($sources.item($i));
@@ -127,7 +127,7 @@ function gcc_compile_source_list(sources type list, includes type string, cflags
             $ofile = gcc_mk_ofile_name(filenamefrompath($ofile), $obj_dir);
             if (hefesto.toolset.file_has_change($sources.item($i)) == 1 || isfile($ofile) == 0) {
                 $gcc_c_project_forge_dirty_files_nr = $gcc_c_project_forge_dirty_files_nr + 1;
-                $curr_src_file = $sources.item($i);
+                $curr_src_file = "\"" + $sources.item($i) + "\"";
                 $run_list.add_item(gcc_mk_app_compilation_command($curr_src_file, $ofile, $includes, $cflags, $is_release));
                 $not_compiled_tmp.add_item($sources.item($i));
             }
@@ -149,7 +149,7 @@ function gcc_compile_source_list(sources type list, includes type string, cflags
         if($run_list.count() > 0) {
             $exit_code = hefesto.sys.run($run_list);
             if ($exit_code == 0) {
-                $j = 0;
+                    $j = 0;
                 while ($j < $not_compiled_tmp.count()) {
                     $not_compiled.del_item($not_compiled_tmp.item($j));
                     $j = $j + 1;

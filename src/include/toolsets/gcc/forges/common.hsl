@@ -17,7 +17,7 @@ function gcc_mk_gcc_incl_str_opt(includes type list) : result type string {
     $i = 0;
     $include_list = " ";
     while ($i < $size) {
-        $include_list = $include_list + "-I" + $includes.item($i) + " ";
+        $include_list = $include_list + "-I\"" + $includes.item($i) + "\" ";
         $i = $i + 1;
     }
     result $include_list;
@@ -31,7 +31,7 @@ function gcc_mk_gcc_lib_str_opt(libraries type list) : result type string {
     $i = 0;
     $libraries_list = " ";
     while ($i < $size) {
-        $libraries_list = $libraries_list + "-L" + $libraries.item($i) + " ";
+        $libraries_list = $libraries_list + "-L\"" + $libraries.item($i) + "\" ";
         $i = $i + 1;
     }
     result $libraries_list;
@@ -53,7 +53,7 @@ function gcc_mk_ofile_name(source type string, obj_dir type string) : result typ
     }
     $ofile = $ofile + ".o";
     #hefesto.sys.make_path($obj_dir, $ofile + ".o"); da null ap.
-    result hefesto.sys.make_path($obj_dir, $ofile);
+    result "\"" + hefesto.sys.make_path($obj_dir, $ofile) + "\"";
 }
 
 function gcc_mk_ofiles_str_opt(sources type list, obj_dir type string) : result type string {
@@ -66,7 +66,7 @@ function gcc_mk_ofiles_str_opt(sources type list, obj_dir type string) : result 
     $size = $sources.count();
     while ($s < $size) {
         $src = $sources.item($s);
-        $ofiles = $ofiles + " " + gcc_mk_ofile_name(filenamefrompath($src), $obj_dir);
+        $ofiles = $ofiles + " \"" + gcc_mk_ofile_name(filenamefrompath($src), $obj_dir) + "\"";
         $s = $s + 1;
     }
     result $ofiles;
