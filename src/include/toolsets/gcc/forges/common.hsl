@@ -52,8 +52,12 @@ function gcc_mk_ofile_name(source type string, obj_dir type string) : result typ
         $i = $i + 1;
     }
     $ofile = $ofile + ".o";
-    #hefesto.sys.make_path($obj_dir, $ofile + ".o"); da null ap.
-    result "\"" + hefesto.sys.make_path($obj_dir, $ofile) + "\"";
+    var filename type string;
+    $filename = hefesto.sys.make_path($obj_dir, $ofile);
+    if ($filename.at(0) != "\"") {
+        $filename = "\"" + $filename + "\"";
+    }
+    result $filename;
 }
 
 function gcc_mk_ofiles_str_opt(sources type list, obj_dir type string) : result type string {
@@ -66,7 +70,7 @@ function gcc_mk_ofiles_str_opt(sources type list, obj_dir type string) : result 
     $size = $sources.count();
     while ($s < $size) {
         $src = $sources.item($s);
-        $ofiles = $ofiles + " \"" + gcc_mk_ofile_name(filenamefrompath($src), $obj_dir) + "\"";
+        $ofiles = $ofiles + " " + gcc_mk_ofile_name(filenamefrompath($src), $obj_dir);
         $s = $s + 1;
     }
     result $ofiles;
