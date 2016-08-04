@@ -1,0 +1,55 @@
+#
+#                              Copyright (C) 2016 by Rafael Santiago
+#
+# This is free software. You can redistribute it and/or modify under
+# the terms of the GNU General Public License version 2.
+#
+# "clang-lib.hsl"
+#       by Rafael Santiago
+#
+#  Description: C/C++ Lib Toolsets for libraries based on Clang.
+#
+
+include ~/toolsets/clang/forges/clang_c_lib_forge.hsl
+
+toolset "clang-c-lib" forge function "clang_c_lib_forge" : forge helpers "clang_compile_source_list", "clang_ar_ofiles", "clang_so_ofiles", "clang_mk_lib_compilation_command":
+    command "compile_static_r": SOURCE, OUTFILE, INCLUDES, CFLAGS <
+        clang -c $SOURCE $INCLUDES $CFLAGS -o $OUTFILE
+    >
+    command "compile_static_d": SOURCE, OUTFILE, INCLUDES, CFLAGS <
+        clang -g -c $SOURCE $INCLUDES $CFLAGS -o $OUTFILE
+    >
+    command "compile_shared_r": SOURCE, OUTFILE, INCLUDES, CFLAGS <
+        clang -c -fPIC $CFLAGS $SOURCE -o $OUTFILE
+    >
+    command "compile_shared_d": SOURCE, OUTFILE, INCLUDES, CFLAGS <
+        clang -g -c -fPIC $CFLAGS $SOURCE -o $OUTFILE
+    >
+    command "ar": LIBNAME, OBJECTS <
+        ar -r $LIBNAME $OBJECTS
+    >
+    command "so": LIBNAME, OBJECTS, LIBRARIES, LDFLAGS <
+        clang -shared $OBJECTS -o $LIBNAME $LIBRARIES $LDFLAGS
+    >
+$
+
+toolset "clang-cc-lib" forge function "clang_c_lib_forge" : forge helpers "clang_compile_source_list", "clang_ar_ofiles", "clang_so_ofiles", "clang_mk_lib_compilation_command":
+    command "compile_static_r": SOURCE, OUTFILE, INCLUDES, CFLAGS <
+        clang++ -c $SOURCE $INCLUDES, $CFLAGS -o $OUTFILE
+    >
+    command "compile_static_d": SOURCE, OUTFILE, INCLUDES, CFLAGS <
+        clang++ -g -c $SOURCE $INCLUDES $CFLAGS -o $OUTFILE
+    >
+    command "compile_shared_r": SOURCE, OUTFILE, INCLUDES, CFLAGS <
+        clang++ -c -fPIC $CFLAGS $SOURCE -o $OUTFILE
+    >
+    command "compile_shared_d": SOURCE, OUTFILE, INCLUDES, CFLAGS <
+        clang++ -g -c -fPIC $CFLAGS $SOURCE -o $OUTFILE
+    >
+    command "ar": LIBNAME, OBJECTS <
+        ar -r $LIBNAME $OBJECTS
+    >
+    command "so": LIBNAME, OBJECTS, LIBRARIES, LDFLAGS <
+        clang++ -shared $OBJECTS -o $LIBNAME $LIBRARIES $LDFLAGS
+    >
+$

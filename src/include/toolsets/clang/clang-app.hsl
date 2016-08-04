@@ -1,0 +1,43 @@
+#
+#                              Copyright (C) 2016 by Rafael Santiago
+#
+# This is free software. You can redistribute it and/or modify under
+# the terms of the GNU General Public License version 2.
+#
+# "clang-app.hsl"
+#       by Rafael Santiago
+#
+#  Description: C/C++ Toolsets based on Clang for applications.
+#
+
+include ~/toolsets/clang/forges/clang_c_app_forge.hsl
+
+toolset "clang-c-app" forge function "clang_c_binary_forge" : forge helpers "clang_compile_source_list", "clang_link_ofiles", "clang_mk_app_compilation_command":
+    command "compile_r": SOURCE, OUTFILE, INCLUDES, CFLAGS <
+        clang -c $SOURCE $INCLUDES $CFLAGS -o $OUTFILE
+    >
+    command "compile_d": SOURCE, OUTFILE, INCLUDES, CFLAGS <
+        clang -g -c $SOURCE $INCLUDES $CFLAGS -o $OUTFILE
+    >
+    command "link_shared": APPNAME, OBJECTS, LIBRARIES, LDFLAGS <
+        clang -o$APPNAME $OBJECTS $LIBRARIES $LDFLAGS
+    >
+    command "link_static": APPNAME, OBJECTS, LIBRARIES, LDFLAGS <
+        clang -static -o$APPNAME $OBJECTS $LIBRARIES $LDFLAGS
+    >
+$
+
+toolset "clang-cc-app" forge function "clang_c_binary_forge" : forge helpers "clang_compile_source_list", "clang_link_ofiles", "clang_mk_app_compilation_command":
+    command "compile_r": SOURCE, OUTFILE, INCLUDES, CFLAGS <
+        clang++ -c $SOURCE $INCLUDES $CFLAGS -o $OUTFILE
+    >
+    command "compile_d": SOURCE, OUTFILE, INCLUDES, CFLAGS <
+        clang++ -g -c $SOURCE $INCLUDES $CFLAGS -o $OUTFILE
+    >
+    command "link_shared": APPNAME, OBJECTS, LIBRARIES, LDFLAGS <
+        clang++ -o$APPNAME $OBJECTS $LIBRARIES $LDFLAGS
+    >
+    command "link_static": APPNAME, OBJECTS, LIBRARIES, LDFLAGS <
+        clang++ -static -o$APPNAME $OBJECTS $LIBRARIES $LDFLAGS
+    >
+$

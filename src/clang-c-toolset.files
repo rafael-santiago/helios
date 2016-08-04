@@ -1,0 +1,6 @@
+include/toolsets/clang/clang-app.hsl
+include/toolsets/clang/clang-lib.hsl
+include/doc/toolsets/clang/README.md
+include/toolsets/clang/forges/common.hsl
+include/toolsets/clang/forges/clang_c_app_forge.hsl
+include/toolsets/clang/forges/clang_c_lib_forge.hsl
