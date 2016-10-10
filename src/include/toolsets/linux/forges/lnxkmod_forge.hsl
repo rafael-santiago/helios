@@ -71,6 +71,17 @@ local function mkmakefile(srcs type list,
         $s = $s + 1;
     }
 
+    var item type string;
+
+    $s = 0;
+    while ($s < $ldflags.count()) {
+        $item = $ldflags.item($s);
+        if ($item.match(".*a$")) {
+            $line = $line + $item + " ";
+        }
+        $s = $s + 1;
+    }
+
     $line = $line + "\n";
 
     if ($includes.count() > 0 || $cflags.count() > 0 || $libraries.count() > 0) {
@@ -96,7 +107,10 @@ local function mkmakefile(srcs type list,
 
         $s = 0;
         while ($s < $ldflags.count()) {
-            $line = $line + $ldflags.item($s) + " ";
+            $item = $ldflags.item($s);
+            if ($item.match("^-")) {
+                $line = $line + $item + " ";
+            }
             $s = $s + 1;
         }
         $line = $line + "\n";
