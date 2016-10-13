@@ -13,39 +13,41 @@ function lnxkmod_forge(main_src_file type string,
                        ldflags type list,
                        kmod_name type string) : result type int {
     var src_files type list;
+
     $src_files.ls(".*\\.c$");
     if ($src_files.count() == 0) {
 	result 1;
     }
+
+    if ($includes.count() > 0) {
+        var cwd type string;
+        $cwd = hefesto.sys.pwd();
+
+        var i type int;
+        $i = 0;
+        while ($i < $includes.count()) {
+            if (hefesto.sys.cd($includes.item($i))) {
+                $src_files.ls(".*\\.c$");
+                hefesto.sys.cd($cwd);
+            }
+            $i = $i + 1;
+        }
+    }
+
     var exit_code type int;
     $exit_code = 1;
     mkmakefile($src_files, $main_src_file, $includes, $cflags, $libraries, $ldflags, $kmod_name);
     $exit_code = hefesto.sys.run(hefesto.toolset.mk_kmodule());
+
     cleanup_kbuild_files();
+
     if ($exit_code == 0) {
 	hefesto.sys.echo("\n\n___\n*** compilation success.\n");
     } else {
 	hefesto.sys.echo("\n\n___\n~~~ compilation failure.\n");
     }
-    result $exit_code;
-}
 
-local function getobj_file_name(filepath type string) : result type string {
-    $filepath.replace("\\.c$", ".o");
-    var f type int;
-    $f = $filepath.len() - 1;
-    while ($f > 0 && $filepath.at($f) != "/") {
-	$f = $f - 1;
-    }
-    if ($filepath.at($f) == "/") {
-	$f = $f + 1;
-    }
-    var retval type string;
-    while ($f < $filepath.len()) {
-	$retval = $retval + $filepath.at($f);
-	$f = $f + 1;
-    }
-    result $retval;
+    result $exit_code;
 }
 
 local function mkmakefile(srcs type list,
@@ -60,13 +62,22 @@ local function mkmakefile(srcs type list,
     var objname type string;
     var line type string;
     var s type int;
+
     $s = 0;
+
     $line = "obj-m += " + $kmod_name + ".o\n";
     hefesto.sys.fwrite($line, $line.len(), $fp);
+
     $line = $kmod_name + "-objs := ";
+
+    var cwd_regex type string;
+    $cwd_regex = "^" + hefesto.sys.pwd() + "/";
+
     while ($s < $srcs.count()) {
         $objname = $srcs.item($s);
-        $objname = "./" + getobj_file_name($objname);
+        $objname.replace($cwd_regex, "");
+        $objname.replace("\\.c$", ".o");
+        $objname = "./" + $objname;
         $line = $line + $objname + " ";
         $s = $s + 1;
     }
@@ -86,7 +97,6 @@ local function mkmakefile(srcs type list,
 
     if ($includes.count() > 0 || $cflags.count() > 0 || $libraries.count() > 0) {
         $line = $line + "ccflags-y := ";
-
         $s = 0;
         while ($s < $includes.count()) {
             $line = $line + "-I" + $includes.item($s) + " ";
