@@ -15,12 +15,10 @@ function mkkld(main_file type string,
     var exit_code type int;
     var data type string;
 
-    var c type int;
-
     $exit_code = 0;
 
     if ($includes.count() > 0 || $cflags.count() > 0) {
-        $data = "CFLAGS +=";
+        $data = "CFLAGS+=";
 
         append_to_cmd_buffer($data, "-I", $includes);
 
@@ -32,7 +30,7 @@ function mkkld(main_file type string,
     }
 
     if ($libraries.count() > 0 || $ldflags.count() > 0) {
-        $data = "LDFLAGS +=";
+        $data = "LDFLAGS+=";
 
         append_to_cmd_buffer($data, "-L", $libraries);
 
@@ -41,11 +39,11 @@ function mkkld(main_file type string,
         $data = $data + "\n";
     }
 
-    $data = $data + "KMOD = " + $modname + "\n";
+    $data = $data + "KMOD= " + $modname + "\n";
 
-    $sources.del_item($main_file);
+    # INFO(Santiago): The main_file is just for keeping the forge function interface compatible with the Linux LKM toolset...
 
-    $data = $data + "SRCS =" + $main_file + " ";
+    $data = $data + "SRCS= ";
 
     append_to_cmd_buffer($data, "", $sources);
 
