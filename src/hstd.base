@@ -29,3 +29,4 @@ bkrun                                   include/
 lnx-module-toolset                      include/toolsets/
 tlpv3-toolset                           include/toolsets/
 clang-c-toolset                         include/toolsets/
+freebsd-module-toolset                  include/toolsets/

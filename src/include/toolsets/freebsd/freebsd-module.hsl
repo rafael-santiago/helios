@@ -1,0 +1,15 @@
+#                                        Sat Oct 22 00:08:04 2016
+# "freebsd-module.hsl"
+#
+#       by Rafael Santiago
+#
+# Description: a basic toolset for FreeBSD kernel modules.
+#
+
+include ~/toolsets/freebsd/forges/mkkld.hsl
+
+toolset "freebsd-kld" forge function "mkkld" :
+    command "mk": <
+        make
+    >
+$
