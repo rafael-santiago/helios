@@ -26,6 +26,6 @@ ffmpeg-toolset                          include/toolsets/
 jekyll-toolset                          include/toolsets/
 go-dep-scanner                          include/toolsets/common/utils/lang/go/
 bkrun                                   include/
-lnx-toolsets                            include/toolsets/
+lnx-module-toolset                      include/toolsets/
 tlpv3-toolset                           include/toolsets/
 clang-c-toolset                         include/toolsets/

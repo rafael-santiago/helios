@@ -8,10 +8,9 @@
 
 include ~/toolsets/linux/forges/lnxkmod_forge.hsl
 
-toolset "linux-module" forge function "lnxkmod_forge" :
+toolset "linux-lkm" forge function "lnxkmod_forge" :
     command "mk_kmodule": <
 	make
     >
 $
 
-	

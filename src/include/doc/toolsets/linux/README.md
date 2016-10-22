@@ -17,9 +17,9 @@ var cflags type list;
 var libraries type list;
 var ldflags type list;
 
-project scull-dev : toolset "linux-module" : "main-module-source.c", $includes, $cflags,
-                                                                     $libraries, $ldflags,
-                                                                     "scull";
+project scull-dev : toolset "linux-lkm" : "main-module-source.c", $includes, $cflags,
+                                                                  $libraries, $ldflags,
+                                                                  "scull";
 ```
 
 The arguments received by its forge function are:
