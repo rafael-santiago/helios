@@ -6,7 +6,6 @@
 #
 
 function mkkld(main_file type string,
-               sources type list,
                includes type list,
                cflags type list,
                libraries type list,
@@ -14,6 +13,7 @@ function mkkld(main_file type string,
                modname type string) : result type int {
     var exit_code type int;
     var data type string;
+    var sources type list;
 
     $exit_code = 0;
 
