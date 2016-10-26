@@ -17,6 +17,8 @@ function mkkld(main_file type string,
 
     $exit_code = 0;
 
+    $sources.ls(".*\\.c$");
+
     if ($includes.count() > 0 || $cflags.count() > 0) {
         $data = "CFLAGS+=";
 
