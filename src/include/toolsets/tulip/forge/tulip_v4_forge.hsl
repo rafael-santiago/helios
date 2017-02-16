@@ -4,7 +4,7 @@
 # This is free software. You can redistribute it and/or modify under
 # the terms of the GNU General Public License version 2.
 #
-# "tulip_v3_forge.hsl"
+# "tulip_v4_forge.hsl"
 #       by Rafael Santiago
 #
 # Relevant toolset's internal options:
@@ -16,7 +16,7 @@
 #       --tab-output-dir=<path> = the directory where the processor will save the generated tabs.
 #
 
-function tulip_v3_forge(sources type list) : result type int {
+function tulip_v4_forge(sources type list) : result type int {
     var exit_code type int;
 
     $exit_code = 0;
@@ -32,7 +32,7 @@ function tulip_v3_forge(sources type list) : result type int {
 
     var not_processed type list;
 
-    tulip_v3_lscpy($not_processed, $sources);
+    tulip_v4_lscpy($not_processed, $sources);
 
     var s type int;
 
@@ -49,7 +49,7 @@ function tulip_v3_forge(sources type list) : result type int {
 
         hefesto.sys.echo("\t*** compiling " + $tlp + "...\n");
 
-        if (tulip_v3_need_to_process_it($tlp, "")) {
+        if (tulip_v4_need_to_process_it($tlp, "")) {
             $cmdline = hefesto.toolset.compile($tlp);
 
             $exit_code = hefesto.sys.run($cmdline);
@@ -82,7 +82,7 @@ function tulip_v3_forge(sources type list) : result type int {
 
     var out_ext type string;
 
-    $out_ext = get_tulip_v3_processor_type();
+    $out_ext = get_tulip_v4_processor_type();
 
     if ($out_ext == "") {
         hefesto.sys.echo("TULIP-V3 TOOLSET ERROR: invalid processor output type!\n");
@@ -99,7 +99,7 @@ function tulip_v3_forge(sources type list) : result type int {
         $basedir = hefesto.sys.pwd();
     }
 
-    tulip_v3_mkbasedir($basedir);
+    tulip_v4_mkbasedir($basedir);
 
     hefesto.sys.echo("\n*** generating the tablatures (processor=" + $out_ext + ")... please wait...\n");
 
@@ -113,7 +113,7 @@ function tulip_v3_forge(sources type list) : result type int {
 
         hefesto.sys.echo("\t*** generating the tablature for " + $tlp + "...\n");
 
-        if (tulip_v3_need_to_process_it($tlp, $out)) {
+        if (tulip_v4_need_to_process_it($tlp, $out)) {
             $cmdline = hefesto.toolset.mktab($tlp, $out);
 
             $exit_code = hefesto.sys.run($cmdline);
@@ -139,7 +139,7 @@ function tulip_v3_forge(sources type list) : result type int {
     result $exit_code;
 }
 
-local function get_tulip_v3_processor_type() : result type string {
+local function get_tulip_v4_processor_type() : result type string {
     var ext type string;
     $ext = "txt";
 
@@ -150,17 +150,20 @@ local function get_tulip_v3_processor_type() : result type string {
         $ext = $outtype.item(0);
     }
 
-    validate_tulip_v3_outtype($ext);
+    validate_tulip_v4_outtype($ext);
 
     result $ext;
 }
 
-local function validate_tulip_v3_outtype(ext type string) : result type none {
+local function validate_tulip_v4_outtype(ext type string) : result type none {
     var allowed_exts type list;
 
     $allowed_exts.add_item("txt");
     $allowed_exts.add_item("pdf");
     $allowed_exts.add_item("ps");
+    $allowed_exts.add_item("eps");
+    $allowed_exts.add_item("md");
+    $allowed_exts.add_item("html");
 
     if ($allowed_exts.index_of($ext) == -1) {
         $ext = "";
@@ -191,7 +194,7 @@ local function get_tablature_output_filepath(basedir type string, tlp type strin
     result $filepath;
 }
 
-local function tulip_v3_lscpy(dst type list, src type list) : result type none {
+local function tulip_v4_lscpy(dst type list, src type list) : result type none {
     var s type int;
     $s = 0;
     while ($s < $src.count()) {
@@ -201,7 +204,7 @@ local function tulip_v3_lscpy(dst type list, src type list) : result type none {
     hefesto.sys.byref($dst);
 }
 
-local function tulip_v3_need_to_process_it(tlp type string, out type string) : result type int {
+local function tulip_v4_need_to_process_it(tlp type string, out type string) : result type int {
     var need type int;
     $need = (hefesto.toolset.file_has_change($tlp));
     if ($need == 0 && $out.len() > 0) {
@@ -215,7 +218,7 @@ local function tulip_v3_need_to_process_it(tlp type string, out type string) : r
     result $need;
 }
 
-local function tulip_v3_mkbasedir(basedir type string) : result type none {
+local function tulip_v4_mkbasedir(basedir type string) : result type none {
     var oldcwd type string;
     $oldcwd = hefesto.sys.pwd();
     if (hefesto.sys.cd($basedir) == 0) {

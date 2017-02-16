@@ -1,4 +1,0 @@
-include/toolsets/tulip/get_tlp_deps.hsl
-include/toolsets/tulip/tulip-v3.hsl
-include/toolsets/tulip/forge/tulip_v3_forge.hsl
-include/doc/toolsets/tulip/README.md

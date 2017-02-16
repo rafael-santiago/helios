@@ -1,15 +1,15 @@
 #
-#                              Copyright (C) 2016 by Rafael Santiago
+#                              Copyright (C) 2017 by Rafael Santiago
 #
 # This is free software. You can redistribute it and/or modify under
 # the terms of the GNU General Public License version 2.
 #
-# "tulip-v3.hsl"
+# "tulip-v4.hsl"
 #       by Rafael Santiago
 #
-include ~/toolsets/tulip/forge/tulip_v3_forge.hsl
+include ~/toolsets/tulip/forge/tulip_v4_forge.hsl
 
-toolset "tulip-v3" forge function "tulip_v3_forge" : forge helpers "tulip_v3_need_to_process_it" :
+toolset "tulip-v4" forge function "tulip_v4_forge" : forge helpers "tulip_v4_need_to_process_it" :
     command "compile": SOURCE <
         tulip --tlp=$SOURCE
     >
