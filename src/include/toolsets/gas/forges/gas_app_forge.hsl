@@ -19,7 +19,7 @@ function gas_app_forge(sources type list,
     var gas_toolset_help type list;
     $gas_toolset_help = hefesto.sys.get_option("gas-toolset-help");
     if ($gas_toolset_help.count() > 0) {
-        gas_toolset_sinopsis();
+        gas_toolset_synopsis();
         result 0;
     }
     var retval type int;
@@ -112,7 +112,7 @@ local function gas_version() : result type string {
     result "0.0.1.0";
 }
 
-local function gas_toolset_sinopsis() : result type none {
+local function gas_toolset_synopsis() : result type none {
     hefesto.sys.echo("____\n" + hefesto.project.toolset() + " version " + gas_version() + " command option synopsis\n\n");
     hefesto.sys.echo("  [--compile-model] option specifies the compilation model. Should be \"release\" (default) or \"debug\".\n\n");
     hefesto.sys.echo("  [--link-model] option specifies the linkage model. Should be \"shared\" (default) or \"static\".\n\n");
@@ -186,9 +186,17 @@ local function mk_gas_compilation_cmdline(srcpath type string,
                                           release type int) : result type string {
     var cmdline type string;
     if ($release) {
-        $cmdline = hefesto.toolset.as_release($srcpath, $objpath, $includes, $cflags);
+        if (hefesto.sys.os_name() != "sunos") {
+            $cmdline = hefesto.toolset.as_release($srcpath, $objpath, $includes, $cflags);
+        } else {
+            $cmdline = hefesto.toolset.sunos_as_release($srcpath, $objpath, $includes, $cflags);
+        }
     } else {
-        $cmdline = hefesto.toolset.as_debug($srcpath, $objpath, $includes, $cflags);
+        if (hefesto.sys.os_name() != "sunos") {
+            $cmdline = hefesto.toolset.as_debug($srcpath, $objpath, $includes, $cflags);
+        } else {
+            $cmdline = hefesto.toolset.sunos_as_debug($srcpath, $objpath, $includes, $cflags);
+        }
     }
     if ($address_model.len() > 0) {
         $cmdline.replace("\n", "");
@@ -319,7 +327,7 @@ local function gas_applink(objects type list, libraries type list, ldflags type 
     var with_libc_option type list;
     $with_libc_option = hefesto.sys.get_option("with-libc");
     if ($with_libc_option.count() > 0) {
-        $ldflags_gas_option = $ldflags_gas_option + " -lc -dynamic-linker /lib/ld-linux.so.2";
+        $ldflags_gas_option = $ldflags_gas_option + " -lc";
     }
     var linker_cmdline type string;
     if ($static) {
