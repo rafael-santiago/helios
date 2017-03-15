@@ -186,16 +186,20 @@ local function mk_gas_compilation_cmdline(srcpath type string,
                                           release type int) : result type string {
     var cmdline type string;
     if ($release) {
-        if (hefesto.sys.os_name() != "sunos") {
+        if (hefesto.sys.os_name() != "sunos" && hefesto.sys.os_name() != "windows") {
             $cmdline = hefesto.toolset.as_release($srcpath, $objpath, $includes, $cflags);
-        } else {
+        } else if (hefesto.sys.os_name() == "sunos") {
             $cmdline = hefesto.toolset.sunos_as_release($srcpath, $objpath, $includes, $cflags);
+        } else if (hefesto.sys.os_name() == "windows") {
+            $cmdline = hefesto.toolset.windows_as_release($srcpath, $objpath, $includes, $cflags);
         }
     } else {
-        if (hefesto.sys.os_name() != "sunos") {
+        if (hefesto.sys.os_name() != "sunos" && hefesto.sys.os_name() != "windows") {
             $cmdline = hefesto.toolset.as_debug($srcpath, $objpath, $includes, $cflags);
-        } else {
+        } else if (hefesto.sys.os_name() == "sunos") {
             $cmdline = hefesto.toolset.sunos_as_debug($srcpath, $objpath, $includes, $cflags);
+        } else if (hefesto.sys.os_name() == "windows") {
+            $cmdline = hefesto.toolset.windows_as_debug($srcpath, $objpath, $includes, $cflags);
         }
     }
     if ($address_model.len() > 0) {
@@ -330,10 +334,14 @@ local function gas_applink(objects type list, libraries type list, ldflags type 
         $ldflags_gas_option = $ldflags_gas_option + " -lc";
     }
     var linker_cmdline type string;
-    if ($static) {
-        $linker_cmdline = hefesto.toolset.ld_static($appname, $objects_gas_option, $libraries_gas_option, $ldflags_gas_option);
+    if (hefesto.sys.os_name() != "windows") {
+        if ($static) {
+            $linker_cmdline = hefesto.toolset.ld_static($appname, $objects_gas_option, $libraries_gas_option, $ldflags_gas_option);
+        } else {
+            $linker_cmdline = hefesto.toolset.ld_shared($appname, $objects_gas_option, $libraries_gas_option, $ldflags_gas_option);
+        }
     } else {
-        $linker_cmdline = hefesto.toolset.ld_shared($appname, $objects_gas_option, $libraries_gas_option, $ldflags_gas_option);
+        $linker_cmdline = hefesto.toolset.windows_ld($appname, $objects_gas_option, $libraries_gas_option, $ldflags_gas_option);
     }
     result hefesto.sys.run($linker_cmdline);
 }
