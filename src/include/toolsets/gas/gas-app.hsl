@@ -23,10 +23,10 @@ toolset "gas-app" forge function "gas_app_forge" : forge helpers "mk_gas_compila
         gas -o $OBJECT $SOURCE $INCLUDES $CFLAGS -gstabs
     >
     command "windows_as_release": SOURCE, OBJECT, INCLUDES, CFLAGS <
-        gcc $SOURCE -o $OBJECT $INCLUDES $CFLAGS
+        as -o $OBJECT $SOURCE $INCLUDES $CFLAGS
     >
     command "windows_as_debug": SOURCE, OBJECT, INCLUDES, CFLAGS <
-        gcc -c $SOURCE -o $OBJECT $INCLUDES $CFLAGS -g
+        as -o $OBJECT $SOURCE $INCLUDES $CFLAGS -gstabs
     >
     command "ld_shared" : APPNAME, OBJECTS, LIBRARIES, LDFLAGS <
         ld -Bdynamic $OBJECTS $LIBRARIES $LDFLAGS -o $APPNAME
@@ -35,6 +35,6 @@ toolset "gas-app" forge function "gas_app_forge" : forge helpers "mk_gas_compila
         ld -Bstatic $OBJECTS $LIBRARIES $LDFLAGS -o $APPNAME
     >
     command "windows_ld": APPNAME, OBJECTS, LIBRARIES, LDFLAGS <
-        gcc -o " $APPNAME " " $OBJECTS " " $LIBRARIES " " $LDFLAGS "
+        gcc -o $APPNAME $OBJECTS $LIBRARIES $LDFLAGS
     >
 $
