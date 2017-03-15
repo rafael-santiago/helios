@@ -149,6 +149,9 @@ local function get_objects_filepaths(sources type list, obj_dir type string) : r
         $object_filepath = filenamefrompath($source_filepath);
         $object_filepath.replace("\\.[s|S]$", ".o");
         $object_filepath = hefesto.sys.make_path($obj_dir, $object_filepath);
+        if (hefesto.sys.os_name() == "windows") {
+            $object_filepath = "\"" + $object_filepath + "\"";
+        }
         $objs.add_item($object_filepath);
         $s = $s + 1;
     }
@@ -160,7 +163,11 @@ local function mk_includes_gas_option(includes type list) : result type string {
     var str_inc type string;
     $i = 0;
     while ($i < $includes.count()) {
-        $str_inc = $str_inc + "-I" + $includes.item($i);
+        if (hefesto.sys.os_name() != "windows") {
+            $str_inc = $str_inc + "-I" + $includes.item($i);
+        } else {
+            $str_inc = $str_inc + "-I\"" + $includes.item($i) + "\"";
+        }
         $i = $i + 1;
     }
     result $str_inc;
@@ -172,7 +179,11 @@ local function mk_libraries_ld_option(libraries type list) : result type string 
     $l = 0;
     $str_lib = "";
     while ($l < $libraries.count()) {
-        $str_lib = $str_lib + "-L" + $libraries.item($l);
+        if (hefesto.sys.os_name() != "windows") {
+            $str_lib = $str_lib + "-L" + $libraries.item($l);
+        } else {
+            $str_lib = $str_lib + "-L\"" + $libraries.item($l) + "\"";
+        }
         $l = $l + 1;
     }
     result $str_lib;
@@ -236,6 +247,9 @@ local function gas_compile_sync(sources type list, objects type list, includes t
 
     while ($retval == 0 && $s < $sources.count()) {
         $srcpath = $sources.item($s);
+        if (hefesto.sys.os_name() == "windows") {
+            $srcpath = "\"" + $srcpath + "\"";
+        }
         $objpath = $objects.item($s);
         hefesto.sys.echo("\tcompiling " + $srcpath + "...");
         $cmdline = mk_gas_compilation_cmdline($srcpath, $objpath, $includes_gas_option, $cflags_gas_option, $address_model, $release);
@@ -269,6 +283,9 @@ local function gas_compile_async(sources type list, objects type list, includes 
     while ($s < $sources.count() && $retval == 0) {
         if ($q <  $qsize) {
             $srcpath = $sources.item($s);
+            if (hefesto.sys.os_name() == "windows") {
+                $srcpath = "\"" + $srcpath + "\"";
+            }
             $objpath = $objects.item($s);
             $cmdlines.add_item(mk_gas_compilation_cmdline($srcpath,
                                                           $objpath,
