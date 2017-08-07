@@ -5,6 +5,7 @@
 #
 # Description: Linux kernel module forge stuff.
 #
+include ~/fsutil.hsl
 
 function lnxkmod_forge(main_src_file type string,
                        includes type list,
@@ -50,6 +51,35 @@ function lnxkmod_forge(main_src_file type string,
     result $exit_code;
 }
 
+local function get_path_deepness_level(path type string) : result type int {
+    var p type int;
+    $p = 0;
+
+    var lv type int;
+    $lv = 0;
+    while ($p < $path.len()) {
+        if ($path.at($p) == "/") {
+            $lv = $lv + 1;
+        }
+        $p = $p + 1;
+    }
+
+    result $lv;
+}
+
+local function get_indirect_file_path(path type string, indirect_delta type int) : result type string {
+    var indirect_path type string;
+
+    if ($indirect_delta > 0) {
+        $indirect_path = hefesto.sys.make_path("./", "..");
+        while ($indirect_delta > 1) {
+            $indirect_path = hefesto.sys.make_path($indirect_path, "..");
+            $indirect_delta = $indirect_delta - 1;
+        }
+    }
+    result hefesto.sys.make_path($indirect_path, filenamefrompath($path));
+}
+
 local function mkmakefile(srcs type list,
                           main type string,
                           includes type list,
@@ -62,6 +92,10 @@ local function mkmakefile(srcs type list,
     var objname type string;
     var line type string;
     var s type int;
+    var pwd_lv type int;
+    var src_lv type int;
+
+    $pwd_lv = get_path_deepness_level(hefesto.sys.pwd() + "/");
 
     $s = 0;
 
@@ -75,9 +109,13 @@ local function mkmakefile(srcs type list,
 
     while ($s < $srcs.count()) {
         $objname = $srcs.item($s);
-        $objname.replace($cwd_regex, "");
+        $src_lv = get_path_deepness_level($objname);
+        if ($objname.replace($cwd_regex, "") > 0) {
+            $objname = "./" + $objname;
+        } else if ($pwd_lv > $src_lv) {
+            $objname = get_indirect_file_path($objname, $pwd_lv - $src_lv);
+        }
         $objname.replace("\\.c$", ".o");
-        $objname = "./" + $objname;
         $line = $line + $objname + " ";
         $s = $s + 1;
     }
@@ -95,11 +133,17 @@ local function mkmakefile(srcs type list,
 
     $line = $line + "\n";
 
-    if ($includes.count() > 0 || $cflags.count() > 0 || $libraries.count() > 0) {
+    if ($includes.count() > 0 || $cflags.count() > 0) {
         $line = $line + "ccflags-y := ";
         $s = 0;
         while ($s < $includes.count()) {
             $line = $line + "-I" + $includes.item($s) + " ";
+            $s = $s + 1;
+        }
+
+        $s = 0;
+        while ($s < $cflags.count() > 0) {
+            $line = $line + $cflags.item($s) + " ";
             $s = $s + 1;
         }
 
