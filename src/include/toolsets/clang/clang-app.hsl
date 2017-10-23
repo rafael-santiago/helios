@@ -12,7 +12,7 @@
 
 include ~/toolsets/clang/forges/clang_c_app_forge.hsl
 
-toolset "clang-c-app" forge function "clang_c_binary_forge" : forge helpers "clang_compile_source_list", "clang_link_ofiles", "clang_mk_app_compilation_command":
+toolset "clang-c-app" forge function "clang_c_binary_forge" : forge helpers "clang_app_compile_source_list", "clang_link_ofiles", "clang_mk_app_compilation_command":
     command "compile_r": SOURCE, OUTFILE, INCLUDES, CFLAGS <
         clang -c $SOURCE $INCLUDES $CFLAGS -o $OUTFILE
     >
@@ -27,7 +27,7 @@ toolset "clang-c-app" forge function "clang_c_binary_forge" : forge helpers "cla
     >
 $
 
-toolset "clang-cc-app" forge function "clang_c_binary_forge" : forge helpers "clang_compile_source_list", "clang_link_ofiles", "clang_mk_app_compilation_command":
+toolset "clang-cc-app" forge function "clang_c_binary_forge" : forge helpers "clang_app_compile_source_list", "clang_link_ofiles", "clang_mk_app_compilation_command":
     command "compile_r": SOURCE, OUTFILE, INCLUDES, CFLAGS <
         clang++ -c $SOURCE $INCLUDES $CFLAGS -o $OUTFILE
     >

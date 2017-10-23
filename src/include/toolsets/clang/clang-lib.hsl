@@ -12,7 +12,7 @@
 
 include ~/toolsets/clang/forges/clang_c_lib_forge.hsl
 
-toolset "clang-c-lib" forge function "clang_c_lib_forge" : forge helpers "clang_compile_source_list", "clang_ar_ofiles", "clang_so_ofiles", "clang_mk_lib_compilation_command":
+toolset "clang-c-lib" forge function "clang_c_lib_forge" : forge helpers "clang_lib_compile_source_list", "clang_ar_ofiles", "clang_so_ofiles", "clang_mk_lib_compilation_command":
     command "compile_static_r": SOURCE, OUTFILE, INCLUDES, CFLAGS <
         clang -c $SOURCE $INCLUDES $CFLAGS -o $OUTFILE
     >
@@ -33,7 +33,7 @@ toolset "clang-c-lib" forge function "clang_c_lib_forge" : forge helpers "clang_
     >
 $
 
-toolset "clang-cc-lib" forge function "clang_c_lib_forge" : forge helpers "clang_compile_source_list", "clang_ar_ofiles", "clang_so_ofiles", "clang_mk_lib_compilation_command":
+toolset "clang-cc-lib" forge function "clang_c_lib_forge" : forge helpers "clang_lib_compile_source_list", "clang_ar_ofiles", "clang_so_ofiles", "clang_mk_lib_compilation_command":
     command "compile_static_r": SOURCE, OUTFILE, INCLUDES, CFLAGS <
         clang++ -c $SOURCE $INCLUDES, $CFLAGS -o $OUTFILE
     >

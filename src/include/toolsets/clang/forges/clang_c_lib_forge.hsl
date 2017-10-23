@@ -32,7 +32,7 @@ include ~/toolsets/clang/forges/common.hsl
 include ~/fsutil.hsl
 include ~/lsutil.hsl
 
-var clang_c_project_forge_dirty_files_nr type int;
+var clang_c_lib_project_forge_dirty_files_nr type int;
 
 local function clang_mk_lib_compilation_command(src_file type string, ofile type string,
                                                 includes type string, cflags type string,
@@ -54,7 +54,7 @@ local function clang_mk_lib_compilation_command(src_file type string, ofile type
     result $cmd;
 }
 
-function clang_compile_source_list(sources type list, includes type string, cflags type string, obj_dir type string) : result type int {
+function clang_lib_compile_source_list(sources type list, includes type string, cflags type string, obj_dir type string) : result type int {
     var size type int;
     var i type int;
     var j type int;
@@ -100,14 +100,14 @@ function clang_compile_source_list(sources type list, includes type string, cfla
     $exit_code = 0;
     $i = 0;
     $not_compiled = lsdup($sources);
-    $clang_c_project_forge_dirty_files_nr = 0;
+    $clang_c_lib_project_forge_dirty_files_nr = 0;
     if ($qsize <= 1) {
         while ($i < $size && $exit_code == 0) {
             $ofile = $sources.item($i);
             $ofile = clang_mk_ofile_name(filenamefrompath($ofile), $obj_dir);
 #            $regex = gcc_mk_regex_pattern_from_filepath($ofile);
             if (hefesto.toolset.file_has_change($sources.item($i)) == 1 || isfile($ofile) == 0) {
-                $clang_c_project_forge_dirty_files_nr = $clang_c_project_forge_dirty_files_nr + 1;
+                $clang_c_lib_project_forge_dirty_files_nr = $clang_c_lib_project_forge_dirty_files_nr + 1;
                 $curr_src_file = "\"" + $sources.item($i) + "\"";
                 $exit_code = hefesto.sys.run(clang_mk_lib_compilation_command($curr_src_file, $ofile, $includes, $cflags, $is_release, $is_static));
                 if ($exit_code == 0) {
@@ -121,7 +121,7 @@ function clang_compile_source_list(sources type list, includes type string, cfla
             }
             $i = $i + 1;
         }
-        if ($clang_c_project_forge_dirty_files_nr > 0) {
+        if ($clang_c_lib_project_forge_dirty_files_nr > 0) {
             hefesto.toolset.base_refresh($not_compiled);
         }
     } else {
@@ -131,7 +131,7 @@ function clang_compile_source_list(sources type list, includes type string, cfla
             $ofile = clang_mk_ofile_name(filenamefrompath($ofile), $obj_dir);
 #            $regex = gcc_mk_regex_pattern_from_filepath($ofile);
             if (hefesto.toolset.file_has_change($sources.item($i)) == 1 || isfile($ofile) == 0) {
-                $clang_c_project_forge_dirty_files_nr = $clang_c_project_forge_dirty_files_nr + 1;
+                $clang_c_lib_project_forge_dirty_files_nr = $clang_c_lib_project_forge_dirty_files_nr + 1;
                 $curr_src_file = "\"" + $sources.item($i) + "\"";
                 $run_list.add_item(clang_mk_lib_compilation_command($curr_src_file, $ofile, $includes, $cflags, $is_release, $is_static));
                 $not_compiled_tmp.add_item($sources.item($i));
@@ -242,13 +242,13 @@ function clang_c_lib_forge(SOURCES type list, INCLUDES type list, CFLAGS type li
     #  compiling...
     hefesto.sys.echo("*** compiling...\n");
 
-    $exit_code = clang_compile_source_list($SOURCES, $includes, $cflags, $obj_dir);
+    $exit_code = clang_lib_compile_source_list($SOURCES, $includes, $cflags, $obj_dir);
 
-    if ($clang_c_project_forge_dirty_files_nr == 0 && isfile($bin_output) == 0) {
-        $clang_c_project_forge_dirty_files_nr = 1;
+    if ($clang_c_lib_project_forge_dirty_files_nr == 0 && isfile($bin_output) == 0) {
+        $clang_c_lib_project_forge_dirty_files_nr = 1;
     }
 
-    if ($clang_c_project_forge_dirty_files_nr > 0 && $exit_code == 0) {
+    if ($clang_c_lib_project_forge_dirty_files_nr > 0 && $exit_code == 0) {
         hefesto.sys.echo("*** now making .a file...\n\t*** waiting...\n");
         $objects = clang_mk_ofiles_str_opt($SOURCES, $obj_dir);
         if ($is_static_library == 1) {

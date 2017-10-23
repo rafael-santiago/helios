@@ -34,7 +34,7 @@ include ~/toolsets/gcc/forges/win_common.hsl
 include ~/fsutil.hsl
 include ~/lsutil.hsl
 
-var gcc_c_project_forge_dirty_files_nr type int;
+var gcc_c_lib_project_forge_dirty_files_nr type int;
 
 local function gcc_mk_lib_compilation_command(src_file type string, ofile type string,
                                               includes type string, cflags type string,
@@ -56,7 +56,7 @@ local function gcc_mk_lib_compilation_command(src_file type string, ofile type s
     result $cmd;
 }
 
-function gcc_compile_source_list(sources type list, includes type string, cflags type string, obj_dir type string) : result type int {
+function gcc_lib_compile_source_list(sources type list, includes type string, cflags type string, obj_dir type string) : result type int {
     var size type int;
     var i type int;
     var j type int;
@@ -103,14 +103,14 @@ function gcc_compile_source_list(sources type list, includes type string, cflags
     $exit_code = 0;
     $i = 0;
     $not_compiled = lsdup($sources);
-    $gcc_c_project_forge_dirty_files_nr = 0;
+    $gcc_c_lib_project_forge_dirty_files_nr = 0;
     if ($qsize <= 1) {
         while ($i < $size && $exit_code == 0) {
             $ofile = $sources.item($i);
             $ofile = gcc_mk_ofile_name(filenamefrompath($ofile), $obj_dir);
 #            $regex = gcc_mk_regex_pattern_from_filepath($ofile);
             if (hefesto.toolset.file_has_change($sources.item($i)) == 1 || isfile($ofile) == 0) {
-                $gcc_c_project_forge_dirty_files_nr = $gcc_c_project_forge_dirty_files_nr + 1;
+                $gcc_c_lib_project_forge_dirty_files_nr = $gcc_c_lib_project_forge_dirty_files_nr + 1;
                 $curr_src_file = "\"" + $sources.item($i) + "\"";
                 $exit_code = hefesto.sys.run(gcc_mk_lib_compilation_command($curr_src_file, $ofile, $includes, $cflags, $is_release, $is_static));
                 if ($exit_code == 0) {
@@ -124,7 +124,7 @@ function gcc_compile_source_list(sources type list, includes type string, cflags
             }
             $i = $i + 1;
         }
-        if ($gcc_c_project_forge_dirty_files_nr > 0) {
+        if ($gcc_c_lib_project_forge_dirty_files_nr > 0) {
             hefesto.toolset.base_refresh($not_compiled);
         }
     } else {
@@ -134,7 +134,7 @@ function gcc_compile_source_list(sources type list, includes type string, cflags
             $ofile = gcc_mk_ofile_name(filenamefrompath($ofile), $obj_dir);
 #            $regex = gcc_mk_regex_pattern_from_filepath($ofile);
             if (hefesto.toolset.file_has_change($sources.item($i)) == 1 || isfile($ofile) == 0) {
-                $gcc_c_project_forge_dirty_files_nr = $gcc_c_project_forge_dirty_files_nr + 1;
+                $gcc_c_lib_project_forge_dirty_files_nr = $gcc_c_lib_project_forge_dirty_files_nr + 1;
                 $curr_src_file = "\"" + $sources.item($i) + "\"";
                 $run_list.add_item(gcc_mk_lib_compilation_command($curr_src_file, $ofile, $includes, $cflags, $is_release, $is_static));
                 $not_compiled_tmp.add_item($sources.item($i));
@@ -245,16 +245,16 @@ function gcc_c_lib_forge(SOURCES type list, INCLUDES type list, CFLAGS type list
     #  compiling...
     hefesto.sys.echo("*** compiling...\n");
 
-    $exit_code = gcc_compile_source_list($SOURCES, $includes, $cflags, $obj_dir);
+    $exit_code = gcc_lib_compile_source_list($SOURCES, $includes, $cflags, $obj_dir);
 
 #    var regex type string;
 #    $regex = gcc_mk_regex_pattern_from_filepath($bin_output);
 
-    if ($gcc_c_project_forge_dirty_files_nr == 0 && isfile($bin_output) == 0) {
-        $gcc_c_project_forge_dirty_files_nr = 1;
+    if ($gcc_c_lib_project_forge_dirty_files_nr == 0 && isfile($bin_output) == 0) {
+        $gcc_c_lib_project_forge_dirty_files_nr = 1;
     }
 
-    if ($gcc_c_project_forge_dirty_files_nr > 0 && $exit_code == 0) {
+    if ($gcc_c_lib_project_forge_dirty_files_nr > 0 && $exit_code == 0) {
         hefesto.sys.echo("*** now making .a file...\n\t*** waiting...\n");
         $objects = gcc_mk_ofiles_str_opt($SOURCES, $obj_dir);
         if ($is_static_library == 1) {
