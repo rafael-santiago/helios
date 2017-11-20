@@ -35,7 +35,7 @@ $
 
 toolset "clang-cc-lib" forge function "clang_c_lib_forge" : forge helpers "clang_lib_compile_source_list", "clang_ar_ofiles", "clang_so_ofiles", "clang_mk_lib_compilation_command":
     command "compile_static_r": SOURCE, OUTFILE, INCLUDES, CFLAGS <
-        clang++ -c $SOURCE $INCLUDES, $CFLAGS -o $OUTFILE
+        clang++ -c $SOURCE $INCLUDES $CFLAGS -o $OUTFILE
     >
     command "compile_static_d": SOURCE, OUTFILE, INCLUDES, CFLAGS <
         clang++ -g -c $SOURCE $INCLUDES $CFLAGS -o $OUTFILE
