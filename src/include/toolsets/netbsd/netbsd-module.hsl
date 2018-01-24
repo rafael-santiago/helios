@@ -1,0 +1,15 @@
+#                                       Wed 24 Jan 2018 02:50:44
+# "netbsd-module.hsl"
+#
+#       by Rafael Santiago
+#
+# Description: a basic toolset for NetBSD kernel modules.
+#
+
+include ~/toolsets/netbsd/forges/mkkld.hsl
+
+toolset "netbsd-kld" forge function "mkkld" :
+    command "mk": <
+        make
+    >
+$

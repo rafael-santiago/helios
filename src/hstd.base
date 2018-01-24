@@ -30,3 +30,4 @@ lnx-module-toolset                      include/toolsets/
 tlpv4-toolset                           include/toolsets/
 clang-c-toolset                         include/toolsets/
 freebsd-module-toolset                  include/toolsets/
+netbsd-module-toolset                   include/toolsets/
