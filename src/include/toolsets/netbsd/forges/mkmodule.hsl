@@ -25,7 +25,7 @@ function mkmodule(main_file type string,
 
         append_to_cmd_buffer($data, "-I", $includes);
 
-        # get_addl_impl_files($sources, $includes);
+        get_addl_impl_files($sources, $includes);
 
         append_to_cmd_buffer($data, "", $cflags);
 
@@ -76,29 +76,33 @@ local function get_addl_impl_files(sources type list, dirs type list) : result t
         $dir = $dirs.item($d);
 
         if (hefesto.sys.cd($dir)) {
-            # INFO(Rafael): NetBSD build system concentrates all object files within the project's root directory.
-
-            var temp_sources type list;
-
-            $temp_sources.ls(".*\\.c$");
-
-            var s type int;
-            $s = 0;
-            while ($s < $temp_sources.count()) {
-                var filename type string;
-                $filename = $temp_sources.item($s);
-                $filename = hefesto.sys.make_path($cwd, filenamefrompath($filename));
-                $sources.add_item($filename);
-                $s = $s + 1;
-            }
-
-            $temp_sources.clear();
+            $sources.ls(".*\\.c$");
         }
 
         $d = $d + 1;
     }
 
     hefesto.sys.cd($cwd);
+
+    # INFO(Rafael): NetBSD build system concentrates all object files within the project's root directory.
+
+    var s type int;
+
+    $s = 0;
+    while ($s < $sources.item($s)) {
+        var o_filepath type string;
+        var o_filename type string;
+
+        $o_filepath = $sources.item($s);
+        $o_filepath.replace("\\.c$", ".o");
+        $o_filename = filenamefrompath($o_filepath);
+
+        if (isfile($o_filepath) == 0) {
+            hefesto.sys.run("ln -s " + $o_filename + " " + $o_filepath);
+        }
+
+        $s = $s + 1;
+    }
 
     hefesto.sys.byref($sources);
 }
