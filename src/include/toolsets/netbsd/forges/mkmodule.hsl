@@ -4,6 +4,7 @@
 #       by Rafael Santiago
 #
 #
+include ~/fsutil.hsl
 
 function mkmodule(main_file type string,
                   includes type list,
@@ -22,10 +23,20 @@ function mkmodule(main_file type string,
     if ($includes.count() > 0 || $cflags.count() > 0) {
         $data = "CFLAGS+=";
 
-        append_to_cmd_buffer($data, "-I", $includes);
+        # INFO(Rafael): NetBSD build system concentrates all object files within the root project sub-directory.
 
-         # WARN(Rafael): In NetBSD we will not try to include automatically implementation files based on header files.
-#        get_addl_impl_files($sources, $includes);
+        var i type int;
+        var temp_includes type list;
+
+        $i = 0;
+        while ($i < $includes.count()) {
+            var includename type string;
+            $includename = $includes.item($i);
+            $temp_includes.add_item(filenamefromfilepath($includename));
+            $i = $i + 1;
+        }
+
+        append_to_cmd_buffer($data, "-I", $temp_includes);
 
         append_to_cmd_buffer($data, "", $cflags);
 
