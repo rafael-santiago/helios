@@ -25,7 +25,7 @@ function mkmodule(main_file type string,
 
         append_to_cmd_buffer($data, "-I", $includes);
 
-        get_addl_impl_files($sources, $includes);
+        # get_addl_impl_files($sources, $includes);
 
         append_to_cmd_buffer($data, "", $cflags);
 
