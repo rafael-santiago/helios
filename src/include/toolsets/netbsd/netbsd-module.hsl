@@ -6,9 +6,9 @@
 # Description: a basic toolset for NetBSD kernel modules.
 #
 
-include ~/toolsets/netbsd/forges/mkkld.hsl
+include ~/toolsets/netbsd/forges/mkmodule.hsl
 
-toolset "netbsd-kld" forge function "mkkld" :
+toolset "netbsd-module" forge function "mkmodule" :
     command "mk": <
         make
     >

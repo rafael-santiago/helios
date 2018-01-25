@@ -1,2 +1,2 @@
 include/toolsets/netbsd/netbsd-module.hsl
-include/toolsets/netbsd/forges/mkkld.hsl
+include/toolsets/netbsd/forges/mkmodule.hsl
