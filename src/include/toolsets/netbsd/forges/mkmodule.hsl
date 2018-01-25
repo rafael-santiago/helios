@@ -32,7 +32,7 @@ function mkmodule(main_file type string,
         while ($i < $includes.count()) {
             var includename type string;
             $includename = $includes.item($i);
-            $temp_includes.add_item(filenamefromfilepath($includename));
+            $temp_includes.add_item(filenamefrompath($includename));
             $i = $i + 1;
         }
 
