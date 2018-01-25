@@ -24,7 +24,8 @@ function mkmodule(main_file type string,
 
         append_to_cmd_buffer($data, "-I", $includes);
 
-        get_addl_impl_files($sources, $includes);
+         # WARN(Rafael): In NetBSD we will not try to include automatically implementation files based on header files.
+#        get_addl_impl_files($sources, $includes);
 
         append_to_cmd_buffer($data, "", $cflags);
 
