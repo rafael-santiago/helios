@@ -89,16 +89,21 @@ local function get_addl_impl_files(sources type list, dirs type list) : result t
     var s type int;
 
     $s = 0;
-    while ($s < $sources.item($s)) {
+    while ($s < $sources.count()) {
         var o_filepath type string;
         var o_filename type string;
+        var s_filename type string;
 
         $o_filepath = $sources.item($s);
+        $s_filename = filenamefrompath($o_filepath);
         $o_filepath.replace("\\.c$", ".o");
         $o_filename = filenamefrompath($o_filepath);
 
-        if (isfile($o_filepath) == 0) {
-            hefesto.sys.run("ln -s " + hefesto.sys.make_path($cwd, $o_filename) + " " + $o_filepath);
+        var ln_path type string;
+        $ln_path = hefesto.sys.make_path($cwd, $o_filename);
+
+        if (isfile($s_filename) == 0 && isfile($ln_path)) {
+            hefesto.sys.run("ln -s " + $ln_path + " " + $o_filepath);
         }
 
         $s = $s + 1;
