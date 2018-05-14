@@ -30,11 +30,11 @@ function forge_projects(cwd type list) : result type int {
         $new_cwd = $cwd.item($c);
         hefesto.sys.cd($new_cwd);
         if (hefesto.sys.ls("\\.ivk$") == 1) {
-            hefesto.sys.echo("forge_project() current status: entering inside \"" + $new_cwd + "\" directory...\n\n");
+            hefesto.sys.echo("\nforge_project() current status: entering inside \"" + $new_cwd + "\" directory...\n\n");
             $exit_code = hefesto.sys.run("hefesto " + hefesto.project.cmdline());
         }
         if ($exit_code == 0) {
-            hefesto.sys.echo("\n\nforge_project() current status: looking for next sub-project...\n\n");
+            #hefesto.sys.echo("\n\nforge_project() current status: looking for next sub-project...\n\n");
             $dirs = lsdir();
             if ($dirs.count() > 0) {
                 $exit_code = forge_projects($dirs);
