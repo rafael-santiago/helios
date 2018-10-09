@@ -11,7 +11,7 @@ include ~/fsutil.hsl
 
 local var sync_forge_projects_recur_deepness type int;
 
-function forge_projects(cwd type list) : result type list {
+function forge_projects(cwd type list) : result type int {
     $sync_forge_projects_recur_deepness = 0;
     result forge_projects_iter($cwd);
 }
