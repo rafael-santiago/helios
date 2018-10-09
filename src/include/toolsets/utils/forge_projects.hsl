@@ -9,6 +9,13 @@
 
 include ~/fsutil.hsl
 
+local var sync_forge_projects_recur_deepness type int;
+
+function forge_projects(cwd type list) : result type list {
+    $sync_forge_projects_recur_deepness = 0;
+    result forge_projects_iter($cwd);
+}
+
 #
 # This function recursivelly calls the default forge of projects
 # which are under passed cwd.
@@ -17,7 +24,11 @@ include ~/fsutil.hsl
 #        be scanned for projects with a configurated .ivk file
 #
 
-function forge_projects(cwd type list) : result type int {
+local function forge_projects_iter(cwd type list) : result type int {
+    if ($sync_forge_projects_recur_deepness > 255) {
+        result 0;
+    }
+    $sync_forge_projects_recur_deepness = $sync_forge_projects_recur_deepness + 1;
     var exit_code type int;
     var dirs type list;
     var c type int;
@@ -37,11 +48,12 @@ function forge_projects(cwd type list) : result type int {
             #hefesto.sys.echo("\n\nforge_project() current status: looking for next sub-project...\n\n");
             $dirs = lsdir();
             if ($dirs.count() > 0) {
-                $exit_code = forge_projects($dirs);
+                $exit_code = forge_projects_iter($dirs);
             }
         }
         hefesto.sys.cd($old_cwd);
         $c = $c + 1;
     }
+    $sync_forge_projects_recur_deepness = $sync_forge_projects_recur_deepness - 1;
     result $exit_code;
 }
