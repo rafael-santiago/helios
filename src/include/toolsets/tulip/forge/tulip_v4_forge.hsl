@@ -178,7 +178,7 @@ local function get_tablature_output_filepath(basedir type string, tlp type strin
 
     $f = $tlp.len() - 1;
 
-    while ($f > 0 && $tlp.at($f) != "/") {
+    while ($f >= 0 && $tlp.at($f) != "/") {
         $filename = $tlp.at($f) + $filename;
         $f = $f - 1;
         if (hefesto.sys.os_name() == "windows" && $tlp.at($f) == "\\") {
