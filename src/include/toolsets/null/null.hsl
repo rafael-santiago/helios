@@ -28,5 +28,5 @@ $
 function mkitnull(bogo_1 type string,
                 bogo_2 type list, bogo_3 type list, bogo_4 type list, bogo_5 type list,
                 bogo_6 type string) : result type none {
-    hefesto.sys.exit(0);
+    result 0;
 }
