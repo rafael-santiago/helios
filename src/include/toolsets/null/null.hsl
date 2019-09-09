@@ -18,3 +18,15 @@ $
 function null_forge(res type int) : result type int {
     result $res;
 }
+
+toolset "no-tool-any-set-lkm" forge function "mkitnull" :
+    command "mk": <
+        make it wit chu
+    >
+$
+
+function mkitnull(bogo_1 type string,
+                bogo_2 type list, bogo_3 type list, bogo_4 type list, bogo_5 type list,
+                bogo_6 type string) : result type none {
+    hefesto.sys.exit(0);
+}
