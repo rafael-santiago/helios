@@ -20,10 +20,10 @@ toolset "clang-c-lib" forge function "clang_c_lib_forge" : forge helpers "clang_
         clang -g -c $SOURCE $INCLUDES $CFLAGS -o $OUTFILE
     >
     command "compile_shared_r": SOURCE, OUTFILE, INCLUDES, CFLAGS <
-        clang -c -fPIC $CFLAGS $SOURCE -o $OUTFILE
+        clang -c -fPIC $INCLUDES $CFLAGS $SOURCE -o $OUTFILE
     >
     command "compile_shared_d": SOURCE, OUTFILE, INCLUDES, CFLAGS <
-        clang -g -c -fPIC $CFLAGS $SOURCE -o $OUTFILE
+        clang -g -c -fPIC $INCLUDES $CFLAGS $SOURCE -o $OUTFILE
     >
     command "ar": LIBNAME, OBJECTS <
         ar -r $LIBNAME $OBJECTS
@@ -41,10 +41,10 @@ toolset "clang-cc-lib" forge function "clang_c_lib_forge" : forge helpers "clang
         clang++ -g -c $SOURCE $INCLUDES $CFLAGS -o $OUTFILE
     >
     command "compile_shared_r": SOURCE, OUTFILE, INCLUDES, CFLAGS <
-        clang++ -c -fPIC $CFLAGS $SOURCE -o $OUTFILE
+        clang++ -c -fPIC $INCLUDES $CFLAGS $SOURCE -o $OUTFILE
     >
     command "compile_shared_d": SOURCE, OUTFILE, INCLUDES, CFLAGS <
-        clang++ -g -c -fPIC $CFLAGS $SOURCE -o $OUTFILE
+        clang++ -g -c -fPIC $INCLUDES $CFLAGS $SOURCE -o $OUTFILE
     >
     command "ar": LIBNAME, OBJECTS <
         ar -r $LIBNAME $OBJECTS
