@@ -1,0 +1,19 @@
+#
+#                              Copyright (C) 2020 by Rafael Santiago
+#
+# This is free software. You can redistribute it and/or modify under
+# the terms of the GNU General Public License version 2.
+#
+# "tulip-v7.hsl"
+#       by Rafael Santiago
+#
+include ~/toolsets/tulip/forge/tulip_v7_forge.hsl
+
+toolset "tulip-v7" forge function "tulip_v7_forge" : forge helpers "tulip_v7_need_to_process_it" :
+    command "compile": SOURCE <
+        tulip --tlp=$SOURCE
+    >
+    command "mktab": SOURCE, OUTPUT, PROCESSOR_OPTIONS <
+        tulip --tlp=$SOURCE --out=$OUTPUT $PROCESSOR_OPTIONS
+    >
+$

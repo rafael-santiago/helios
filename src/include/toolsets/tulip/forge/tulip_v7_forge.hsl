@@ -1,0 +1,274 @@
+#
+#                              Copyright (C) 2020 by Rafael Santiago
+#
+# This is free software. You can redistribute it and/or modify under
+# the terms of the GNU General Public License version 2.
+#
+# "tulip_v7_forge.hsl"
+#       by Rafael Santiago
+#
+# Relevant toolset's internal options:
+#
+#       --just-compile = just compile.
+#
+#       --out-type=<type> where <type> = txt | ps | pdf | svg | html, the default out-type is "txt"
+#
+#       --tab-output-dir=<path> = the directory where the processor will save the generated tabs.
+#
+
+function tulip_v7_forge(sources type list) : result type int {
+    var exit_code type int;
+
+    $exit_code = 0;
+
+    if ($sources.count() == 0) {
+        $sources.ls(".*\\.tlp$");
+    }
+
+    if ($sources.count() == 0) {
+        hefesto.sys.echo("TULIP-V7 TOOLSET ERROR: no tulip sources to process here!\n");
+        result 1;
+    }
+
+    var not_processed type list;
+
+    tulip_v7_lscpy($not_processed, $sources);
+
+    var s type int;
+
+    $s = 0;
+
+    var cmdline type string;
+
+    hefesto.sys.echo("*** compiling the tulip codes... please wait...\n");
+
+    while ($s < $sources.count() && $exit_code == 0) {
+        var tlp type string;
+
+        $tlp = $sources.item($s);
+
+        hefesto.sys.echo("\t*** compiling " + $tlp + "...\n");
+
+        if (tulip_v7_need_to_process_it($tlp, "")) {
+            $cmdline = hefesto.toolset.compile($tlp);
+
+            $exit_code = hefesto.sys.run($cmdline);
+
+            if ($exit_code == 0) {
+                hefesto.sys.echo("\t    ok!\n");
+                $not_processed.del_item($tlp);
+            }
+        } else {
+                hefesto.sys.echo("\t    no changes.\n");
+        }
+
+        $s = $s + 1;
+    }
+
+    if ($exit_code == 0) {
+        hefesto.sys.echo("*** all done.\n");
+    } else {
+        hefesto.sys.echo("*** has error(s).\n");
+    }
+
+    var option type list;
+
+    $option = hefesto.sys.get_option("just-compile");
+
+    if ($exit_code != 0 || $option.count() > 0) {
+        hefesto.toolset.base_refresh($not_processed);
+        result $exit_code;
+    }
+
+    var out_ext type string;
+
+    $out_ext = get_tulip_v7_processor_type();
+
+    if ($out_ext == "") {
+        hefesto.sys.echo("TULIP-V3 TOOLSET ERROR: invalid processor output type!\n");
+        result 1;
+    }
+
+    var basedir type string;
+
+    $option = hefesto.sys.get_option("tab-output-dir");
+
+    if ($option.count() > 0) {
+        $basedir = $option.item(0);
+    } else {
+        $basedir = hefesto.sys.pwd();
+    }
+
+    var processor_options type string;
+
+    $processor_options = get_processor_options();
+
+    tulip_v7_mkbasedir($basedir);
+
+    hefesto.sys.echo("\n*** generating the tablatures (processor=" + $out_ext + ")... please wait...\n");
+
+    $s = 0;
+    while ($s < $sources.count() && $exit_code == 0) {
+        var out type string;
+
+        $tlp = $sources.item($s);
+
+        $out = get_tablature_output_filepath($basedir, $tlp, $out_ext);
+
+        hefesto.sys.echo("\t*** generating the tablature for " + $tlp + "...\n");
+
+        if (tulip_v7_need_to_process_it($tlp, $out)) {
+            $cmdline = hefesto.toolset.mktab($tlp, $out, $processor_options);
+
+            $exit_code = hefesto.sys.run($cmdline);
+
+            if ($exit_code == 0) {
+                hefesto.sys.echo("\t    generated!\n");
+            }
+        } else {
+            hefesto.sys.echo("\t    no changes.\n");
+        }
+
+        $s = $s + 1;
+    }
+
+    if ($exit_code == 0) {
+        hefesto.sys.echo("*** all done.\n");
+    } else {
+        hefesto.sys.echo("*** has error(s).\n");
+    }
+
+    hefesto.toolset.base_refresh($not_processed);
+
+    result $exit_code;
+}
+
+local function get_tulip_v7_processor_type() : result type string {
+    var ext type string;
+    $ext = "txt";
+
+    var outtype type list;
+    $outtype = hefesto.sys.get_option("out-type");
+
+    if ($outtype.count() > 0) {
+        $ext = $outtype.item(0);
+    }
+
+    validate_tulip_v7_outtype($ext);
+
+    result $ext;
+}
+
+local function validate_tulip_v7_outtype(ext type string) : result type none {
+    var allowed_exts type list;
+
+    $allowed_exts.add_item("txt");
+    $allowed_exts.add_item("pdf");
+    $allowed_exts.add_item("ps");
+    $allowed_exts.add_item("eps");
+    $allowed_exts.add_item("md");
+    $allowed_exts.add_item("html");
+    $allowed_exts.add_item("svg");
+
+    if ($allowed_exts.index_of($ext) == -1) {
+        $ext = "";
+        hefesto.sys.byref($ext);
+    }
+}
+
+local function get_tablature_output_filepath(basedir type string, tlp type string, ext type string) : result type string {
+    var filepath type string;
+    var filename type string;
+    var f type int;
+
+    $f = $tlp.len() - 1;
+
+    while ($f >= 0 && $tlp.at($f) != "/") {
+        $filename = $tlp.at($f) + $filename;
+        $f = $f - 1;
+        if (hefesto.sys.os_name() == "windows" && $tlp.at($f) == "\\") {
+            break;
+        }
+    }
+
+    $filepath = hefesto.sys.make_path($basedir, $filename);
+    var pattern type string;
+    $pattern = "." + $ext;
+    $filepath.replace("\\.tlp$", $pattern);
+
+    result $filepath;
+}
+
+local function tulip_v7_lscpy(dst type list, src type list) : result type none {
+    var s type int;
+    $s = 0;
+    while ($s < $src.count()) {
+        $dst.add_item($src.item($s));
+        $s = $s + 1;
+    }
+    hefesto.sys.byref($dst);
+}
+
+local function tulip_v7_need_to_process_it(tlp type string, out type string) : result type int {
+    var need type int;
+    $need = (hefesto.toolset.file_has_change($tlp));
+    if ($need == 0 && $out.len() > 0) {
+        var tab type file;
+        $tab = hefesto.sys.fopen($out, "r");
+        $need = ($tab == 0);
+        if ($need == 0) {
+            hefesto.sys.fclose($tab);
+        }
+    }
+    result $need;
+}
+
+local function tulip_v7_mkbasedir(basedir type string) : result type none {
+    var oldcwd type string;
+    $oldcwd = hefesto.sys.pwd();
+    if (hefesto.sys.cd($basedir) == 0) {
+        hefesto.sys.mkdir($basedir);
+    } else {
+        hefesto.sys.cd($oldcwd);
+    }
+}
+
+local function get_data_option(option type string) : result type string {
+    var data type string;
+    $data = hefesto.sys.get_option($option);
+    result ("--" + $option + "=" + $data);
+}
+
+local function get_bool_option(option type string) : result type string {
+    result ("--" + $option);
+}
+
+local function get_processor_options() : result type string {
+    var processor_options type list;
+    var processor_readers type list;
+
+    $processor_options.add_item("paper"); $processor_readers.add_item(hefesto.sys.get_func_addr("get_data_option"));
+    $processor_options.add_item("paper-width"); $processor_readers.add_item(hefesto.sys.get_func_addr("get_data_option"));
+    $processor_options.add_item("paper-height"); $processor_readers.add_item(hefesto.sys.get_func_addr("get_data_option"));
+    $processor_options.add_item("svg"); $processor_readers.add_item(hefesto.sys.get_func_addr("get_bool_option"));
+    $processor_options.add_item("svg-embed-font"); $processor_readers.add_item(hefesto.sys.get_func_addr("get_data_option"));
+    $processor_options.add_item("svg-font"); $processor_readers.add_item(hefesto.sys.get_func_addr("get_data_option"));
+    $processor_options.add_item("svg-encoding"); $processor_readers.add_item(hefesto.sys.get_func_addr("get_data_option"));
+
+    var p_options type string;
+    var p type int;
+
+    $p = 0;
+    while ($p < $processor_options.count()) {
+        var option_data type list;
+        var option_label type string;
+        $option_label = $processor_options.item($p);
+        $option_data = hefesto.sys.get_option($option_label);
+        if ($option_data.count() > 0) {
+            $p_options = $p_options + hefesto.sys.call_func_addr($processor_readers.item($p), $option_label) + " ";
+        }
+        $p = $p + 1;
+    }
+
+    result $p_options;
+}
