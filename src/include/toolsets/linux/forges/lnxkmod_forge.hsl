@@ -16,9 +16,9 @@ function lnxkmod_forge(main_src_file type string,
     var src_files type list;
 
     $src_files.ls(".*\\.c$");
-    if ($src_files.count() == 0) {
-	result 1;
-    }
+#    if ($src_files.count() == 0) {
+#	result 1;
+#    }
 
     if ($includes.count() > 0) {
         var cwd type string;
