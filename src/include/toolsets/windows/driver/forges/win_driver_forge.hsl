@@ -1,0 +1,596 @@
+#
+#                              Copyright (C) 2020 by Rafael Santiago
+#
+# This is free software. You can redistribute it and/or modify under
+# the terms of the GNU General Public License version 2.
+#
+#
+# "windows-driver.hsl"
+#       by Rafael Santiago
+#
+# Description: Windows driver toolset forge.
+#
+# Toolset options:
+#
+#	--compile-model=<release|debug> (Debug it the default)
+#
+#	--cpu-arch=<arch>	(On 64-bit machines the default is 'x64', on 32-bit machines the default is 'Win32'
+#                        The toolset set automatically converts 'x86' into 'Win32').
+#
+#	--inf=<file path> (When not specified must exist an inf having the same name of sys, e.g.:
+#					   target.sys, target.inf will be inferred at the same level where build runs).
+#
+#	* If exists a vcxproject with the same name of sys (target.sys, target.vcxproj) this one will be used.
+#     When not a temporary will be generated based on src, inc, cflags, libraries, ldflags and target options
+#     passed through project definition.
+#
+
+include ~/fsutil.hsl
+
+function forge_win_driver(src type list,
+						  inc type list,
+						  cflags type list,
+						  lib type list,
+						  ldflags type list,
+						  target type string) : result type int {
+	var exit_code type int;
+	var vcxproj_created type int;
+	var vcxproj_filename type string;
+	
+	if ($src.count() == 0) {
+		$src.ls(".*\\.c$");
+	}
+	
+	if ($src.count() == 0) {
+		hefesto.sys.echo("ERROR: Driver's sources not found.\n");
+		result 1;
+	}
+	
+	$vcxproj_filename = get_vcxproj_from_sys($target);
+	$vcxproj_created = mk_vcxproj($vcxproj_filename, $src, $inc, $cflags, $lib, $ldflags, $target);
+	
+	$exit_code = configure_dev_env();
+
+	if ($exit_code != 0)  {
+		hefesto.sys.echo("ERROR: Unable to configure development environment.\n");
+	}
+	
+	$exit_code = msbuild($vcxproj_filename);
+	
+	if ($vcxproj_created) {
+		hefesto.sys.rm($vcxproj_filename);
+	}
+	
+	result $exit_code;
+}
+
+local function msbuild(vcxproj_path type string) : result type int {
+	var vsdevcmd type string;
+	$vsdevcmd = get_vsdev_cmd();
+	
+	var option type list;
+	$option = hefesto.sys.get_option("clean");
+	
+	if ($option.count() > 0) {
+		result hefesto.sys.run(hefesto.toolset.clean($vsdevcmd, $vcxproj_path));
+	}
+	
+	var configuration type string;
+	$configuration = get_configuration();
+	
+	if ($configuration.len() == 0) {
+		result 1;
+	}
+	
+	var platform type string;
+	$platform = get_platform();
+	
+	hefesto.sys.echo("INFO: Now building " + $configuration + "/" + $platform + " driver.\n");
+	
+	result hefesto.sys.run(hefesto.toolset.build($vsdevcmd, $vcxproj_path, $configuration, $platform));
+}
+
+local function get_configuration() : result type string {
+	var option type list;
+	$option = hefesto.sys.get_option("compile-model");
+	if ($option.count() == 0) {
+		result "debug";
+	}
+	
+	var config type string;
+	$config = $option.item(0);
+	
+	if ($config.match("^([dD][eE][bB][uU][gG]|[rR][eE][lL][eE][aA][sS][eE])$") == 0) {
+		hefesto.sys.echo("ERROR: --compile-model must be 'debug' or 'release'.\n");
+		$config = "";
+	}
+	
+	result $config;
+}
+
+local function get_platform() : result type string {
+	var option type list;
+	var arch type string;
+	
+	$option = hefesto.sys.get_option("cpu-arch");
+	if ($option.count() == 0) {
+		var programfilesx86 type string;
+		$programfilesx86 = hefesto.sys.env("ProgramFiles(x86)");
+		if ($programfilesx86.len() > 0) {
+			result "x64";
+		}
+		result "Win32";
+	}
+	
+	$arch = $option.item(0);
+	
+	if($arch == "x86" || $arch == "X86") {
+		result "Win32";
+	}
+	
+	result $arch;
+}
+
+local function get_vsdev_cmd() : result type string {
+	var cmd type string;
+	$cmd = hefesto.sys.env("HEFESTO_WINDOWS_DRIVER_TOOLSET_VSDEVCMD");
+	result $cmd;
+}
+
+local function configure_dev_env() : result type int {
+	var temp type string;
+	$temp = hefesto.sys.env("HEFESTO_WINDOWS_DRIVER_TOOLSET_VSDEVCMD");
+	if ($temp.len() > 0) {
+		result 0;
+	}
+	var vsdevcmd_locations type list;
+	$vsdevcmd_locations.add_item("\"{{.ProgramFiles}}\\Microsoft Visual Studio\\{{.YEAR}}\\Enterprise\\Common7\\Tools\\VsDevCmd.bat\"");
+	$vsdevcmd_locations.add_item("\"{{.ProgramFiles}}\\Microsoft Visual Studio\{{.YEAR}}\\Professional\\Common7\\Tools\\VsDevCmd.bat\"");
+	$vsdevcmd_locations.add_item("\"{{.ProgramFiles}}\\Microsoft Visual Studio\\{{.YEAR}}\\Community\\Common7\\Tools\\VsDevCmd.bat\"");
+	
+	var year type int;
+	
+	$year = 2019;
+	
+	var exit_code type int;
+	$exit_code = 1;
+	var v type int;
+	$v = 0;
+	while ($year >= 2010 && $exit_code != 0) {
+		var program_files type string;	
+		$program_files = hefesto.sys.env("ProgramFiles(x86)");
+		var vsdevcmd type string;
+		$vsdevcmd = $vsdevcmd_locations.item($v);
+		$vsdevcmd.replace("\\{\\{.ProgramFiles\\}\\}", $program_files);
+		var s_year type string;
+		$s_year = $year;
+		$vsdevcmd.replace("\\{\\{.YEAR\\}\\}", $s_year);
+		$exit_code = hefesto.sys.run($vsdevcmd + " >nul 2>&1");
+		if ($exit_code != 0) {
+			$program_files = hefesto.sys.env("ProgramFiles");
+			$vsdevcmd = $vsdevcmd_locations.item($v);
+			$vsdevcmd.replace("\\{\\{.ProgramFiles\\}\\}", $program_files);
+			$vsdevcmd.replace("\\{\\{.YEAR\\}\\}", $s_year);
+			$exit_code = hefesto.sys.run($vsdevcmd + ">nul 2>&1");
+		}
+		$v = ($v + 1) % $vsdevcmd_locations.count();
+		if ($v == 0) {
+			$year = $year - 1;
+		}
+		if ($exit_code == 0) {
+			hefesto.sys.setenv("HEFESTO_WINDOWS_DRIVER_TOOLSET_VSDEVCMD", $vsdevcmd);
+		}
+	}
+	result $exit_code;
+}
+
+local function mk_vcxproj(vcxproj_filename type string,
+						  src type list,
+						  inc type list,
+						  cflags type list,
+						  lib type list,
+						  ldflags type list,
+						  target type string) : result type int {
+	var created type int;
+	
+	if (isfile($vcxproj_filename) == 0) {
+		var vcxproj_data type string;
+		$vcxproj_data = generate_vcxproj_metadata($vcxproj_filename, $src, $inc, $cflags, $lib, $ldflags, $target);
+		var fp type file;
+		$fp = hefesto.sys.fopen($vcxproj_filename, "wb");
+
+		if ($fp == 0) {
+			hefesto.sys.echo("ERROR: Unable to create vcxproj.\n");
+			result 0;
+		}
+		hefesto.sys.fwrite($vcxproj_data, $vcxproj_data.len(), $fp);
+		hefesto.sys.fclose($fp);
+		$created = 1;
+	} else {
+		$created = 0;
+	}
+	
+	result $created;
+}
+
+local function get_vcxproj_from_sys(sys type string) : result type string {
+	var vcx type string;
+	$vcx = filenamefrompath($sys);
+	$vcx.replace("\\.sys$", ".vcxproj");
+	result $vcx;
+}
+
+local function generate_vcxproj_metadata(vcxproj_filename type string,
+										 src type list,
+										 inc type list,
+										 cflags type list,
+										 lib type list,
+										 ldflags type list,
+										 target type string) : result type string {
+	var vcxproj_template type string;
+	$vcxproj_template  =    "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+							"<Project DefaultTargets=\"Build\" ToolsVersion=\"12.0\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\">\n" +
+							"  <ItemGroup Label=\"ProjectConfigurations\">\n" +
+							"    <ProjectConfiguration Include=\"Debug|Win32\">\n" +
+							"      <Configuration>Debug</Configuration>\n" +
+							"      <Platform>Win32</Platform>\n" +
+							"    </ProjectConfiguration>\n" +
+							"    <ProjectConfiguration Include=\"Release|Win32\">\n" +
+							"      <Configuration>Release</Configuration>\n" +
+							"      <Platform>Win32</Platform>\n" +
+							"    </ProjectConfiguration>\n" +
+							"    <ProjectConfiguration Include=\"Debug|x64\">\n" +
+							"      <Configuration>Debug</Configuration>\n" +
+							"      <Platform>x64</Platform>\n" +
+							"    </ProjectConfiguration>\n" +
+							"    <ProjectConfiguration Include=\"Release|x64\">\n" +
+							"      <Configuration>Release</Configuration>\n" +
+							"      <Platform>x64</Platform>\n" +
+							"    </ProjectConfiguration>\n" +
+							"    <ProjectConfiguration Include=\"Debug|ARM\">\n" +
+							"      <Configuration>Debug</Configuration>\n" +
+							"      <Platform>ARM</Platform>\n" +
+							"    </ProjectConfiguration>\n" +
+							"    <ProjectConfiguration Include=\"Release|ARM\">\n" +
+							"      <Configuration>Release</Configuration>\n" +
+							"      <Platform>ARM</Platform>\n" +
+							"    </ProjectConfiguration>\n" +
+							"    <ProjectConfiguration Include=\"Debug|ARM64\">\n" +
+							"      <Configuration>Debug</Configuration>\n" +
+							"      <Platform>ARM64</Platform>\n" +
+							"    </ProjectConfiguration>\n" +
+							"    <ProjectConfiguration Include=\"Release|ARM64\">\n" +
+							"      <Configuration>Release</Configuration>\n" +
+							"      <Platform>ARM64</Platform>\n" +
+							"    </ProjectConfiguration>\n" +
+							"  </ItemGroup>\n" +
+							"  <ItemGroup>\n" +
+							"    <Inf Include=\"{{.DRIVER_INF}}\" />\n" +
+							"  </ItemGroup>\n" +
+							"  <PropertyGroup Label=\"Globals\">\n" +
+							"    <ProjectGuid>{91337E0F-4D32-4E59-96EA-02346AB239CA}</ProjectGuid>\n" +
+							"    <TemplateGuid>{497e31cb-056b-4f31-abb8-447fd55ee5a5}</TemplateGuid>\n" +
+							"    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>\n" +
+							"    <MinimumVisualStudioVersion>12.0</MinimumVisualStudioVersion>\n" +
+							"    <Configuration>Debug</Configuration>\n" +
+							"    <Platform Condition=\"'$(Platform)' == ''\">Win32</Platform>\n" +
+							"    <RootNamespace>{{.ROOTNAMESPACE}}</RootNamespace>\n" +
+							"  </PropertyGroup>\n" +
+							"  <Import Project=\"$(VCTargetsPath)\Microsoft.Cpp.Default.props\" />\n" +
+							"  <PropertyGroup Condition=\"'$(Configuration)|$(Platform)'=='Debug|Win32'\" Label=\"Configuration\">\n" +
+							"    <TargetVersion>{{.TARGETVERSION}}</TargetVersion>\n" +
+							"    <UseDebugLibraries>true</UseDebugLibraries>\n" +
+							"    <PlatformToolset>WindowsKernelModeDriver10.0</PlatformToolset>\n" +
+							"    <ConfigurationType>Driver</ConfigurationType>\n" +
+							"    <DriverType>WDM</DriverType>\n" +
+							"    <DriverTargetPlatform>Universal</DriverTargetPlatform>\n" +
+							"  </PropertyGroup>\n" +
+							"  <PropertyGroup Condition=\"'$(Configuration)|$(Platform)'=='Release|Win32'\" Label=\"Configuration\">\n" +
+							"    <TargetVersion>{{.TARGETVERSION}}</TargetVersion>\n" +
+							"    <UseDebugLibraries>false</UseDebugLibraries>\n" +
+							"    <PlatformToolset>WindowsKernelModeDriver10.0</PlatformToolset>\n" +
+							"    <ConfigurationType>Driver</ConfigurationType>\n" +
+							"    <DriverType>WDM</DriverType>\n" +
+							"    <DriverTargetPlatform>Universal</DriverTargetPlatform>\n" +
+							"  </PropertyGroup>\n" +
+							"  <PropertyGroup Condition=\"'$(Configuration)|$(Platform)'=='Debug|x64'\" Label=\"Configuration\">\n" +
+							"    <TargetVersion>{{.TARGETVERSION}}</TargetVersion>\n" +
+							"    <UseDebugLibraries>true</UseDebugLibraries>\n" +
+							"    <PlatformToolset>WindowsKernelModeDriver10.0</PlatformToolset>\n" +
+							"    <ConfigurationType>Driver</ConfigurationType>\n" +
+							"    <DriverType>WDM</DriverType>\n" +
+							"    <DriverTargetPlatform>Universal</DriverTargetPlatform>\n" +
+							"  </PropertyGroup>\n" +
+							"  <PropertyGroup Condition=\"'$(Configuration)|$(Platform)'=='Release|x64'\" Label=\"Configuration\">\n" +
+							"    <TargetVersion>{{.TARGETVERSION}}</TargetVersion>\n" +
+							"    <UseDebugLibraries>false</UseDebugLibraries>\n" +
+							"    <PlatformToolset>WindowsKernelModeDriver10.0</PlatformToolset>\n" +
+							"    <ConfigurationType>Driver</ConfigurationType>\n" +
+							"    <DriverType>WDM</DriverType>\n" +
+							"    <DriverTargetPlatform>Universal</DriverTargetPlatform>\n" +
+							"  </PropertyGroup>\n" +
+							"  <PropertyGroup Condition=\"'$(Configuration)|$(Platform)'=='Debug|ARM'\" Label=\"Configuration\">\n" +
+							"    <TargetVersion>{{.TARGETVERSION}}</TargetVersion>\n" +
+							"    <UseDebugLibraries>true</UseDebugLibraries>\n" +
+							"    <PlatformToolset>WindowsKernelModeDriver10.0</PlatformToolset>\n" +
+							"    <ConfigurationType>Driver</ConfigurationType>\n" +
+							"    <DriverType>KMDF</DriverType>\n" +
+							"    <DriverTargetPlatform>Universal</DriverTargetPlatform>\n" +
+							"  </PropertyGroup>\n" +
+							"  <PropertyGroup Condition=\"'$(Configuration)|$(Platform)'=='Release|ARM'\" Label=\"Configuration\">\n" +
+							"    <TargetVersion>{{.TARGETVERSION}}</TargetVersion>\n" +
+							"    <UseDebugLibraries>false</UseDebugLibraries>\n" +
+							"    <PlatformToolset>WindowsKernelModeDriver10.0</PlatformToolset>\n" +
+							"    <ConfigurationType>Driver</ConfigurationType>\n" +
+							"    <DriverType>KMDF</DriverType>\n" +
+							"    <DriverTargetPlatform>Universal</DriverTargetPlatform>\n" +
+							"  </PropertyGroup>\n" +
+							"  <PropertyGroup Condition=\"'$(Configuration)|$(Platform)'=='Debug|ARM64'\" Label=\"Configuration\">\n" +
+							"    <TargetVersion>{{.TARGETVERSION}}</TargetVersion>\n" +
+							"    <UseDebugLibraries>true</UseDebugLibraries>\n" +
+							"    <PlatformToolset>WindowsKernelModeDriver10.0</PlatformToolset>\n" +
+							"    <ConfigurationType>Driver</ConfigurationType>\n" +
+							"    <DriverType>KMDF</DriverType>\n" +
+							"    <DriverTargetPlatform>Universal</DriverTargetPlatform>\n" +
+							"  </PropertyGroup>\n" +
+							"  <PropertyGroup Condition=\"'$(Configuration)|$(Platform)'=='Release|ARM64'\" Label=\"Configuration\">\n" +
+							"    <TargetVersion>{{.TARGETVERSION}}</TargetVersion>\n" +
+							"    <UseDebugLibraries>false</UseDebugLibraries>\n" +
+							"    <PlatformToolset>WindowsKernelModeDriver10.0</PlatformToolset>\n" +
+							"    <ConfigurationType>Driver</ConfigurationType>\n" +
+							"    <DriverType>KMDF</DriverType>\n" +
+							"    <DriverTargetPlatform>Universal</DriverTargetPlatform>\n" +
+							"  </PropertyGroup>\n" +
+							"  <Import Project=\"$(VCTargetsPath)\Microsoft.Cpp.props\" />\n" +
+							"  <ImportGroup Label=\"ExtensionSettings\">\n" +
+							"  </ImportGroup>\n" +
+							"  <ImportGroup Label=\"PropertySheets\">\n" +
+							"    <Import Project=\"$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props\" Condition=\"exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')\" Label=\"LocalAppDataPlatform\" />\n" +
+							"  </ImportGroup>\n" +
+							"  <PropertyGroup Label=\"UserMacros\" />\n" +
+							"  <PropertyGroup />\n" +
+							"  <PropertyGroup Condition=\"'$(Configuration)|$(Platform)'=='Debug|Win32'\">\n" +
+							"    <DebuggerFlavor>DbgengKernelDebugger</DebuggerFlavor>\n" +
+							"  </PropertyGroup>\n" +
+							"  <PropertyGroup Condition=\"'$(Configuration)|$(Platform)'=='Release|Win32'\">\n" +
+							"    <DebuggerFlavor>DbgengKernelDebugger</DebuggerFlavor>\n" +
+							"  </PropertyGroup>\n" +
+							"  <PropertyGroup Condition=\"'$(Configuration)|$(Platform)'=='Debug|x64'\">\n" +
+							"    <DebuggerFlavor>DbgengKernelDebugger</DebuggerFlavor>\n" +
+							"  </PropertyGroup>\n" +
+							"  <PropertyGroup Condition=\"'$(Configuration)|$(Platform)'=='Release|x64'\">\n" +
+							"    <DebuggerFlavor>DbgengKernelDebugger</DebuggerFlavor>\n" +
+							"  </PropertyGroup>\n" +
+							"  <PropertyGroup Condition=\"'$(Configuration)|$(Platform)'=='Debug|ARM'\">\n" +
+							"    <DebuggerFlavor>DbgengKernelDebugger</DebuggerFlavor>\n" +
+							"  </PropertyGroup>\n" +
+							"  <PropertyGroup Condition=\"'$(Configuration)|$(Platform)'=='Release|ARM'\">\n" +
+							"    <DebuggerFlavor>DbgengKernelDebugger</DebuggerFlavor>\n" +
+							"  </PropertyGroup>\n" +
+							"  <PropertyGroup Condition=\"'$(Configuration)|$(Platform)'=='Debug|ARM64'\">\n" +
+							"    <DebuggerFlavor>DbgengKernelDebugger</DebuggerFlavor>\n" +
+							"  </PropertyGroup>\n" +
+							"  <PropertyGroup Condition=\"'$(Configuration)|$(Platform)'=='Release|ARM64'\">\n" +
+							"    <DebuggerFlavor>DbgengKernelDebugger</DebuggerFlavor>\n" +
+							"  </PropertyGroup>\n" +
+							"  <ItemDefinitionGroup Condition=\"'$(Configuration)|$(Platform)'=='Debug|Win32'\">\n" +
+							"    <ClCompile>\n" +
+							"      <WppEnabled>false</WppEnabled>\n" +
+							"      <WppRecorderEnabled>true</WppRecorderEnabled>\n" +
+							"      <WppScanConfigurationData Condition=\"'%(ClCompile.ScanConfigurationData)' == ''\">trace.h</WppScanConfigurationData>\n" +
+							"      <WppKernelMode>true</WppKernelMode>\n" +
+							"      <AdditionalIncludeDirectories>{{.ADDITIONALINCLUDEDIRECTORIES}};%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>\n" +
+							"      <PreprocessorDefinitions>{{.PREPROCESSORDEFINITIONS}};_X86_=1;i386=1;STD_CALL;%(PreprocessorDefinitions)</PreprocessorDefinitions>\n" +
+							"    </ClCompile>\n" +
+							"    <Link>\n" +
+							"      <AdditionalDependencies>{{.ADDITIONALDEPENDENCIES}};%(AdditionalDependencies);$(KernelBufferOverflowLib);$(DDK_LIB_PATH)ntoskrnl.lib;$(DDK_LIB_PATH)hal.lib;$(DDK_LIB_PATH)wmilib.lib;$(KMDF_LIB_PATH)$(KMDF_VER_PATH)\WdfLdr.lib;$(KMDF_LIB_PATH)$(KMDF_VER_PATH)\WdfDriverEntry.lib</AdditionalDependencies>\n" +
+							"      <EntryPointSymbol>FxDriverEntry@8</EntryPointSymbol>\n" +
+							"    </Link>\n" +
+							"  </ItemDefinitionGroup>\n" +
+							"  <ItemDefinitionGroup Condition=\"'$(Configuration)|$(Platform)'=='Release|Win32'\">\n" +
+							"    <ClCompile>\n" +
+							"      <WppEnabled>false</WppEnabled>\n" +
+							"      <WppRecorderEnabled>true</WppRecorderEnabled>\n" +
+							"      <WppScanConfigurationData Condition=\"'%(ClCompile.ScanConfigurationData)' == ''\">trace.h</WppScanConfigurationData>\n" +
+							"      <WppKernelMode>true</WppKernelMode>\n" +
+							"      <PreprocessorDefinitions>{{.PREPROCESSORDEFINITIONS}};_X86_=1;i386=1;STD_CALL;%(PreprocessorDefinitions)</PreprocessorDefinitions>\n" +
+							"      <AdditionalIncludeDirectories>{{.ADDITIONALINCLUDEDIRECTORIES}};$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>\n" +
+							"    </ClCompile>\n" +
+							"    <Link>\n" +
+							"      <AdditionalDependencies>{{.ADDITIONALDEPENDENCIES}};%(AdditionalDependencies);$(KernelBufferOverflowLib);$(DDK_LIB_PATH)ntoskrnl.lib;$(DDK_LIB_PATH)hal.lib;$(DDK_LIB_PATH)wmilib.lib;$(KMDF_LIB_PATH)$(KMDF_VER_PATH)\WdfLdr.lib;$(KMDF_LIB_PATH)$(KMDF_VER_PATH)\WdfDriverEntry.lib</AdditionalDependencies>\n" +
+							"    </Link>\n" +
+							"  </ItemDefinitionGroup>\n" +
+							"  <ItemDefinitionGroup Condition=\"'$(Configuration)|$(Platform)'=='Debug|x64'\">\n" +
+							"    <ClCompile>\n" +
+							"      <WppEnabled>false</WppEnabled>\n" +
+							"      <WppRecorderEnabled>true</WppRecorderEnabled>\n" +
+							"      <WppScanConfigurationData Condition=\"'%(ClCompile.ScanConfigurationData)' == ''\">trace.h</WppScanConfigurationData>\n" +
+							"      <WppKernelMode>true</WppKernelMode>\n" +
+							"      <PreprocessorDefinitions>{{.PREPROCESSORDEFINITIONS}};_WIN64;_AMD64_;AMD64;%(PreprocessorDefinitions)</PreprocessorDefinitions>\n" +
+							"      <AdditionalIncludeDirectories>{{.ADDITIONALINCLUDEDIRECTORIES}};$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>\n" +
+							"    </ClCompile>\n" +
+							"    <Link>\n" +
+							"      <AdditionalDependencies>{{.ADDITIONALDEPENDENCIES}};%(AdditionalDependencies);$(KernelBufferOverflowLib);$(DDK_LIB_PATH)ntoskrnl.lib;$(DDK_LIB_PATH)hal.lib;$(DDK_LIB_PATH)wmilib.lib</AdditionalDependencies>\n" +
+							"    </Link>\n" +
+							"  </ItemDefinitionGroup>\n" +
+							"  <ItemDefinitionGroup Condition=\"'$(Configuration)|$(Platform)'=='Release|x64'\">\n" +
+							"    <ClCompile>\n" +
+							"      <WppEnabled>false</WppEnabled>\n" +
+							"      <WppRecorderEnabled>true</WppRecorderEnabled>\n" +
+							"      <WppScanConfigurationData Condition=\"'%(ClCompile.ScanConfigurationData)' == ''\">trace.h</WppScanConfigurationData>\n" +
+							"      <WppKernelMode>true</WppKernelMode>\n" +
+							"      <AdditionalIncludeDirectories>{{.ADDITIONALINCLUDEDIRECTORIES}};$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>\n" +
+							"      <PreprocessorDefinitions>{{.PREPROCESSORDEFINITIONS}};_WIN64;_AMD64_;AMD64;%(PreprocessorDefinitions)</PreprocessorDefinitions>\n" +
+							"    </ClCompile>\n" +
+							"    <Link>\n" +
+							"      <AdditionalDependencies>{{.ADDITIONALDEPENDENCIES}};%(AdditionalDependencies);$(KernelBufferOverflowLib);$(DDK_LIB_PATH)ntoskrnl.lib;$(DDK_LIB_PATH)hal.lib;$(DDK_LIB_PATH)wmilib.lib</AdditionalDependencies>\n" +
+							"    </Link>\n" +
+							"  </ItemDefinitionGroup>\n" +
+							"  <ItemDefinitionGroup Condition=\"'$(Configuration)|$(Platform)'=='Debug|ARM'\">\n" +
+							"    <ClCompile>\n" +
+							"      <WppEnabled>true</WppEnabled>\n" +
+							"      <WppRecorderEnabled>true</WppRecorderEnabled>\n" +
+							"      <WppScanConfigurationData Condition=\"'%(ClCompile.ScanConfigurationData)' == ''\">trace.h</WppScanConfigurationData>\n" +
+							"      <WppKernelMode>true</WppKernelMode>\n" +
+							"    </ClCompile>\n" +
+							"  </ItemDefinitionGroup>\n" +
+							"  <ItemDefinitionGroup Condition=\"'$(Configuration)|$(Platform)'=='Release|ARM'\">\n" +
+							"    <ClCompile>\n" +
+							"      <WppEnabled>true</WppEnabled>\n" +
+							"      <WppRecorderEnabled>true</WppRecorderEnabled>\n" +
+							"      <WppScanConfigurationData Condition=\"'%(ClCompile.ScanConfigurationData)' == ''\">trace.h</WppScanConfigurationData>\n" +
+							"      <WppKernelMode>true</WppKernelMode>\n" +
+							"    </ClCompile>\n" +
+							"  </ItemDefinitionGroup>\n" +
+							"  <ItemDefinitionGroup Condition=\"'$(Configuration)|$(Platform)'=='Release|ARM64'\">\n" +
+							"    <ClCompile>\n" +
+							"      <WppEnabled>true</WppEnabled>\n" +
+							"      <WppRecorderEnabled>true</WppRecorderEnabled>\n" +
+							"      <WppScanConfigurationData Condition=\"'%(ClCompile.ScanConfigurationData)' == ''\">trace.h</WppScanConfigurationData>\n" +
+							"      <WppKernelMode>true</WppKernelMode>\n" +
+							"    </ClCompile>\n" +
+							"  </ItemDefinitionGroup>\n" +
+							"  <ItemDefinitionGroup Condition=\"'$(Configuration)|$(Platform)'=='Debug|ARM64'\">\n" +
+							"    <ClCompile>\n" +
+							"      <WppEnabled>true</WppEnabled>\n" +
+							"      <WppRecorderEnabled>true</WppRecorderEnabled>\n" +
+							"      <WppScanConfigurationData Condition=\"'%(ClCompile.ScanConfigurationData)' == ''\">trace.h</WppScanConfigurationData>\n" +
+							"      <WppKernelMode>true</WppKernelMode>\n" +
+							"    </ClCompile>\n" +
+							"  </ItemDefinitionGroup>\n" +
+							"  <ItemGroup>\n" +
+							"    <FilesToPackage Include=\"$(TargetPath)\" />\n" +
+							"  </ItemGroup>\n" +
+							"  <ItemGroup>\n" +
+							"    {{.INCLUDES}}\n" +
+							"  </ItemGroup>\n" +
+							"  <ItemGroup>\n" +
+							"    {{.SOURCES}}\n" +
+							"  </ItemGroup>\n" +
+							"  <Import Project=\"$(VCTargetsPath)\Microsoft.Cpp.targets\" />\n" +
+							"  <ImportGroup Label=\"ExtensionTargets\">\n" +
+							"  </ImportGroup>\n" +
+							"</Project>\n";
+		
+	var replacement type string;
+	$replacement = get_infname($target);
+	$vcxproj_template.replace("\\{\\{.DRIVER_INF\\}\\}", $replacement);
+	$replacement = get_rootnamespace();
+	$vcxproj_template.replace("\\{\\{.ROOTNAMESPACE\\}\\}", $replacement);
+	$replacement = get_targetversion();
+	$vcxproj_template.replace("\\{\\{.TARGETVERSION\\}\\}", $replacement);
+	$replacement = get_list_str($inc);
+	$vcxproj_template.replace("\\{\\{.ADDITIONALINCLUDEDIRECTORIES\\}\\}", $replacement);
+	$replacement = get_preprocessor_defs($cflags);
+	$vcxproj_template.replace("\\{\\{.PREPROCESSORDEFINITIONS\\}\\}", $replacement);
+	$replacement = get_list_str($ldflags);
+	$vcxproj_template.replace("\\{\\{.ADDITIONALDEPENDENCIES\\}\\}", $replacement);
+	$replacement = get_includes_list($src);
+	$vcxproj_template.replace("\\{\\{.INCLUDES\\}\\}", $replacement);
+	$replacement = get_sources_list($src);
+	$vcxproj_template.replace("\\{\\{.SOURCES\\}\\}", $replacement);
+
+	result $vcxproj_template;
+}
+
+local function get_infname(target type string) : result type string {
+	var inf type string;
+	var option type list;
+	$option = hefesto.sys.get_option("inf");
+	if ($option.count() == 0) {
+		$inf = $target;
+		$inf.replace("\\.sys$", ".inf");
+	} else {
+		$inf = $option.item(0);
+	}
+	result $inf;
+}
+
+local function get_includes_list(src type list) : result type string {
+	result get_code_list($src, ".*\\.(h|H|hpp|HPP|Hpp)$", "ClInclude");
+}
+
+local function get_sources_list(src type list) : result type string {
+	result get_code_list($src, ".*\\.(c|C|cc|CC|Cc|cpp|CPP|Cpp)$", "ClCompile");
+}
+
+local function get_code_list(src type list, pattern type string, directive_tag type string) : result type string {
+	var inc type list;
+	var s type int;
+	
+	$s = 0;
+	while ($s < $src.count()) {
+		var filepath type string;
+		$filepath = $src.item($s);
+		if ($filepath.match($pattern) == 1) {
+			$inc.add_item($filepath);
+		}
+		$s = $s + 1;
+	}
+	var inc_str type string;
+	$s = 0;
+	while ($s < $inc.count()) {
+		$inc_str = $inc_str + "<" + $directive_tag + " Include=\"" + $inc.item($s) + "\" />";
+		$s = $s + 1;
+	}
+	result $inc_str;
+}
+
+local function get_rootnamespace() : result type string {
+	var cwd type string;
+	$cwd = hefesto.sys.pwd();
+	var c type int;
+	$c = $cwd.len() - 1;
+	while ($c > 0 && $cwd.at($c) != "\\") {
+		$c = $c - 1;
+	}
+	$c = $c + 1;
+	var rootnamespace type string;
+	while ($c < $cwd.len()) {
+		$rootnamespace = $rootnamespace + $cwd.at($c);
+		$c = $c + 1;
+	}
+	result $rootnamespace;
+}
+
+local function get_targetversion() : result type string {
+	var target_version type string;
+	
+	var option type list;
+	$option = hefesto.sys.get_option("target-version");
+	
+	if ($option.count() > 0) {
+		$target_version = $option.item(0);
+	} else {
+		$target_version = "Windows10";
+	}
+	
+	result $target_version;
+}
+
+local function get_list_str(lst type list) : result type string {
+	var str type string;
+	var l type int;
+	$l = 0;
+	while ($l < $lst.count()) {
+		$str = $str + $lst.item($l) + ";";
+		$l = $l + 1;
+	}
+	result $str;
+}
+
+local function get_preprocessor_defs(cflags type list) : result type string {
+	var defs type list;
+	var c type int;
+	$c = 0;
+	while ($c < $cflags.count()) {
+		var flag type string;
+		$flag = $cflags.item($c);
+		if ($flag.match("^-D") == 1) {
+			$flag.replace("^-D", "");
+			$defs.add_item($flag);
+		}
+		$c = $c + 1;
+	}
+	result get_list_str($defs);
+}

@@ -1,0 +1,26 @@
+#
+#                              Copyright (C) 2020 by Rafael Santiago
+#
+# This is free software. You can redistribute it and/or modify under
+# the terms of the GNU General Public License version 2.
+#
+#
+# "windows-driver.hsl"
+#       by Rafael Santiago
+#
+# Description: Windows driver toolset.
+#
+
+include ~/toolsets/windows/driver/forges/win_driver_forge.hsl
+
+toolset "windows-driver" forge function "forge_win_driver" : forge helpers "msbuild" :
+	command "configure_dev_env": <
+	
+	>
+	command "build": VSDEVCMD, VCXPROJ, CONFIGURATION, PLATFORM <
+		$VSDEVCMD \>nul 2\>&1 && Msbuild $VCXPROJ /p:Configuration=$CONFIGURATION /p:Platform=$PLATFORM
+	>
+	command "clean": VSDEVCMD, VCXPROJ <
+		$VSDEVCMD \>nul 2\>&1 && Msbuild $VCXPROJ /t:Clean
+	>
+$

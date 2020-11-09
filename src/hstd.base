@@ -32,3 +32,4 @@ clang-c-toolset                         include/toolsets/
 freebsd-module-toolset                  include/toolsets/
 netbsd-module-toolset                   include/toolsets/
 tlpv7-toolset                           include/toolsets/
+windows-driver-toolset					include/toolsets/
