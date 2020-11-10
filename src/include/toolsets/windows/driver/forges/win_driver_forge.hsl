@@ -379,12 +379,11 @@ local function generate_vcxproj_metadata(vcxproj_filename type string,
 							"      <WppRecorderEnabled>true</WppRecorderEnabled>\n" +
 							"      <WppScanConfigurationData Condition=\"'%(ClCompile.ScanConfigurationData)' == ''\">trace.h</WppScanConfigurationData>\n" +
 							"      <WppKernelMode>true</WppKernelMode>\n" +
-							"      <AdditionalIncludeDirectories>{{.ADDITIONALINCLUDEDIRECTORIES}};%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>\n" +
-							"      <PreprocessorDefinitions>{{.PREPROCESSORDEFINITIONS}};_X86_=1;i386=1;STD_CALL;%(PreprocessorDefinitions)</PreprocessorDefinitions>\n" +
+							"      <AdditionalIncludeDirectories>{{.ADDITIONALINCLUDEDIRECTORIES}}%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>\n" +
+							"      <PreprocessorDefinitions>{{.PREPROCESSORDEFINITIONS}}_X86_=1;i386=1;STD_CALL;%(PreprocessorDefinitions)</PreprocessorDefinitions>\n" +
 							"    </ClCompile>\n" +
 							"    <Link>\n" +
-							"      <AdditionalDependencies>{{.ADDITIONALDEPENDENCIES}};%(AdditionalDependencies);$(KernelBufferOverflowLib);$(DDK_LIB_PATH)ntoskrnl.lib;$(DDK_LIB_PATH)hal.lib;$(DDK_LIB_PATH)wmilib.lib;$(KMDF_LIB_PATH)$(KMDF_VER_PATH)\WdfLdr.lib;$(KMDF_LIB_PATH)$(KMDF_VER_PATH)\WdfDriverEntry.lib</AdditionalDependencies>\n" +
-							"      <EntryPointSymbol>FxDriverEntry@8</EntryPointSymbol>\n" +
+							"      <AdditionalDependencies>{{.ADDITIONALDEPENDENCIES}}%(AdditionalDependencies);$(KernelBufferOverflowLib);$(DDK_LIB_PATH)ntoskrnl.lib;$(DDK_LIB_PATH)hal.lib;$(DDK_LIB_PATH)wmilib.lib;</AdditionalDependencies>\n" +
 							"    </Link>\n" +
 							"  </ItemDefinitionGroup>\n" +
 							"  <ItemDefinitionGroup Condition=\"'$(Configuration)|$(Platform)'=='Release|Win32'\">\n" +
@@ -393,11 +392,11 @@ local function generate_vcxproj_metadata(vcxproj_filename type string,
 							"      <WppRecorderEnabled>true</WppRecorderEnabled>\n" +
 							"      <WppScanConfigurationData Condition=\"'%(ClCompile.ScanConfigurationData)' == ''\">trace.h</WppScanConfigurationData>\n" +
 							"      <WppKernelMode>true</WppKernelMode>\n" +
-							"      <PreprocessorDefinitions>{{.PREPROCESSORDEFINITIONS}};_X86_=1;i386=1;STD_CALL;%(PreprocessorDefinitions)</PreprocessorDefinitions>\n" +
-							"      <AdditionalIncludeDirectories>{{.ADDITIONALINCLUDEDIRECTORIES}};$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>\n" +
+							"      <PreprocessorDefinitions>{{.PREPROCESSORDEFINITIONS}}_X86_=1;i386=1;STD_CALL;%(PreprocessorDefinitions)</PreprocessorDefinitions>\n" +
+							"      <AdditionalIncludeDirectories>{{.ADDITIONALINCLUDEDIRECTORIES}}$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>\n" +
 							"    </ClCompile>\n" +
 							"    <Link>\n" +
-							"      <AdditionalDependencies>{{.ADDITIONALDEPENDENCIES}};%(AdditionalDependencies);$(KernelBufferOverflowLib);$(DDK_LIB_PATH)ntoskrnl.lib;$(DDK_LIB_PATH)hal.lib;$(DDK_LIB_PATH)wmilib.lib;$(KMDF_LIB_PATH)$(KMDF_VER_PATH)\WdfLdr.lib;$(KMDF_LIB_PATH)$(KMDF_VER_PATH)\WdfDriverEntry.lib</AdditionalDependencies>\n" +
+							"      <AdditionalDependencies>{{.ADDITIONALDEPENDENCIES}}%(AdditionalDependencies);$(KernelBufferOverflowLib);$(DDK_LIB_PATH)ntoskrnl.lib;$(DDK_LIB_PATH)hal.lib;$(DDK_LIB_PATH)wmilib.lib;</AdditionalDependencies>\n" +
 							"    </Link>\n" +
 							"  </ItemDefinitionGroup>\n" +
 							"  <ItemDefinitionGroup Condition=\"'$(Configuration)|$(Platform)'=='Debug|x64'\">\n" +
@@ -410,7 +409,7 @@ local function generate_vcxproj_metadata(vcxproj_filename type string,
 							"      <AdditionalIncludeDirectories>{{.ADDITIONALINCLUDEDIRECTORIES}};$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>\n" +
 							"    </ClCompile>\n" +
 							"    <Link>\n" +
-							"      <AdditionalDependencies>{{.ADDITIONALDEPENDENCIES}};%(AdditionalDependencies);$(KernelBufferOverflowLib);$(DDK_LIB_PATH)ntoskrnl.lib;$(DDK_LIB_PATH)hal.lib;$(DDK_LIB_PATH)wmilib.lib</AdditionalDependencies>\n" +
+							"      <AdditionalDependencies>{{.ADDITIONALDEPENDENCIES}}%(AdditionalDependencies);$(KernelBufferOverflowLib);$(DDK_LIB_PATH)ntoskrnl.lib;$(DDK_LIB_PATH)hal.lib;$(DDK_LIB_PATH)wmilib.lib</AdditionalDependencies>\n" +
 							"    </Link>\n" +
 							"  </ItemDefinitionGroup>\n" +
 							"  <ItemDefinitionGroup Condition=\"'$(Configuration)|$(Platform)'=='Release|x64'\">\n" +
@@ -419,11 +418,11 @@ local function generate_vcxproj_metadata(vcxproj_filename type string,
 							"      <WppRecorderEnabled>true</WppRecorderEnabled>\n" +
 							"      <WppScanConfigurationData Condition=\"'%(ClCompile.ScanConfigurationData)' == ''\">trace.h</WppScanConfigurationData>\n" +
 							"      <WppKernelMode>true</WppKernelMode>\n" +
-							"      <AdditionalIncludeDirectories>{{.ADDITIONALINCLUDEDIRECTORIES}};$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>\n" +
-							"      <PreprocessorDefinitions>{{.PREPROCESSORDEFINITIONS}};_WIN64;_AMD64_;AMD64;%(PreprocessorDefinitions)</PreprocessorDefinitions>\n" +
+							"      <AdditionalIncludeDirectories>{{.ADDITIONALINCLUDEDIRECTORIES}}$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>\n" +
+							"      <PreprocessorDefinitions>{{.PREPROCESSORDEFINITIONS}}_WIN64;_AMD64_;AMD64;%(PreprocessorDefinitions)</PreprocessorDefinitions>\n" +
 							"    </ClCompile>\n" +
 							"    <Link>\n" +
-							"      <AdditionalDependencies>{{.ADDITIONALDEPENDENCIES}};%(AdditionalDependencies);$(KernelBufferOverflowLib);$(DDK_LIB_PATH)ntoskrnl.lib;$(DDK_LIB_PATH)hal.lib;$(DDK_LIB_PATH)wmilib.lib</AdditionalDependencies>\n" +
+							"      <AdditionalDependencies>{{.ADDITIONALDEPENDENCIES}}%(AdditionalDependencies);$(KernelBufferOverflowLib);$(DDK_LIB_PATH)ntoskrnl.lib;$(DDK_LIB_PATH)hal.lib;$(DDK_LIB_PATH)wmilib.lib</AdditionalDependencies>\n" +
 							"    </Link>\n" +
 							"  </ItemDefinitionGroup>\n" +
 							"  <ItemDefinitionGroup Condition=\"'$(Configuration)|$(Platform)'=='Debug|ARM'\">\n" +

@@ -14,9 +14,6 @@
 include ~/toolsets/windows/driver/forges/win_driver_forge.hsl
 
 toolset "windows-driver" forge function "forge_win_driver" : forge helpers "msbuild" :
-	command "configure_dev_env": <
-	
-	>
 	command "build": VSDEVCMD, VCXPROJ, CONFIGURATION, PLATFORM <
 		$VSDEVCMD \>nul 2\>&1 && Msbuild $VCXPROJ /p:Configuration=$CONFIGURATION /p:Platform=$PLATFORM
 	>

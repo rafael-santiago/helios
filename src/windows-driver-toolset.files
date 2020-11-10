@@ -1,2 +1,3 @@
 include/toolsets/windows/driver/windows-driver.hsl
 include/toolsets/windows/driver/forges/win_driver_forge.hsl
+include/doc/toolsets/windows/driver/README.md
