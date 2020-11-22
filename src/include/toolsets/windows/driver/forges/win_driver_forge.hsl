@@ -623,9 +623,9 @@ local function mkinf(inf type string) : result type int {
 	$inf_data = "[Version]\n" +
 				"Signature = \"$Windows NT$\"\n" +
 				"Provider = %ManufacturerName%\n" +
-				"CatalogFile = \"test.cat\"\n" +
+				"CatalogFile = \"{{.TARGET}}.cat\"\n" +
 				"DriverVer = 01/15/05,1.0\n" +
-				"Class=test\n" +
+				"Class={{.TARGET}}\n" +
 				"ClassGuid={{{.GUID}}}\n\n" +
 				"[SourceDisksNames]\n" +
 				"1 = %DiskName%\n\n" +
