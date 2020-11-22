@@ -20,6 +20,10 @@
 #	--inf=<file path> (When not specified must exist an inf having the same name of sys, e.g.:
 #					   target.sys, target.inf will be inferred at the same level where build runs).
 #
+#   * When an inf file is not specified through --inf option and an inferred is not found, a default one
+#     is automatically generated. You can change it according your preferences and use it as a regular
+#     project file.
+#
 #	* If exists a vcxproject with the same name of sys (target.sys, target.vcxproj) this one will be used.
 #     When not a temporary will be generated based on src, inc, cflags, libraries, ldflags and target options
 #     passed through project definition.
@@ -53,6 +57,24 @@ function forge_win_driver(src type list,
 
 	if ($exit_code != 0)  {
 		hefesto.sys.echo("ERROR: Unable to configure development environment.\n");
+		result $exit_code;
+	}
+
+	var option type list;
+	$option = hefesto.sys.get_option("inf");
+
+	if ($option.count() == 0) {
+		var inf type string;
+		$inf = filenamefrompath($target);
+		$inf.replace("\\.sys$", ".inf");
+		if (isfile($inf) == 0) {
+			$exit_code = mkinf($inf);
+			if ($exit_code != 0) {
+				result $exit_code;
+			}
+			hefesto.sys.echo("WARN: Inf file was not found. A default one was automatically generated at '" + $inf + "'.\n" +
+			                 "      Change it according your preferences.\n");
+		}
 	}
 	
 	$exit_code = msbuild($vcxproj_filename);
@@ -592,4 +614,74 @@ local function get_preprocessor_defs(cflags type list) : result type string {
 		$c = $c + 1;
 	}
 	result get_list_str($defs);
+}
+
+local function mkinf(inf type string) : result type int {
+	var inf_data type string;
+	var default_guid type string;
+	$default_guid = "78A1C341-4539-11d3-B88D-00C04FAD5171";
+	$inf_data = "[Version]\n" +
+				"Signature = \"$Windows NT$\"\n" +
+				"Provider = %ManufacturerName%\n" +
+				"CatalogFile = \"test.cat\"\n" +
+				"DriverVer = 01/15/05,1.0\n" +
+				"Class=test\n" +
+				"ClassGuid={{{.GUID}}}\n\n" +
+				"[SourceDisksNames]\n" +
+				"1 = %DiskName%\n\n" +
+				"[SourceDisksFiles]\n" +
+				"{{.TARGET}}.sys = 1\n\n" +
+				"[DestinationDirs]\n" +
+				"DefaultDestDir = 11 ; %windir%\\system32\\\n" +
+				"{{.TARGET}}.DriverFiles = 11 ; %windir%\\system32\\\n\n" +
+				"[DefaultInstall.NT$ARCH$]\n" +
+				"OptionDesc = %Description%\n" +
+				"CopyFiles = {{.TARGET}}.DriverFiles\n\n" +
+				"[DefaultInstall.Services]\n" +
+				"AddService = %ServiceName%,,{{.TARGET}}.Service\n\n" +
+				"[DefaultUninstall.NT$ARCH$]\n" +
+				"DelFiles = {{.TARGET}}.DriverFiles\n" +
+				"LegacyUninstall=1\n\n" +
+				"[DefaultUninstall.Services]\n" +
+				"DelService = {{.TARGET}},0x200 ; SPSVCINST_STOPSERVICE\n\n" +
+				"[{{.TARGET}}.DriverFiles]\n" +
+				"{{.TARGET}}.sys,,,0x00000040 ; COPYFLG_OVERWRITE_OLDER_ONLY\n\n" +
+				"[{{.TARGET}}.Service]\n" +
+				"DisplayName = %ServiceName%\n" +
+				"Description = %ServiceDesc%\n" +
+				"ServiceType = 1  ; SERVICE_KERNEL_DRIVER\n" +
+				"StartType = 0    ; SERVICE_BOOT_START\n" +
+				"ErrorControl = 1 ; SERVICE_ERROR_NORMAL\n" +
+				"ServiceBinary = %11%\\{{.TARGET}}.sys\n\n" +
+				"[Strings]\n" +
+				"Msft = \"Microsoft Corporation\"\n" +
+				"DiskName = \"{{.TARGET}} Installation Disk\"\n" +
+				"Description = \"{{.TARGET}} driver\"\n" +
+				"ServiceName = \"{{.TARGET}}\"\n" +
+				"ServiceDesc = \"{{.TARGET}} driver\"\n" +
+				"ManufacturerName = \"Particular\"\n";
+
+	var option type list;
+	$option = hefesto.sys.get_option("guid");
+
+	if ($option.count() > 0) {
+		$default_guid = $option.item(0);
+	}
+
+	var basename type string;
+	$basename = filenamefrompath($inf);
+	$basename.replace("\\.inf$", "");
+
+	$inf_data.replace("\\{\\{.GUID\\}\\}", $default_guid);
+	$inf_data.replace("\\{\\{.TARGET\\}\\}", $basename);
+
+	var fp type file;
+	$fp = hefesto.sys.fopen($inf, "wb");
+	if ($fp == 0) {
+		hefesto.sys.echo("ERROR: Unable to create the inf file : '" + $inf + "'.\n");
+		result 1;
+	}
+	hefesto.sys.fwrite($inf_data, $inf_data.len(), $fp);
+	hefesto.sys.fclose($fp);
+	result 0;
 }

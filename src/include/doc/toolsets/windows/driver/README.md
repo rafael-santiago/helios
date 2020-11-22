@@ -35,6 +35,8 @@ When not specified the architecture is driven by the current build machine proce
 
 You can you ``--inf`` to specify a .inf file. When not specified will be infered a inf named with the same
 name of the target saved into the directory where build was called, e.g: ``target.sys``, expected ``target.inf``.
+When an inf file is not specified through ``--inf`` option and an inferred is not found, a default one is automatically
+generated. You can change it according your preferences and use it as a regular project file.
 
 When a vcxproj having the same name of the target (e.g.: target.sys -> target.vcxproj) is found in the same
 directory where build was called, this vcxproj will be used. When no vcxproj is found, one is generated and
