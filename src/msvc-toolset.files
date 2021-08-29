@@ -1,0 +1,4 @@
+include/toolsets/msvc/forges/msvc_forge.hsl
+include/toolsets/msvc/util/msvc_utils.hsl
+include/toolsets/msvc/msvc.hsl
+include/doc/toolsets/msvc/README.md
