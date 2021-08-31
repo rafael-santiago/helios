@@ -5,48 +5,47 @@
 # the terms of the GNU General Public License version 2.
 #
 #
-# "windows-driver.hsl"
+# "msvc.hsl"
 #       by Rafael Santiago
 #
-# Description: Windows driver toolset.
+# Description: A more generic MSVC toolset. In practice it will act as a build generator by taking advantage of MSBuild.
 #
 
 include ~/toolsets/msvc/forges/msvc_forge.hsl
 include ~/toolsets/msvc/util/msvc_utils.hsl
 
 toolset "msvc-c-lib" forge function "forge_msvc_lib" : forge helpers "msvc_msbuild" :
-	command "build": VSDEVCMD, VCXPROJ, CONFIGURATION, PLATFORM <
-		$VSDEVCMD \>nul 2\>&1 && Msbuild $VCXPROJ /p:Configuration=$CONFIGURATION /p:Platform=$PLATFORM
-	>
-	command "clean": VSDEVCMD, VCXPROJ <
-		$VSDEVCMD \>nul 2\>&1 && Msbuild $VCXPROJ /t:Clean
-	>
+        command "build": VSDEVCMD, VCXPROJ, CONFIGURATION, PLATFORM <
+            $VSDEVCMD \>nul 2\>&1 && Msbuild $VCXPROJ /p:Configuration=$CONFIGURATION /p:Platform=$PLATFORM
+        >
+        command "clean": VSDEVCMD, VCXPROJ <
+            $VSDEVCMD \>nul 2\>&1 && Msbuild $VCXPROJ /t:Clean
+        >
 $
 
 toolset "msvc-c-app" forge function "forge_msvc_app" : forge helpers "msvc_msbuild" :
-	command "build": VSDEVCMD, VCXPROJ, CONFIGURATION, PLATFORM <
-		$VSDEVCMD \>nul 2\>&1 && Msbuild $VCXPROJ /p:Configuration=$CONFIGURATION /p:Platform=$PLATFORM
-	>
-	command "clean": VSDEVCMD, VCXPROJ <
-		$VSDEVCMD \>nul 2\>&1 && Msbuild $VCXPROJ /t:Clean
-	>
+        command "build": VSDEVCMD, VCXPROJ, CONFIGURATION, PLATFORM <
+            $VSDEVCMD \>nul 2\>&1 && Msbuild $VCXPROJ /p:Configuration=$CONFIGURATION /p:Platform=$PLATFORM
+        >
+        command "clean": VSDEVCMD, VCXPROJ <
+            $VSDEVCMD \>nul 2\>&1 && Msbuild $VCXPROJ /t:Clean
+        >
 $
 
 toolset "msvc-cc-lib" forge function "forge_msvc_lib" : forge helpers "msvc_msbuild" :
-	command "build": VSDEVCMD, VCXPROJ, CONFIGURATION, PLATFORM <
-		$VSDEVCMD \>nul 2\>&1 && Msbuild $VCXPROJ /p:Configuration=$CONFIGURATION /p:Platform=$PLATFORM
-	>
-	command "clean": VSDEVCMD, VCXPROJ <
-		$VSDEVCMD \>nul 2\>&1 && Msbuild $VCXPROJ /t:Clean
-	>
+        command "build": VSDEVCMD, VCXPROJ, CONFIGURATION, PLATFORM <
+            $VSDEVCMD \>nul 2\>&1 && Msbuild $VCXPROJ /p:Configuration=$CONFIGURATION /p:Platform=$PLATFORM
+        >
+        command "clean": VSDEVCMD, VCXPROJ <
+            $VSDEVCMD \>nul 2\>&1 && Msbuild $VCXPROJ /t:Clean
+        >
 $
 
 toolset "msvc-cc-app" forge function "forge_msvc_app" : forge helpers "msvc_msbuild" :
-	command "build": VSDEVCMD, VCXPROJ, CONFIGURATION, PLATFORM <
-		$VSDEVCMD \>nul 2\>&1 && Msbuild $VCXPROJ /p:Configuration=$CONFIGURATION /p:Platform=$PLATFORM
-	>
-	command "clean": VSDEVCMD, VCXPROJ <
-		$VSDEVCMD \>nul 2\>&1 && Msbuild $VCXPROJ /t:Clean
-	>
+        command "build": VSDEVCMD, VCXPROJ, CONFIGURATION, PLATFORM <
+            $VSDEVCMD \>nul 2\>&1 && Msbuild $VCXPROJ /p:Configuration=$CONFIGURATION /p:Platform=$PLATFORM
+        >
+        command "clean": VSDEVCMD, VCXPROJ <
+            $VSDEVCMD \>nul 2\>&1 && Msbuild $VCXPROJ /t:Clean
+        >
 $
-

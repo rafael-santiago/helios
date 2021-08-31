@@ -12,16 +12,16 @@
 #
 # Toolset options:
 #
-#	--compile-model=<release|debug> (Debug is the default)
+#       --compile-model=<release|debug> (Debug is the default)
 #
-#	--link-model=<static|shared> (Static is the default)
+#       --link-model=<static|shared> (Static is the default)
 #
-#	--cpu-arch=<arch>	(On 64-bit machines the default is 'x64', on 32-bit machines the default is 'Win32'
-#                        The toolset set automatically converts 'x86' into 'Win32').
+#       --cpu-arch=<arch>       (On 64-bit machines the default is 'x64', on 32-bit machines the default is 'Win32'
+#                                The toolset set automatically converts 'x86' into 'Win32').
 #
-#	--charset=<MultiByte|Unicode> (MultiByte is the default)
+#       --charset=<MultiByte|Unicode> (MultiByte is the default)
 #
-#	* If exists a vcxproject with the same name of lib (target.lib, target.vcxproj) this one will be used.
+#   * If exists a vcxproject with the same name of lib (target.lib, target.vcxproj) this one will be used.
 #     When not a temporary will be generated based on src, inc, cflags, libraries, ldflags and target options
 #     passed through project definition.
 #
@@ -31,123 +31,122 @@ include ~/toolsets/msvc/util/msvc_utils.hsl
 
 function forge_msvc_app(src type list,
                         inc type list,
-						cflags type list,
-						lib type list,
-						ldflags type list,
-						target type string) : result type int {
-	var option type list;
-	$option = hefesto.sys.get_option("link-model");
-	
-	if ($option.count() > 0) {
-		var model type string;
-		$model = $option.item(0);
-		if ($model != "shared" && $model != "static") {
-			hefesto.sys.echo("forge_msvc_lib ERROR: link-model must be 'shared' or 'static'.\n");
-			result 1;
-		}
-	}
-	
-	$option = hefesto.sys.get_option("compile-model");
-	if ($option.count() > 0) {
-		$model = $option.item(0);
-		if ($model != "debug" && $model != "release") {
-			hefesto.sys.echo("forge_msvc_lib ERROR: compile-model must be 'debug' or 'release'.\n");
-			result 1;
-		}
-	}					
-	
-	var tgt type string;
-	
-	$tgt = $target;
-	if ($tgt.match("\\.exe$") == 0) {
-		$tgt = $tgt + ".exe";
-	}
-	
-	result forge_msvc_target($src, $inc, $cflags, $lib, $ldflags, $tgt);
+                        cflags type list,
+                        lib type list,
+                        ldflags type list,
+                        target type string) : result type int {
+    var option type list;
+    $option = hefesto.sys.get_option("link-model");
+
+    if ($option.count() > 0) {
+        var model type string;
+        $model = $option.item(0);
+        if ($model != "shared" && $model != "static") {
+            hefesto.sys.echo("forge_msvc_lib ERROR: link-model must be 'shared' or 'static'.\n");
+            result 1;
+        }
+    }
+
+    $option = hefesto.sys.get_option("compile-model");
+    if ($option.count() > 0) {
+        $model = $option.item(0);
+        if ($model != "debug" && $model != "release") {
+            hefesto.sys.echo("forge_msvc_lib ERROR: compile-model must be 'debug' or 'release'.\n");
+            result 1;
+        }
+    }
+
+    var tgt type string;
+
+    $tgt = $target;
+    if ($tgt.match("\\.exe$") == 0) {
+        $tgt = $tgt + ".exe";
+    }
+
+    result forge_msvc_target($src, $inc, $cflags, $lib, $ldflags, $tgt);
 }
 
 function forge_msvc_lib(src type list,
-						inc type list,
-						cflags type list,
-						lib type list,
-						ldflags type list,
-						target type string) : result type int {
-	var tgt type string;
-	$tgt = $target;
-	
-	var is_shared type int;
-	$is_shared = 0;
-	
-	var option type list;
-	$option = hefesto.sys.get_option("link-model");
-	
-	if ($option.count() > 0) {
-		var model type string;
-		$model = $option.item(0);
-		$is_shared = ($model == "shared");
-		if ($is_shared == 0 && $model != "static") {
-			hefesto.sys.echo("forge_msvc_lib ERROR: link-model must be 'shared' or 'static'.\n");
-			result 1;
-		}
-	}
-	
-	$option = hefesto.sys.get_option("compile-model");
-	if ($option.count() > 0) {
-		$model = $option.item(0);
-		if ($model != "debug" && $model != "release") {
-			hefesto.sys.echo("forge_msvc_lib ERROR: compile-model must be 'debug' or 'release'.\n");
-			result 1;
-		}
-	}
-		
-	if ($is_shared == 0) {
-		if ($tgt.match("\\.lib$") == 0) {
-			$tgt = $tgt + ".lib";
-		}
-	} else {
-		if ($tgt.match("\\.dll$") == 0) {
-			$tgt = $tgt + ".dll";
-		}
-	}
-	
-	result forge_msvc_target($src, $inc, $cflags, $lib, $ldflags, $tgt);
+                        inc type list,
+                        cflags type list,
+                        lib type list,
+                        ldflags type list,
+                        target type string) : result type int {
+    var tgt type string;
+    $tgt = $target;
+
+    var is_shared type int;
+    $is_shared = 0;
+
+    var option type list;
+    $option = hefesto.sys.get_option("link-model");
+
+    if ($option.count() > 0) {
+        var model type string;
+        $model = $option.item(0);
+        $is_shared = ($model == "shared");
+        if ($is_shared == 0 && $model != "static") {
+            hefesto.sys.echo("forge_msvc_lib ERROR: link-model must be 'shared' or 'static'.\n");
+            result 1;
+        }
+    }
+
+    $option = hefesto.sys.get_option("compile-model");
+    if ($option.count() > 0) {
+        $model = $option.item(0);
+        if ($model != "debug" && $model != "release") {
+            hefesto.sys.echo("forge_msvc_lib ERROR: compile-model must be 'debug' or 'release'.\n");
+            result 1;
+        }
+    }
+
+    if ($is_shared == 0) {
+        if ($tgt.match("\\.lib$") == 0) {
+            $tgt = $tgt + ".lib";
+        }
+    } else {
+        if ($tgt.match("\\.dll$") == 0) {
+            $tgt = $tgt + ".dll";
+        }
+    }
+
+    result forge_msvc_target($src, $inc, $cflags, $lib, $ldflags, $tgt);
 }
 
 local function forge_msvc_target(src type list,
-		 				         inc type list,
-		 				         cflags type list,
-						         lib type list,
-						         ldflags type list,
-						         target type string) : result type int {
-	var exit_code type int;
-	var vcxproj_created type int;
-	var vcxproj_filename type string;
-	
-	if ($src.count() == 0) {
-		$src.ls(".*\\.c$");
-	}
-	
-	if ($src.count() == 0) {
-		hefesto.sys.echo("ERROR: Driver's sources not found.\n");
-		result 1;
-	}
-	
-	$vcxproj_filename = msvc_get_vcxproj_from_target($target);
-	$vcxproj_created = msvc_mk_vcxproj($vcxproj_filename, $src, $inc, $cflags, $lib, $ldflags, $target);
-	
-	$exit_code = msvc_configure_dev_env();
+                                 inc type list,
+                                 cflags type list,
+                                 lib type list,
+                                 ldflags type list,
+                                 target type string) : result type int {
+    var exit_code type int;
+    var vcxproj_created type int;
+    var vcxproj_filename type string;
 
-	if ($exit_code != 0)  {
-		hefesto.sys.echo("ERROR: Unable to configure development environment.\n");
-		result $exit_code;
-	}
-	
-	$exit_code = msvc_msbuild($vcxproj_filename);
-	
-	if ($vcxproj_created) {
-		hefesto.sys.rm($vcxproj_filename);
-	}
-	
-	result $exit_code;
+    if ($src.count() == 0) {
+        $src.ls(".*\\.c$");
+    }
+
+    if ($src.count() == 0) {
+        hefesto.sys.echo("ERROR: Driver's sources not found.\n");
+        result 1;
+    }
+
+    $vcxproj_filename = msvc_get_vcxproj_from_target($target);
+    $vcxproj_created = msvc_mk_vcxproj($vcxproj_filename, $src, $inc, $cflags, $lib, $ldflags, $target);
+
+    $exit_code = msvc_configure_dev_env();
+
+    if ($exit_code != 0)  {
+        hefesto.sys.echo("ERROR: Unable to configure development environment.\n");
+        result $exit_code;
+    }
+
+    $exit_code = msvc_msbuild($vcxproj_filename);
+
+    if ($vcxproj_created) {
+        hefesto.sys.rm($vcxproj_filename);
+    }
+
+    result $exit_code;
 }
-

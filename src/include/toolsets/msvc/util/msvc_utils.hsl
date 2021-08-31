@@ -12,177 +12,177 @@
 #
 
 function msvc_msbuild(vcxproj_path type string) : result type int {
-	var vsdevcmd type string;
-	$vsdevcmd = msvc_get_vsdev_cmd();
-	
-	var option type list;
-	$option = hefesto.sys.get_option("clean");
-	
-	if ($option.count() > 0) {
-		result hefesto.sys.run(hefesto.toolset.clean($vsdevcmd, $vcxproj_path));
-	}
-	
-	var configuration type string;
-	$configuration = msvc_get_configuration();
-	
-	if ($configuration.len() == 0) {
-		result 1;
-	}
-	
-	var platform type string;
-	$platform = msvc_get_platform();
-	
-	hefesto.sys.echo("INFO: Now building " + $configuration + "/" + $platform + "...\n");
-	
-	result hefesto.sys.run(hefesto.toolset.build($vsdevcmd, $vcxproj_path, $configuration, $platform));
+    var vsdevcmd type string;
+    $vsdevcmd = msvc_get_vsdev_cmd();
+
+    var option type list;
+    $option = hefesto.sys.get_option("clean");
+
+    if ($option.count() > 0) {
+        result hefesto.sys.run(hefesto.toolset.clean($vsdevcmd, $vcxproj_path));
+    }
+
+    var configuration type string;
+    $configuration = msvc_get_configuration();
+
+    if ($configuration.len() == 0) {
+        result 1;
+    }
+
+    var platform type string;
+    $platform = msvc_get_platform();
+
+    hefesto.sys.echo("INFO: Now building " + $configuration + "/" + $platform + "...\n");
+
+    result hefesto.sys.run(hefesto.toolset.build($vsdevcmd, $vcxproj_path, $configuration, $platform));
 }
 
 local function msvc_get_configuration() : result type string {
-	var option type list;
-	$option = hefesto.sys.get_option("compile-model");
-	if ($option.count() == 0) {
-		result "debug";
-	}
-	
-	var config type string;
-	$config = $option.item(0);
-	
-	if ($config.match("^([dD][eE][bB][uU][gG]|[rR][eE][lL][eE][aA][sS][eE])$") == 0) {
-		hefesto.sys.echo("ERROR: --compile-model must be 'debug' or 'release'.\n");
-		$config = "";
-	}
-	
-	result $config;
+    var option type list;
+    $option = hefesto.sys.get_option("compile-model");
+    if ($option.count() == 0) {
+        result "debug";
+    }
+
+    var config type string;
+    $config = $option.item(0);
+
+    if ($config.match("^([dD][eE][bB][uU][gG]|[rR][eE][lL][eE][aA][sS][eE])$") == 0) {
+        hefesto.sys.echo("ERROR: --compile-model must be 'debug' or 'release'.\n");
+        $config = "";
+    }
+
+    result $config;
 }
 
 local function msvc_get_platform() : result type string {
-	var option type list;
-	var arch type string;
-	
-	$option = hefesto.sys.get_option("cpu-arch");
-	if ($option.count() == 0) {
-		var programfilesx86 type string;
-		$programfilesx86 = hefesto.sys.env("ProgramFiles(x86)");
-		if ($programfilesx86.len() > 0) {
-			result "x64";
-		}
-		result "Win32";
-	}
-	
-	$arch = $option.item(0);
-	
-	if($arch == "x86" || $arch == "X86") {
-		result "Win32";
-	}
-	
-	result $arch;
+    var option type list;
+    var arch type string;
+
+    $option = hefesto.sys.get_option("cpu-arch");
+    if ($option.count() == 0) {
+        var programfilesx86 type string;
+        $programfilesx86 = hefesto.sys.env("ProgramFiles(x86)");
+        if ($programfilesx86.len() > 0) {
+            result "x64";
+        }
+        result "Win32";
+    }
+
+    $arch = $option.item(0);
+
+    if($arch == "x86" || $arch == "X86") {
+        result "Win32";
+    }
+
+    result $arch;
 }
 
 local function msvc_get_vsdev_cmd() : result type string {
-	var cmd type string;
-	$cmd = hefesto.sys.env("HEFESTO_MSVC_TOOLSET_VSDEVCMD");
-	result $cmd;
+    var cmd type string;
+    $cmd = hefesto.sys.env("HEFESTO_MSVC_TOOLSET_VSDEVCMD");
+    result $cmd;
 }
 
 function msvc_configure_dev_env() : result type int {
-	var temp type string;
-	$temp = hefesto.sys.env("HEFESTO_MSVC_TOOLSET_VSDEVCMD");
-	if ($temp.len() > 0) {
-		result 0;
-	}
-	var vsdevcmd_locations type list;
-	$vsdevcmd_locations.add_item("\"{{.ProgramFiles}}\\Microsoft Visual Studio\\{{.YEAR}}\\Enterprise\\Common7\\Tools\\VsDevCmd.bat\"");
-	$vsdevcmd_locations.add_item("\"{{.ProgramFiles}}\\Microsoft Visual Studio\{{.YEAR}}\\Professional\\Common7\\Tools\\VsDevCmd.bat\"");
-	$vsdevcmd_locations.add_item("\"{{.ProgramFiles}}\\Microsoft Visual Studio\\{{.YEAR}}\\Community\\Common7\\Tools\\VsDevCmd.bat\"");
-	
-	var year type int;
-	
-	$year = 2019;
-	
-	var exit_code type int;
-	$exit_code = 1;
-	var v type int;
-	$v = 0;
-	while ($year >= 2010 && $exit_code != 0) {
-		var program_files type string;	
-		$program_files = hefesto.sys.env("ProgramFiles(x86)");
-		var vsdevcmd type string;
-		$vsdevcmd = $vsdevcmd_locations.item($v);
-		$vsdevcmd.replace("\\{\\{.ProgramFiles\\}\\}", $program_files);
-		var s_year type string;
-		$s_year = $year;
-		$vsdevcmd.replace("\\{\\{.YEAR\\}\\}", $s_year);
-		$exit_code = hefesto.sys.run($vsdevcmd + " >nul 2>&1");
-		if ($exit_code != 0) {
-			$program_files = hefesto.sys.env("ProgramFiles");
-			$vsdevcmd = $vsdevcmd_locations.item($v);
-			$vsdevcmd.replace("\\{\\{.ProgramFiles\\}\\}", $program_files);
-			$vsdevcmd.replace("\\{\\{.YEAR\\}\\}", $s_year);
-			$exit_code = hefesto.sys.run($vsdevcmd + ">nul 2>&1");
-		}
-		$v = ($v + 1) % $vsdevcmd_locations.count();
-		if ($v == 0) {
-			$year = $year - 1;
-		}
-		if ($exit_code == 0) {
-			hefesto.sys.setenv("HEFESTO_MSVC_TOOLSET_VSDEVCMD", $vsdevcmd);
-		}
-	}
-	result $exit_code;
+    var temp type string;
+    $temp = hefesto.sys.env("HEFESTO_MSVC_TOOLSET_VSDEVCMD");
+    if ($temp.len() > 0) {
+        result 0;
+    }
+    var vsdevcmd_locations type list;
+    $vsdevcmd_locations.add_item("\"{{.ProgramFiles}}\\Microsoft Visual Studio\\{{.YEAR}}\\Enterprise\\Common7\\Tools\\VsDevCmd.bat\"");
+    $vsdevcmd_locations.add_item("\"{{.ProgramFiles}}\\Microsoft Visual Studio\{{.YEAR}}\\Professional\\Common7\\Tools\\VsDevCmd.bat\"");
+    $vsdevcmd_locations.add_item("\"{{.ProgramFiles}}\\Microsoft Visual Studio\\{{.YEAR}}\\Community\\Common7\\Tools\\VsDevCmd.bat\"");
+
+    var year type int;
+
+    $year = 2019;
+
+    var exit_code type int;
+    $exit_code = 1;
+    var v type int;
+    $v = 0;
+    while ($year >= 2010 && $exit_code != 0) {
+        var program_files type string;
+        $program_files = hefesto.sys.env("ProgramFiles(x86)");
+        var vsdevcmd type string;
+        $vsdevcmd = $vsdevcmd_locations.item($v);
+        $vsdevcmd.replace("\\{\\{.ProgramFiles\\}\\}", $program_files);
+        var s_year type string;
+        $s_year = $year;
+        $vsdevcmd.replace("\\{\\{.YEAR\\}\\}", $s_year);
+        $exit_code = hefesto.sys.run($vsdevcmd + " >nul 2>&1");
+        if ($exit_code != 0) {
+            $program_files = hefesto.sys.env("ProgramFiles");
+            $vsdevcmd = $vsdevcmd_locations.item($v);
+            $vsdevcmd.replace("\\{\\{.ProgramFiles\\}\\}", $program_files);
+            $vsdevcmd.replace("\\{\\{.YEAR\\}\\}", $s_year);
+            $exit_code = hefesto.sys.run($vsdevcmd + ">nul 2>&1");
+        }
+        $v = ($v + 1) % $vsdevcmd_locations.count();
+        if ($v == 0) {
+            $year = $year - 1;
+        }
+        if ($exit_code == 0) {
+            hefesto.sys.setenv("HEFESTO_MSVC_TOOLSET_VSDEVCMD", $vsdevcmd);
+        }
+    }
+    result $exit_code;
 }
 
 function msvc_mk_vcxproj(vcxproj_filename type string,
-				    	 src type list,
-						 inc type list,
-						 cflags type list,
-						 lib type list,
-						 ldflags type list,
-						 target type string) : result type int {
-	var created type int;
-	
-	if (isfile($vcxproj_filename) == 0) {
-		var vcxproj_data type string;
-		$vcxproj_data = msvc_generate_vcxproj_metadata($vcxproj_filename, $src, $inc, $cflags, $lib, $ldflags, $target);
-		var fp type file;
-		$fp = hefesto.sys.fopen($vcxproj_filename, "wb");
+                         src type list,
+                         inc type list,
+                         cflags type list,
+                         lib type list,
+                         ldflags type list,
+                         target type string) : result type int {
+    var created type int;
 
-		if ($fp == 0) {
-			hefesto.sys.echo("ERROR: Unable to create vcxproj.\n");
-			result 0;
-		}
-		hefesto.sys.fwrite($vcxproj_data, $vcxproj_data.len(), $fp);
-		hefesto.sys.fclose($fp);
-		$created = 1;
-	} else {
-		$created = 0;
-	}
-	
-	result $created;
+    if (isfile($vcxproj_filename) == 0) {
+        var vcxproj_data type string;
+        $vcxproj_data = msvc_generate_vcxproj_metadata($vcxproj_filename, $src, $inc, $cflags, $lib, $ldflags, $target);
+        var fp type file;
+        $fp = hefesto.sys.fopen($vcxproj_filename, "wb");
+
+        if ($fp == 0) {
+            hefesto.sys.echo("ERROR: Unable to create vcxproj.\n");
+            result 0;
+        }
+        hefesto.sys.fwrite($vcxproj_data, $vcxproj_data.len(), $fp);
+        hefesto.sys.fclose($fp);
+        $created = 1;
+    } else {
+        $created = 0;
+    }
+
+    result $created;
 }
 
 function msvc_get_vcxproj_from_target(target type string) : result type string {
-	var vcx type string;
-	$vcx = filenamefrompath($target);
-	$vcx.replace("(\\.lib|\\.dll|\\.exe)$", ".vcxproj");
-	result $vcx;
+    var vcx type string;
+    $vcx = filenamefrompath($target);
+    $vcx.replace("(\\.lib|\\.dll|\\.exe)$", ".vcxproj");
+    result $vcx;
 }
 
 function msvc_get_vcxproj_from_exe(sys type string) : result type string {
-	var vcx type string;
-	$vcx = filenamefrompath($sys);
-	$vcx.replace("\\.exe$", ".vcxproj");
-	result $vcx;
+    var vcx type string;
+    $vcx = filenamefrompath($sys);
+    $vcx.replace("\\.exe$", ".vcxproj");
+    result $vcx;
 }
 
 local function msvc_generate_vcxproj_metadata(vcxproj_filename type string,
-					  		   		          src type list,
-									          inc type list,
-									          cflags type list,
-									          lib type list,
-									          ldflags type list,
-									          target type string) : result type string {
-	var vcxproj_template type string;
-	$vcxproj_template  = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+                                              src type list,
+                                              inc type list,
+                                              cflags type list,
+                                              lib type list,
+                                              ldflags type list,
+                                              target type string) : result type string {
+    var vcxproj_template type string;
+    $vcxproj_template  = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
                          "<Project DefaultTargets=\"Build\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\">\n" +
                          "<ItemGroup Label=\"ProjectConfigurations\">\n" +
                          "<ProjectConfiguration Include=\"Debug|Win32\">\n" +
@@ -256,19 +256,19 @@ local function msvc_generate_vcxproj_metadata(vcxproj_filename type string,
                          "<PropertyGroup Label=\"UserMacros\" />\n" +
                          "<PropertyGroup Condition=\"'$(Configuration)|$(Platform)'=='Debug|Win32'\">\n" +
                          "<LinkIncremental>true</LinkIncremental>\n" +
-						 "<OutDir>{{.OUTDIR}}</OutDir>\n" +
+                         "<OutDir>{{.OUTDIR}}</OutDir>\n" +
                          "</PropertyGroup>\n" +
                          "<PropertyGroup Condition=\"'$(Configuration)|$(Platform)'=='Release|Win32'\">\n" +
                          "<LinkIncremental>false</LinkIncremental>\n" +
                          "<OutDir>{{.OUTDIR}}</OutDir>\n" +
-						 "</PropertyGroup>\n" +
+                         "</PropertyGroup>\n" +
                          "<PropertyGroup Condition=\"'$(Configuration)|$(Platform)'=='Debug|x64'\">\n" +
                          "<LinkIncremental>true</LinkIncremental>\n" +
-						 "<OutDir>{{.OUTDIR}}</OutDir>\n" +
+                         "<OutDir>{{.OUTDIR}}</OutDir>\n" +
                          "</PropertyGroup>\n" +
                          "<PropertyGroup Condition=\"'$(Configuration)|$(Platform)'=='Release|x64'\">\n" +
                          "<LinkIncremental>false</LinkIncremental>\n" +
-						 "<OutDir>{{.OUTDIR}}</OutDir>\n" +
+                         "<OutDir>{{.OUTDIR}}</OutDir>\n" +
                          "</PropertyGroup>\n" +
                          "<ItemDefinitionGroup Condition=\"'$(Configuration)|$(Platform)'=='Debug|Win32'\">\n" +
                          "<ClCompile>\n" +
@@ -279,14 +279,14 @@ local function msvc_generate_vcxproj_metadata(vcxproj_filename type string,
                          "<PrecompiledHeader>NotUsing</PrecompiledHeader>\n" +
                          "<PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>\n" +
                          "<AdditionalIncludeDirectories>{{.ADDITIONALINCLUDEDIRECTORIES}}</AdditionalIncludeDirectories>\n" +
-						 "<RuntimeLibrary>MultiThreadedDebug{{.RUNTIMELIBRARY}}</RuntimeLibrary>\n" +
-						 "<AdditionalOptions>{{.ADDITIONALOPTIONS}}%(AdditionalOptions)</AdditionalOptions>\n" +
+                         "<RuntimeLibrary>MultiThreadedDebug{{.RUNTIMELIBRARY}}</RuntimeLibrary>\n" +
+                         "<AdditionalOptions>{{.ADDITIONALOPTIONS}}%(AdditionalOptions)</AdditionalOptions>\n" +
                          "</ClCompile>\n" +
                          "<Link>\n" +
                          "<SubSystem>\n" +
                          "</SubSystem>\n" +
                          "<GenerateDebugInformation>true</GenerateDebugInformation>\n" +
-						 "<AdditionalDependencies>{{.ADDITIONALDEPENDENCIES}};%(AdditionalDependencies)</AdditionalDependencies>\n" +
+                         "<AdditionalDependencies>{{.ADDITIONALDEPENDENCIES}};%(AdditionalDependencies)</AdditionalDependencies>\n" +
                          "</Link>\n" +
                          "</ItemDefinitionGroup>\n" +
                          "<ItemDefinitionGroup Condition=\"'$(Configuration)|$(Platform)'=='Release|Win32'\">\n" +
@@ -300,8 +300,8 @@ local function msvc_generate_vcxproj_metadata(vcxproj_filename type string,
                          "<PrecompiledHeader>NotUsing</PrecompiledHeader>\n" +
                          "<PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>\n" +
                          "<RuntimeLibrary>MultiThreaded{{.RUNTIMELIBRARY}}</RuntimeLibrary>\n" +
-						 "<AdditionalIncludeDirectories>{{.ADDITIONALINCLUDEDIRECTORIES}}</AdditionalIncludeDirectories>\n" +
-						 "<AdditionalOptions>{{.ADDITIONALOPTIONS}}%(AdditionalOptions)</AdditionalOptions>\n" +
+                         "<AdditionalIncludeDirectories>{{.ADDITIONALINCLUDEDIRECTORIES}}</AdditionalIncludeDirectories>\n" +
+                         "<AdditionalOptions>{{.ADDITIONALOPTIONS}}%(AdditionalOptions)</AdditionalOptions>\n" +
                          "</ClCompile>\n" +
                          "<Link>\n" +
                          "<SubSystem>\n" +
@@ -309,7 +309,7 @@ local function msvc_generate_vcxproj_metadata(vcxproj_filename type string,
                          "<EnableCOMDATFolding>true</EnableCOMDATFolding>\n" +
                          "<OptimizeReferences>true</OptimizeReferences>\n" +
                          "<GenerateDebugInformation>true</GenerateDebugInformation>\n" +
-						 "<AdditionalDependencies>{{.ADDITIONALDEPENDENCIES}};%(AdditionalDependencies)</AdditionalDependencies>\n" +
+                         "<AdditionalDependencies>{{.ADDITIONALDEPENDENCIES}};%(AdditionalDependencies)</AdditionalDependencies>\n" +
                          "</Link>\n" +
                          "</ItemDefinitionGroup>\n" +
                          "<ItemDefinitionGroup Condition=\"'$(Configuration)|$(Platform)'=='Debug|x64'\">\n" +
@@ -320,15 +320,15 @@ local function msvc_generate_vcxproj_metadata(vcxproj_filename type string,
                          "<ConformanceMode>true</ConformanceMode>\n" +
                          "<PrecompiledHeader>NotUsing</PrecompiledHeader>\n" +
                          "<PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>\n" +
-						 "<RuntimeLibrary>MultiThreadedDebug{{.RUNTIMELIBRARY}}</RuntimeLibrary>\n" +
-	                     "<AdditionalIncludeDirectories>{{.ADDITIONALINCLUDEDIRECTORIES}}</AdditionalIncludeDirectories>\n" +
-						 "<AdditionalOptions>{{.ADDITIONALOPTIONS}}%(AdditionalOptions)</AdditionalOptions>\n" +
+                         "<RuntimeLibrary>MultiThreadedDebug{{.RUNTIMELIBRARY}}</RuntimeLibrary>\n" +
+                         "<AdditionalIncludeDirectories>{{.ADDITIONALINCLUDEDIRECTORIES}}</AdditionalIncludeDirectories>\n" +
+                         "<AdditionalOptions>{{.ADDITIONALOPTIONS}}%(AdditionalOptions)</AdditionalOptions>\n" +
                          "</ClCompile>\n" +
                          "<Link>\n" +
                          "<SubSystem>\n" +
                          "</SubSystem>\n" +
                          "<GenerateDebugInformation>true</GenerateDebugInformation>\n" +
-						 "<AdditionalDependencies>{{.ADDITIONALDEPENDENCIES}};%(AdditionalDependencies)</AdditionalDependencies>\n" +
+                         "<AdditionalDependencies>{{.ADDITIONALDEPENDENCIES}};%(AdditionalDependencies)</AdditionalDependencies>\n" +
                          "</Link>\n" +
                          "</ItemDefinitionGroup>\n" +
                          "<ItemDefinitionGroup Condition=\"'$(Configuration)|$(Platform)'=='Release|x64'\">\n" +
@@ -341,9 +341,9 @@ local function msvc_generate_vcxproj_metadata(vcxproj_filename type string,
                          "<ConformanceMode>true</ConformanceMode>\n" +
                          "<PrecompiledHeader>NotUsing</PrecompiledHeader>\n" +
                          "<PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>\n" +
-						 "<RuntimeLibrary>MultiThreaded{{.RUNTIMELIBRARY}}</RuntimeLibrary>\n" +
-	                     "<AdditionalIncludeDirectories>{{.ADDITIONALINCLUDEDIRECTORIES}}</AdditionalIncludeDirectories>\n" +
-						 "<AdditionalOptions>{{.ADDITIONALOPTIONS}}%(AdditionalOptions)</AdditionalOptions>\n" +
+                         "<RuntimeLibrary>MultiThreaded{{.RUNTIMELIBRARY}}</RuntimeLibrary>\n" +
+                         "<AdditionalIncludeDirectories>{{.ADDITIONALINCLUDEDIRECTORIES}}</AdditionalIncludeDirectories>\n" +
+                         "<AdditionalOptions>{{.ADDITIONALOPTIONS}}%(AdditionalOptions)</AdditionalOptions>\n" +
                          "</ClCompile>\n" +
                          "<Link>\n" +
                          "<SubSystem>\n" +
@@ -351,164 +351,164 @@ local function msvc_generate_vcxproj_metadata(vcxproj_filename type string,
                          "<EnableCOMDATFolding>true</EnableCOMDATFolding>\n" +
                          "<OptimizeReferences>true</OptimizeReferences>\n" +
                          "<GenerateDebugInformation>true</GenerateDebugInformation>\n" +
-						 "<AdditionalDependencies>{{.ADDITIONALDEPENDENCIES}};%(AdditionalDependencies)</AdditionalDependencies>\n" +
+                         "<AdditionalDependencies>{{.ADDITIONALDEPENDENCIES}};%(AdditionalDependencies)</AdditionalDependencies>\n" +
                          "</Link>\n" +
-	                     "</ItemDefinitionGroup>\n" +
+                         "</ItemDefinitionGroup>\n" +
                          "<ItemGroup>\n" +
                          "{{.INCLUDES}}\n" +
                          "</ItemGroup>\n" +
-                         "<ItemGroup>\n" +	
+                         "<ItemGroup>\n" +
                          "{{.SOURCES}}\n" +
                          "</ItemGroup>\n" +
                          "<Import Project=\"$(VCTargetsPath)\Microsoft.Cpp.targets\" />\n" +
                          "<ImportGroup Label=\"ExtensionTargets\">\n" +
-                         "</ImportGroup>\n" + 
+                         "</ImportGroup>\n" +
                          "</Project>\n";
-	var replacement type string;
-	
-	if ($target.match("\\.lib$") == 1) {
-		$replacement = "StaticLibrary";
-	} else if ($target.match("\\.dll$") == 1) {
-		$replacement = "DynamicLibrary";
-	} else if ($target.match("\\.exe$") == 1) {
-		$replacement = "Application";
-	} else {
-		$replacement = "(Unknown)";
-	}
-	$vcxproj_template.replace("\\{\\{.CONFIGURATIONTYPE\\}\\}", $replacement);
-	
-	var option type list;
-	$option = hefesto.sys.get_option("charset");
-	if ($option.count() > 0) {
-		$replacement = $option.item(0);
-	} else {
-		$replacement = "MultiByte";
-	}
-	$vcxproj_template.replace("\\{\\{.CHARACTERSET\\}\\}", $replacement);
-	
-	$option = hefesto.sys.get_option("bin-output-dir");
-	if ($option.count() > 0) {
-		$replacement = $option.item(0);
-		if ($replacement.match("\\\\$") == 0) {
-			$replacement = $replacement + "\\";
-		}
-	} else {
-		$replacement = "$(SolutionDir)$(Platform)\\$(Configuration)\\";
-	}
-	$vcxproj_template.replace("\\{\\{.OUTDIR\\}\\}", $replacement);
-	
-	$option = hefesto.sys.get_option("link-model");
-	$replacement = $option.item(0);
-	if ($replacement == "shared") {
-		$replacement = "DLL";
-	} else {
-		$replacement = "";
-	}
-	$vcxproj_template.replace("\\{\\{.RUNTIMELIBRARY\\}\\}", $replacement);	
-	
-	$replacement = msvc_get_rootnamespace();
-	$vcxproj_template.replace("\\{\\{.ROOTNAMESPACE\\}\\}", $replacement);
-	$replacement = msvc_get_list_str($inc);
-	$vcxproj_template.replace("\\{\\{.ADDITIONALINCLUDEDIRECTORIES\\}\\}", $replacement);
-	$replacement = msvc_get_preprocessor_defs($cflags);
-	$vcxproj_template.replace("\\{\\{.PREPROCESSORDEFINITIONS\\}\\}", $replacement);
-	$replacement = msvc_get_compiler_options($cflags);
-	$vcxproj_template.replace("\\{\\{.ADDITIONALOPTIONS\\}\\}", $replacement);
-	$replacement = msvc_get_list_str($ldflags);
-	$vcxproj_template.replace("\\{\\{.ADDITIONALDEPENDENCIES\\}\\}", $replacement);
-	$replacement = msvc_get_includes_list($src);
-	$vcxproj_template.replace("\\{\\{.INCLUDES\\}\\}", $replacement);
-	$replacement = msvc_get_sources_list($src);
-	$vcxproj_template.replace("\\{\\{.SOURCES\\}\\}", $replacement);
+    var replacement type string;
 
-	result $vcxproj_template;
+    if ($target.match("\\.lib$") == 1) {
+        $replacement = "StaticLibrary";
+    } else if ($target.match("\\.dll$") == 1) {
+        $replacement = "DynamicLibrary";
+    } else if ($target.match("\\.exe$") == 1) {
+        $replacement = "Application";
+    } else {
+        $replacement = "(Unknown)";
+    }
+    $vcxproj_template.replace("\\{\\{.CONFIGURATIONTYPE\\}\\}", $replacement);
+
+    var option type list;
+    $option = hefesto.sys.get_option("charset");
+    if ($option.count() > 0) {
+        $replacement = $option.item(0);
+    } else {
+        $replacement = "MultiByte";
+    }
+    $vcxproj_template.replace("\\{\\{.CHARACTERSET\\}\\}", $replacement);
+
+    $option = hefesto.sys.get_option("bin-output-dir");
+    if ($option.count() > 0) {
+        $replacement = $option.item(0);
+        if ($replacement.match("\\\\$") == 0) {
+            $replacement = $replacement + "\\";
+        }
+    } else {
+        $replacement = "$(SolutionDir)$(Platform)\\$(Configuration)\\";
+    }
+    $vcxproj_template.replace("\\{\\{.OUTDIR\\}\\}", $replacement);
+
+    $option = hefesto.sys.get_option("link-model");
+    $replacement = $option.item(0);
+    if ($replacement == "shared") {
+        $replacement = "DLL";
+    } else {
+        $replacement = "";
+    }
+    $vcxproj_template.replace("\\{\\{.RUNTIMELIBRARY\\}\\}", $replacement);	
+
+    $replacement = msvc_get_rootnamespace();
+    $vcxproj_template.replace("\\{\\{.ROOTNAMESPACE\\}\\}", $replacement);
+    $replacement = msvc_get_list_str($inc);
+    $vcxproj_template.replace("\\{\\{.ADDITIONALINCLUDEDIRECTORIES\\}\\}", $replacement);
+    $replacement = msvc_get_preprocessor_defs($cflags);
+    $vcxproj_template.replace("\\{\\{.PREPROCESSORDEFINITIONS\\}\\}", $replacement);
+    $replacement = msvc_get_compiler_options($cflags);
+    $vcxproj_template.replace("\\{\\{.ADDITIONALOPTIONS\\}\\}", $replacement);
+    $replacement = msvc_get_list_str($ldflags);
+    $vcxproj_template.replace("\\{\\{.ADDITIONALDEPENDENCIES\\}\\}", $replacement);
+    $replacement = msvc_get_includes_list($src);
+    $vcxproj_template.replace("\\{\\{.INCLUDES\\}\\}", $replacement);
+    $replacement = msvc_get_sources_list($src);
+    $vcxproj_template.replace("\\{\\{.SOURCES\\}\\}", $replacement);
+
+    result $vcxproj_template;
 }
 
 local function msvc_get_includes_list(src type list) : result type string {
-	result msvc_get_code_list($src, ".*\\.(h|H|hpp|HPP|Hpp)$", "ClInclude");
+    result msvc_get_code_list($src, ".*\\.(h|H|hpp|HPP|Hpp)$", "ClInclude");
 }
 
 local function msvc_get_sources_list(src type list) : result type string {
-	result msvc_get_code_list($src, ".*\\.(c|C|cc|CC|Cc|cpp|CPP|Cpp)$", "ClCompile");
+    result msvc_get_code_list($src, ".*\\.(c|C|cc|CC|Cc|cpp|CPP|Cpp)$", "ClCompile");
 }
 
 local function msvc_get_code_list(src type list, pattern type string, directive_tag type string) : result type string {
-	var inc type list;
-	var s type int;
-	
-	$s = 0;
-	while ($s < $src.count()) {
-		var filepath type string;
-		$filepath = $src.item($s);
-		if ($filepath.match($pattern) == 1) {
-			$inc.add_item($filepath);
-		}
-		$s = $s + 1;
-	}
-	var inc_str type string;
-	$s = 0;
-	while ($s < $inc.count()) {
-		$inc_str = $inc_str + "<" + $directive_tag + " Include=\"" + $inc.item($s) + "\" />";
-		$s = $s + 1;
-	}
-	result $inc_str;
+    var inc type list;
+    var s type int;
+
+    $s = 0;
+    while ($s < $src.count()) {
+        var filepath type string;
+        $filepath = $src.item($s);
+        if ($filepath.match($pattern) == 1) {
+            $inc.add_item($filepath);
+        }
+        $s = $s + 1;
+    }
+    var inc_str type string;
+    $s = 0;
+    while ($s < $inc.count()) {
+        $inc_str = $inc_str + "<" + $directive_tag + " Include=\"" + $inc.item($s) + "\" />";
+        $s = $s + 1;
+    }
+    result $inc_str;
 }
 
 local function msvc_get_rootnamespace() : result type string {
-	var cwd type string;
-	$cwd = hefesto.sys.pwd();
-	var c type int;
-	$c = $cwd.len() - 1;
-	while ($c > 0 && $cwd.at($c) != "\\") {
-		$c = $c - 1;
-	}
-	$c = $c + 1;
-	var rootnamespace type string;
-	while ($c < $cwd.len()) {
-		$rootnamespace = $rootnamespace + $cwd.at($c);
-		$c = $c + 1;
-	}
-	result $rootnamespace;
+    var cwd type string;
+    $cwd = hefesto.sys.pwd();
+    var c type int;
+    $c = $cwd.len() - 1;
+    while ($c > 0 && $cwd.at($c) != "\\") {
+        $c = $c - 1;
+    }
+    $c = $c + 1;
+    var rootnamespace type string;
+    while ($c < $cwd.len()) {
+        $rootnamespace = $rootnamespace + $cwd.at($c);
+        $c = $c + 1;
+    }
+    result $rootnamespace;
 }
 
 local function msvc_get_list_str(lst type list) : result type string {
-	var str type string;
-	var l type int;
-	$l = 0;
-	while ($l < $lst.count()) {
-		$str = $str + $lst.item($l) + ";";
-		$l = $l + 1;
-	}
-	result $str;
+    var str type string;
+    var l type int;
+    $l = 0;
+    while ($l < $lst.count()) {
+        $str = $str + $lst.item($l) + ";";
+        $l = $l + 1;
+    }
+    result $str;
 }
 
 local function msvc_get_preprocessor_defs(cflags type list) : result type string {
-	var defs type list;
-	var c type int;
-	$c = 0;
-	while ($c < $cflags.count()) {
-		var flag type string;
-		$flag = $cflags.item($c);
-		if ($flag.match("^-D") == 1) {
-			$flag.replace("^-D", "");
-			$defs.add_item($flag);
-		}
-		$c = $c + 1;
-	}
-	result msvc_get_list_str($defs);
+    var defs type list;
+    var c type int;
+    $c = 0;
+    while ($c < $cflags.count()) {
+        var flag type string;
+        $flag = $cflags.item($c);
+        if ($flag.match("^-D") == 1) {
+            $flag.replace("^-D", "");
+            $defs.add_item($flag);
+        }
+        $c = $c + 1;
+    }
+    result msvc_get_list_str($defs);
 }
 
 local function msvc_get_compiler_options(cflags type list) : result type string {
-	var options type string;
-	var c type int;
-	$c = 0;
-	while ($c < $cflags.count()) {
-		var option type string;
-		$option = $cflags.item($c);
-		if ($option.match("^/") == 1) {
-			$options = $options + $option + " ";
-		}
-		$c = $c + 1;
-	}
-	result $options;
+    var options type string;
+    var c type int;
+    $c = 0;
+    while ($c < $cflags.count()) {
+        var option type string;
+        $option = $cflags.item($c);
+        if ($option.match("^/") == 1) {
+            $options = $options + $option + " ";
+        }
+        $c = $c + 1;
+    }
+    result $options;
 }
