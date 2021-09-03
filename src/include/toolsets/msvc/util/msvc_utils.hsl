@@ -10,6 +10,7 @@
 #
 # Description: Utilities used by MSVC toolsets.
 #
+include ~/fsutil.hsl
 
 function msvc_msbuild(vcxproj_path type string) : result type int {
     var vsdevcmd type string;
@@ -41,7 +42,7 @@ local function msvc_get_configuration() : result type string {
     var option type list;
     $option = hefesto.sys.get_option("compile-model");
     if ($option.count() == 0) {
-        result "debug";
+        result "release";
     }
 
     var config type string;
@@ -55,7 +56,7 @@ local function msvc_get_configuration() : result type string {
     result $config;
 }
 
-local function msvc_get_platform() : result type string {
+function msvc_get_platform() : result type string {
     var option type list;
     var arch type string;
 

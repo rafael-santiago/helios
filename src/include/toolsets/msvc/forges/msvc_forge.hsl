@@ -12,7 +12,7 @@
 #
 # Toolset options:
 #
-#       --compile-model=<release|debug> (Debug is the default)
+#       --compile-model=<release|debug> (Release is the default)
 #
 #       --link-model=<static|shared> (Static is the default)
 #
