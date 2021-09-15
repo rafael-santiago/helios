@@ -176,14 +176,14 @@ function msvc_get_vcxproj_from_exe(sys type string) : result type string {
 }
 
 local function msvc_generate_vcxproj_metadata(vcxproj_filename type string,
-                                              src type list,
-                                              inc type list,
-                                              cflags type list,
-                                              lib type list,
-                                              ldflags type list,
-                                              target type string) : result type string {
-    var vcxproj_template type string;
-    $vcxproj_template  = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+					  		   		          src type list,
+									          inc type list,
+									          cflags type list,
+									          lib type list,
+									          ldflags type list,
+									          target type string) : result type string {
+	var vcxproj_template type string;
+	$vcxproj_template  = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
                          "<Project DefaultTargets=\"Build\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\">\n" +
                          "<ItemGroup Label=\"ProjectConfigurations\">\n" +
                          "<ProjectConfiguration Include=\"Debug|Win32\">\n" +
@@ -256,20 +256,20 @@ local function msvc_generate_vcxproj_metadata(vcxproj_filename type string,
                          "</ImportGroup>\n" +
                          "<PropertyGroup Label=\"UserMacros\" />\n" +
                          "<PropertyGroup Condition=\"'$(Configuration)|$(Platform)'=='Debug|Win32'\">\n" +
-                         "<LinkIncremental>true</LinkIncremental>\n" +
-                         "<OutDir>{{.OUTDIR}}</OutDir>\n" +
+                         "<LinkIncremental>false</LinkIncremental>\n" +
+						 "<OutDir>{{.OUTDIR}}</OutDir>\n" +
                          "</PropertyGroup>\n" +
                          "<PropertyGroup Condition=\"'$(Configuration)|$(Platform)'=='Release|Win32'\">\n" +
                          "<LinkIncremental>false</LinkIncremental>\n" +
                          "<OutDir>{{.OUTDIR}}</OutDir>\n" +
-                         "</PropertyGroup>\n" +
+						 "</PropertyGroup>\n" +
                          "<PropertyGroup Condition=\"'$(Configuration)|$(Platform)'=='Debug|x64'\">\n" +
-                         "<LinkIncremental>true</LinkIncremental>\n" +
-                         "<OutDir>{{.OUTDIR}}</OutDir>\n" +
+                         "<LinkIncremental>false</LinkIncremental>\n" +
+						 "<OutDir>{{.OUTDIR}}</OutDir>\n" +
                          "</PropertyGroup>\n" +
                          "<PropertyGroup Condition=\"'$(Configuration)|$(Platform)'=='Release|x64'\">\n" +
                          "<LinkIncremental>false</LinkIncremental>\n" +
-                         "<OutDir>{{.OUTDIR}}</OutDir>\n" +
+						 "<OutDir>{{.OUTDIR}}</OutDir>\n" +
                          "</PropertyGroup>\n" +
                          "<ItemDefinitionGroup Condition=\"'$(Configuration)|$(Platform)'=='Debug|Win32'\">\n" +
                          "<ClCompile>\n" +
@@ -280,14 +280,15 @@ local function msvc_generate_vcxproj_metadata(vcxproj_filename type string,
                          "<PrecompiledHeader>NotUsing</PrecompiledHeader>\n" +
                          "<PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>\n" +
                          "<AdditionalIncludeDirectories>{{.ADDITIONALINCLUDEDIRECTORIES}}</AdditionalIncludeDirectories>\n" +
-                         "<RuntimeLibrary>MultiThreadedDebug{{.RUNTIMELIBRARY}}</RuntimeLibrary>\n" +
-                         "<AdditionalOptions>{{.ADDITIONALOPTIONS}}%(AdditionalOptions)</AdditionalOptions>\n" +
+						 "<RuntimeLibrary>MultiThreadedDebug{{.RUNTIMELIBRARY}}</RuntimeLibrary>\n" +
+						 "<AdditionalOptions>{{.ADDITIONALOPTIONS}}%(AdditionalOptions)</AdditionalOptions>\n" +
                          "</ClCompile>\n" +
                          "<Link>\n" +
                          "<SubSystem>\n" +
                          "</SubSystem>\n" +
                          "<GenerateDebugInformation>true</GenerateDebugInformation>\n" +
-                         "<AdditionalDependencies>{{.ADDITIONALDEPENDENCIES}};%(AdditionalDependencies)</AdditionalDependencies>\n" +
+						 "<AdditionalDependencies>{{.ADDITIONALDEPENDENCIES}};%(AdditionalDependencies)</AdditionalDependencies>\n" +
+                         "<AdditionalLibraryDirectories>{{.ADDITIONALLIBRARYDIRECTORIES}}</AdditionalLibraryDirectories>\n" +
                          "</Link>\n" +
                          "</ItemDefinitionGroup>\n" +
                          "<ItemDefinitionGroup Condition=\"'$(Configuration)|$(Platform)'=='Release|Win32'\">\n" +
@@ -301,8 +302,8 @@ local function msvc_generate_vcxproj_metadata(vcxproj_filename type string,
                          "<PrecompiledHeader>NotUsing</PrecompiledHeader>\n" +
                          "<PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>\n" +
                          "<RuntimeLibrary>MultiThreaded{{.RUNTIMELIBRARY}}</RuntimeLibrary>\n" +
-                         "<AdditionalIncludeDirectories>{{.ADDITIONALINCLUDEDIRECTORIES}}</AdditionalIncludeDirectories>\n" +
-                         "<AdditionalOptions>{{.ADDITIONALOPTIONS}}%(AdditionalOptions)</AdditionalOptions>\n" +
+						 "<AdditionalIncludeDirectories>{{.ADDITIONALINCLUDEDIRECTORIES}}</AdditionalIncludeDirectories>\n" +
+						 "<AdditionalOptions>{{.ADDITIONALOPTIONS}}%(AdditionalOptions)</AdditionalOptions>\n" +
                          "</ClCompile>\n" +
                          "<Link>\n" +
                          "<SubSystem>\n" +
@@ -310,7 +311,8 @@ local function msvc_generate_vcxproj_metadata(vcxproj_filename type string,
                          "<EnableCOMDATFolding>true</EnableCOMDATFolding>\n" +
                          "<OptimizeReferences>true</OptimizeReferences>\n" +
                          "<GenerateDebugInformation>true</GenerateDebugInformation>\n" +
-                         "<AdditionalDependencies>{{.ADDITIONALDEPENDENCIES}};%(AdditionalDependencies)</AdditionalDependencies>\n" +
+						 "<AdditionalDependencies>{{.ADDITIONALDEPENDENCIES}};%(AdditionalDependencies)</AdditionalDependencies>\n" +
+                         "<AdditionalLibraryDirectories>{{.ADDITIONALLIBRARYDIRECTORIES}}</AdditionalLibraryDirectories>\n" +
                          "</Link>\n" +
                          "</ItemDefinitionGroup>\n" +
                          "<ItemDefinitionGroup Condition=\"'$(Configuration)|$(Platform)'=='Debug|x64'\">\n" +
@@ -321,15 +323,16 @@ local function msvc_generate_vcxproj_metadata(vcxproj_filename type string,
                          "<ConformanceMode>true</ConformanceMode>\n" +
                          "<PrecompiledHeader>NotUsing</PrecompiledHeader>\n" +
                          "<PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>\n" +
-                         "<RuntimeLibrary>MultiThreadedDebug{{.RUNTIMELIBRARY}}</RuntimeLibrary>\n" +
-                         "<AdditionalIncludeDirectories>{{.ADDITIONALINCLUDEDIRECTORIES}}</AdditionalIncludeDirectories>\n" +
-                         "<AdditionalOptions>{{.ADDITIONALOPTIONS}}%(AdditionalOptions)</AdditionalOptions>\n" +
+						 "<RuntimeLibrary>MultiThreadedDebug{{.RUNTIMELIBRARY}}</RuntimeLibrary>\n" +
+	                     "<AdditionalIncludeDirectories>{{.ADDITIONALINCLUDEDIRECTORIES}}</AdditionalIncludeDirectories>\n" +
+						 "<AdditionalOptions>{{.ADDITIONALOPTIONS}}%(AdditionalOptions)</AdditionalOptions>\n" +
                          "</ClCompile>\n" +
                          "<Link>\n" +
                          "<SubSystem>\n" +
                          "</SubSystem>\n" +
                          "<GenerateDebugInformation>true</GenerateDebugInformation>\n" +
-                         "<AdditionalDependencies>{{.ADDITIONALDEPENDENCIES}};%(AdditionalDependencies)</AdditionalDependencies>\n" +
+						 "<AdditionalDependencies>{{.ADDITIONALDEPENDENCIES}};%(AdditionalDependencies)</AdditionalDependencies>\n" +
+                         "<AdditionalLibraryDirectories>{{.ADDITIONALLIBRARYDIRECTORIES}}</AdditionalLibraryDirectories>\n" +
                          "</Link>\n" +
                          "</ItemDefinitionGroup>\n" +
                          "<ItemDefinitionGroup Condition=\"'$(Configuration)|$(Platform)'=='Release|x64'\">\n" +
@@ -342,9 +345,9 @@ local function msvc_generate_vcxproj_metadata(vcxproj_filename type string,
                          "<ConformanceMode>true</ConformanceMode>\n" +
                          "<PrecompiledHeader>NotUsing</PrecompiledHeader>\n" +
                          "<PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>\n" +
-                         "<RuntimeLibrary>MultiThreaded{{.RUNTIMELIBRARY}}</RuntimeLibrary>\n" +
-                         "<AdditionalIncludeDirectories>{{.ADDITIONALINCLUDEDIRECTORIES}}</AdditionalIncludeDirectories>\n" +
-                         "<AdditionalOptions>{{.ADDITIONALOPTIONS}}%(AdditionalOptions)</AdditionalOptions>\n" +
+						 "<RuntimeLibrary>MultiThreaded{{.RUNTIMELIBRARY}}</RuntimeLibrary>\n" +
+	                     "<AdditionalIncludeDirectories>{{.ADDITIONALINCLUDEDIRECTORIES}}</AdditionalIncludeDirectories>\n" +
+						 "<AdditionalOptions>{{.ADDITIONALOPTIONS}}%(AdditionalOptions)</AdditionalOptions>\n" +
                          "</ClCompile>\n" +
                          "<Link>\n" +
                          "<SubSystem>\n" +
@@ -352,77 +355,80 @@ local function msvc_generate_vcxproj_metadata(vcxproj_filename type string,
                          "<EnableCOMDATFolding>true</EnableCOMDATFolding>\n" +
                          "<OptimizeReferences>true</OptimizeReferences>\n" +
                          "<GenerateDebugInformation>true</GenerateDebugInformation>\n" +
-                         "<AdditionalDependencies>{{.ADDITIONALDEPENDENCIES}};%(AdditionalDependencies)</AdditionalDependencies>\n" +
+						 "<AdditionalDependencies>{{.ADDITIONALDEPENDENCIES}};%(AdditionalDependencies)</AdditionalDependencies>\n" +
+                         "<AdditionalLibraryDirectories>{{.ADDITIONALLIBRARYDIRECTORIES}}</AdditionalLibraryDirectories>\n" +
                          "</Link>\n" +
-                         "</ItemDefinitionGroup>\n" +
+	                     "</ItemDefinitionGroup>\n" +
                          "<ItemGroup>\n" +
                          "{{.INCLUDES}}\n" +
                          "</ItemGroup>\n" +
-                         "<ItemGroup>\n" +
+                         "<ItemGroup>\n" +	
                          "{{.SOURCES}}\n" +
                          "</ItemGroup>\n" +
                          "<Import Project=\"$(VCTargetsPath)\Microsoft.Cpp.targets\" />\n" +
                          "<ImportGroup Label=\"ExtensionTargets\">\n" +
-                         "</ImportGroup>\n" +
+                         "</ImportGroup>\n" + 
                          "</Project>\n";
-    var replacement type string;
+	var replacement type string;
+	
+	if ($target.match("\\.lib$") == 1) {
+		$replacement = "StaticLibrary";
+	} else if ($target.match("\\.dll$") == 1) {
+		$replacement = "DynamicLibrary";
+	} else if ($target.match("\\.exe$") == 1) {
+		$replacement = "Application";
+	} else {
+		$replacement = "(Unknown)";
+	}
+	$vcxproj_template.replace("\\{\\{.CONFIGURATIONTYPE\\}\\}", $replacement);
+	
+	var option type list;
+	$option = hefesto.sys.get_option("charset");
+	if ($option.count() > 0) {
+		$replacement = $option.item(0);
+	} else {
+		$replacement = "MultiByte";
+	}
+	$vcxproj_template.replace("\\{\\{.CHARACTERSET\\}\\}", $replacement);
+	
+	$option = hefesto.sys.get_option("bin-output-dir");
+	if ($option.count() > 0) {
+		$replacement = $option.item(0);
+		if ($replacement.match("\\\\$") == 0) {
+			$replacement = $replacement + "\\";
+		}
+	} else {
+		$replacement = "$(SolutionDir)$(Platform)\\$(Configuration)\\";
+	}
+	$vcxproj_template.replace("\\{\\{.OUTDIR\\}\\}", $replacement);
+	
+	$option = hefesto.sys.get_option("link-model");
+	$replacement = $option.item(0);
+	if ($replacement == "shared") {
+		$replacement = "DLL";
+	} else {
+		$replacement = "";
+	}
+	$vcxproj_template.replace("\\{\\{.RUNTIMELIBRARY\\}\\}", $replacement);	
+	
+	$replacement = msvc_get_rootnamespace();
+	$vcxproj_template.replace("\\{\\{.ROOTNAMESPACE\\}\\}", $replacement);
+	$replacement = msvc_get_list_str($inc);
+	$vcxproj_template.replace("\\{\\{.ADDITIONALINCLUDEDIRECTORIES\\}\\}", $replacement);
+	$replacement = msvc_get_preprocessor_defs($cflags);
+	$vcxproj_template.replace("\\{\\{.PREPROCESSORDEFINITIONS\\}\\}", $replacement);
+	$replacement = msvc_get_compiler_options($cflags);
+	$vcxproj_template.replace("\\{\\{.ADDITIONALOPTIONS\\}\\}", $replacement);
+	$replacement = msvc_get_list_str($ldflags);
+	$vcxproj_template.replace("\\{\\{.ADDITIONALDEPENDENCIES\\}\\}", $replacement);
+    $replacement = msvc_get_list_str($lib);
+    $vcxproj_template.replace("\\{\\{.ADDITIONALLIBRARYDIRECTORIES\\}\\}", $replacement);
+	$replacement = msvc_get_includes_list($src);
+	$vcxproj_template.replace("\\{\\{.INCLUDES\\}\\}", $replacement);
+	$replacement = msvc_get_sources_list($src);
+	$vcxproj_template.replace("\\{\\{.SOURCES\\}\\}", $replacement);
 
-    if ($target.match("\\.lib$") == 1) {
-        $replacement = "StaticLibrary";
-    } else if ($target.match("\\.dll$") == 1) {
-        $replacement = "DynamicLibrary";
-    } else if ($target.match("\\.exe$") == 1) {
-        $replacement = "Application";
-    } else {
-        $replacement = "(Unknown)";
-    }
-    $vcxproj_template.replace("\\{\\{.CONFIGURATIONTYPE\\}\\}", $replacement);
-
-    var option type list;
-    $option = hefesto.sys.get_option("charset");
-    if ($option.count() > 0) {
-        $replacement = $option.item(0);
-    } else {
-        $replacement = "MultiByte";
-    }
-    $vcxproj_template.replace("\\{\\{.CHARACTERSET\\}\\}", $replacement);
-
-    $option = hefesto.sys.get_option("bin-output-dir");
-    if ($option.count() > 0) {
-        $replacement = $option.item(0);
-        if ($replacement.match("\\\\$") == 0) {
-            $replacement = $replacement + "\\";
-        }
-    } else {
-        $replacement = "$(SolutionDir)$(Platform)\\$(Configuration)\\";
-    }
-    $vcxproj_template.replace("\\{\\{.OUTDIR\\}\\}", $replacement);
-
-    $option = hefesto.sys.get_option("link-model");
-    $replacement = $option.item(0);
-    if ($replacement == "shared") {
-        $replacement = "DLL";
-    } else {
-        $replacement = "";
-    }
-    $vcxproj_template.replace("\\{\\{.RUNTIMELIBRARY\\}\\}", $replacement);	
-
-    $replacement = msvc_get_rootnamespace();
-    $vcxproj_template.replace("\\{\\{.ROOTNAMESPACE\\}\\}", $replacement);
-    $replacement = msvc_get_list_str($inc);
-    $vcxproj_template.replace("\\{\\{.ADDITIONALINCLUDEDIRECTORIES\\}\\}", $replacement);
-    $replacement = msvc_get_preprocessor_defs($cflags);
-    $vcxproj_template.replace("\\{\\{.PREPROCESSORDEFINITIONS\\}\\}", $replacement);
-    $replacement = msvc_get_compiler_options($cflags);
-    $vcxproj_template.replace("\\{\\{.ADDITIONALOPTIONS\\}\\}", $replacement);
-    $replacement = msvc_get_list_str($ldflags);
-    $vcxproj_template.replace("\\{\\{.ADDITIONALDEPENDENCIES\\}\\}", $replacement);
-    $replacement = msvc_get_includes_list($src);
-    $vcxproj_template.replace("\\{\\{.INCLUDES\\}\\}", $replacement);
-    $replacement = msvc_get_sources_list($src);
-    $vcxproj_template.replace("\\{\\{.SOURCES\\}\\}", $replacement);
-
-    result $vcxproj_template;
+	result $vcxproj_template;
 }
 
 local function msvc_get_includes_list(src type list) : result type string {
