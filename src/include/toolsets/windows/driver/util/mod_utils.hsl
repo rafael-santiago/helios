@@ -11,64 +11,64 @@
 #
 
 function insmod(driver_binary type string) : result type int {
-	var exit_code type int;
-	var service_name type string;
-	
-	$service_name = get_servicename($driver_binary);	
-	
-	hefesto.sys.run("sc stop " + $service_name + " >nul 2>&1");
-	hefesto.sys.run("sc delete " + $service_name + " >nul 2>&1");
-	
-	$exit_code = hefesto.sys.run("sc create " + $service_name + " binpath=" + $driver_binary + " type=kernel");
-	
-	if ($exit_code != 0) {
-		hefesto.sys.echo("ERROR: Unable to create service " + $service_name + ".\n");
-		result $exit_code;
-	}
-	
-	result hefesto.sys.run("sc start " + $service_name);
+    var exit_code type int;
+    var service_name type string;
+
+    $service_name = get_servicename($driver_binary);
+
+    hefesto.sys.run("sc stop " + $service_name + " >nul 2>&1");
+    hefesto.sys.run("sc delete " + $service_name + " >nul 2>&1");
+
+    $exit_code = hefesto.sys.run("sc create " + $service_name + " binpath=" + $driver_binary + " type=kernel >nul 2>&1");
+
+    if ($exit_code != 0) {
+        hefesto.sys.echo("ERROR: Unable to create service " + $service_name + ".\n");
+        result $exit_code;
+    }
+
+    result hefesto.sys.run("sc start " + $service_name + " >nul 2>&1");
 }
 
 function rmmod(driver_binary type string) : result type int {
-	var exit_code type int;
-	var service_name type string;
-	
-	$service_name = get_servicename($driver_binary);
-	
-	$exit_code = hefesto.sys.run("sc stop " + $service_name);
-	
-	if ($exit_code != 0) {
-		hefesto.sys.echo("ERROR: Unable to stop service " + $service_name + ".\n");
-		result $exit_code;
-	}
-	
-	result hefesto.sys.run("sc delete " + $service_name);
+    var exit_code type int;
+    var service_name type string;
+
+    $service_name = get_servicename($driver_binary);
+
+    $exit_code = hefesto.sys.run("sc stop " + $service_name + " >nul 2>&1");
+
+    if ($exit_code != 0) {
+        hefesto.sys.echo("ERROR: Unable to stop service " + $service_name + ".\n");
+        result $exit_code;
+    }
+
+    result hefesto.sys.run("sc delete " + $service_name + " >nul 2>&1");
 }
 
 local function get_servicename(driver_binary type string) : result type string {
-	var d type int;
-	
-	$d = $driver_binary.len() - 1;
-	
-	while ($d > 0) {
-		if ($driver_binary.at($d) == "\\" || $driver_binary.at($d) == "/") {
-			break;
-		}
-		$d = $d - 1;
-	}
+    var d type int;
 
-	var service_name type string;
-	
-	if ($d > 0) {
-		$d = $d + 1;
-	}
-	
-	while ($d < $driver_binary.len()) {
-		$service_name = $service_name + $driver_binary.at($d);
-		$d = $d + 1;
-	}
-	
-	$service_name.replace("\\.sys$", "");
+    $d = $driver_binary.len() - 1;
 
-	result $service_name;
+    while ($d > 0) {
+        if ($driver_binary.at($d) == "\\" || $driver_binary.at($d) == "/") {
+            break;
+        }
+        $d = $d - 1;
+    }
+
+    var service_name type string;
+
+    if ($d > 0) {
+        $d = $d + 1;
+    }
+
+    while ($d < $driver_binary.len()) {
+        $service_name = $service_name + $driver_binary.at($d);
+        $d = $d + 1;
+    }
+
+    $service_name.replace("\\.sys$", "");
+
+    result $service_name;
 }
