@@ -35,7 +35,56 @@ function msvc_msbuild(vcxproj_path type string) : result type int {
 
     hefesto.sys.echo("INFO: Now building " + $configuration + "/" + $platform + "...\n");
 
-    result hefesto.sys.run(hefesto.toolset.build($vsdevcmd, $vcxproj_path, $configuration, $platform));
+    var exit_code type int;
+
+    $exit_code = hefesto.sys.run(hefesto.toolset.build($vsdevcmd, $vcxproj_path, $configuration, $platform));
+
+    var oldcwd type string;
+    $oldcwd = hefesto.sys.pwd();
+
+    var build_outdir type string;
+    if ($platform != "x86") {
+        $build_outdir = hefesto.sys.make_path(hefesto.sys.make_path(hefesto.sys.pwd(), $platform), $configuration);
+    } else {
+        $build_outdir = hefesto.sys.make_path(hefesto.sys.pwd(), $configuration);
+    }
+
+    hefesto.sys.cd($build_outdir);
+
+    var burn type list;
+    $burn.ls(".*\\.(recipe|CppClean\\.log|FileListAbsolute\\.txt)$");
+    $burn.ls(".*tlog$");
+
+    var b type int;
+    $b = 0;
+    while ($b < $burn.count()) {
+        var filepath type string;
+        $filepath = $burn.item($b);
+
+        if (isfile($filepath)) {
+            hefesto.sys.rm($filepath);
+        } else {
+            if (hefesto.sys.cd($filepath)) {
+                var subtargets type list;
+                $subtargets.ls(".*");
+
+                var s type int;
+                $s = 0;
+                while ($s < $subtargets.count()) {
+                    hefesto.sys.rm($subtargets.item($s));
+                    $s = $s + 1;
+                }
+
+                hefesto.sys.cd("..");
+                hefesto.sys.rmdir($filepath);
+            }
+        }
+        $b = $b + 1;
+    }
+
+    hefesto.sys.cd($oldcwd);
+
+    result $exit_code;
 }
 
 local function msvc_get_configuration() : result type string {
