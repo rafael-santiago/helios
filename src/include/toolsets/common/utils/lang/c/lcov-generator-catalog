@@ -1,0 +1,5 @@
+===
+=== The LCOV generator
+===
+
+Description: A GCOV/LCOV report generator for GCC and Clang toolsets.

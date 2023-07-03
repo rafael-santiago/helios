@@ -81,14 +81,16 @@ function gcc_lib_compile_source_list(sources type list, includes type string, cf
         $qsize = $qsize_list.item(0);
     }
     $compile_model = hefesto.sys.get_option("compile-model");
-    $is_release = 1;
+    var coverage type list;
+    $coverage = hefesto.sys.get_option("coverage");
+    $is_release = ($coverage.count() == 0);
     if ($compile_model.count() > 0) {
         if ($compile_model.item(0) != "release" &&
             $compile_model.item(0) != "debug") {
             hefesto.sys.echo(hefesto.project.toolset() + " internal error: unknown compile model: \"" + $compile_model.item(0) + "\"\n");
             result 1;
         }
-        $is_release = ($compile_model.item(0) == "release");
+        $is_release = ($is_release == 1 && $compile_model.item(0) == "release");
     }
     $link_model = hefesto.sys.get_option("link-model");
     $is_static = 1;
@@ -109,7 +111,7 @@ function gcc_lib_compile_source_list(sources type list, includes type string, cf
             $ofile = $sources.item($i);
             $ofile = gcc_mk_ofile_name(filenamefrompath($ofile), $obj_dir);
 #            $regex = gcc_mk_regex_pattern_from_filepath($ofile);
-            if (hefesto.toolset.file_has_change($sources.item($i)) == 1 || isfile($ofile) == 0) {
+            if ($coverage.count() > 0 || hefesto.toolset.file_has_change($sources.item($i)) == 1 || isfile($ofile) == 0) {
                 $gcc_c_lib_project_forge_dirty_files_nr = $gcc_c_lib_project_forge_dirty_files_nr + 1;
                 $curr_src_file = "\"" + $sources.item($i) + "\"";
                 $exit_code = hefesto.sys.run(gcc_mk_lib_compilation_command($curr_src_file, $ofile, $includes, $cflags, $is_release, $is_static));
@@ -133,7 +135,7 @@ function gcc_lib_compile_source_list(sources type list, includes type string, cf
             $ofile = $sources.item($i);
             $ofile = gcc_mk_ofile_name(filenamefrompath($ofile), $obj_dir);
 #            $regex = gcc_mk_regex_pattern_from_filepath($ofile);
-            if (hefesto.toolset.file_has_change($sources.item($i)) == 1 || isfile($ofile) == 0) {
+            if ($coverage.count() > 0 || hefesto.toolset.file_has_change($sources.item($i)) == 1 || isfile($ofile) == 0) {
                 $gcc_c_lib_project_forge_dirty_files_nr = $gcc_c_lib_project_forge_dirty_files_nr + 1;
                 $curr_src_file = "\"" + $sources.item($i) + "\"";
                 $run_list.add_item(gcc_mk_lib_compilation_command($curr_src_file, $ofile, $includes, $cflags, $is_release, $is_static));
@@ -227,6 +229,13 @@ function gcc_c_lib_forge(SOURCES type list, INCLUDES type list, CFLAGS type list
     $exit_code = 0;
 
     $includes = gcc_mk_gcc_incl_str_opt($INCLUDES);
+
+    var coverage type list;
+    $coverage = hefesto.sys.get_option("coverage");
+    if ($coverage.count() > 0) {
+        $CFLAGS.add_item("--coverage");
+        $LDFLAGS.add_item("--coverage");
+    }
 
     $cflags = gcc_mk_raw_str_opt($CFLAGS);
 

@@ -79,8 +79,11 @@ function gcc_app_compile_source_list(sources type list, includes type string, cf
         $qsize = $qsize_list.item(0);
     }
 
+    var coverage type list;
+    $coverage = hefesto.sys.get_option("coverage");
+
     $compile_model = hefesto.sys.get_option("compile-model");
-    $is_release = 1;
+    $is_release = ($coverage.count() == 0);
 
     if ($compile_model.count() > 0) {
         if ($compile_model.item(0) != "release" &&
@@ -88,7 +91,7 @@ function gcc_app_compile_source_list(sources type list, includes type string, cf
             hefesto.sys.echo(hefesto.project.toolset() + " internal error: unknown compile model: \"" + $compile_model.item(0) + "\"\n");
             result 1;
         }
-        $is_release = ($compile_model.item(0) == "release");
+        $is_release = ($is_release == 1 && $compile_model.item(0) == "release");
     }
 
     $exit_code = 0;
@@ -102,7 +105,7 @@ function gcc_app_compile_source_list(sources type list, includes type string, cf
         while ($i < $size && $exit_code == 0) {
             $ofile = $sources.item($i);
             $ofile = gcc_mk_ofile_name(filenamefrompath($ofile), $obj_dir);
-            if (hefesto.toolset.file_has_change($sources.item($i)) == 1 || isfile($ofile) == 0) {
+            if ($coverage.count() > 0 || hefesto.toolset.file_has_change($sources.item($i)) == 1 || isfile($ofile) == 0) {
                 $gcc_c_app_project_forge_dirty_files_nr = $gcc_c_app_project_forge_dirty_files_nr + 1;
                 $curr_src_file = "\"" + $sources.item($i) + "\"";
                 $exit_code = hefesto.sys.run(gcc_mk_app_compilation_command($curr_src_file, $ofile, $includes, $cflags, $is_release));
@@ -125,7 +128,7 @@ function gcc_app_compile_source_list(sources type list, includes type string, cf
         while ($i < $size) {
             $ofile = $sources.item($i);
             $ofile = gcc_mk_ofile_name(filenamefrompath($ofile), $obj_dir);
-            if (hefesto.toolset.file_has_change($sources.item($i)) == 1 || isfile($ofile) == 0) {
+            if ($coverage.count() > 0 || hefesto.toolset.file_has_change($sources.item($i)) == 1 || isfile($ofile) == 0) {
                 $gcc_c_app_project_forge_dirty_files_nr = $gcc_c_app_project_forge_dirty_files_nr + 1;
                 $curr_src_file = "\"" + $sources.item($i) + "\"";
                 $run_list.add_item(gcc_mk_app_compilation_command($curr_src_file, $ofile, $includes, $cflags, $is_release));
@@ -239,6 +242,13 @@ function gcc_c_binary_forge(SOURCES type list, INCLUDES type list, CFLAGS type l
     $exit_code = 0;
 
     $includes = gcc_mk_gcc_incl_str_opt($INCLUDES); #  GCC's include list option string
+
+    var coverage type list;
+    $coverage = hefesto.sys.get_option("coverage");
+    if ($coverage.count() > 0) {
+        $CFLAGS.add_item("--coverage");
+        $LDFLAGS.add_item("--coverage");
+    }
 
     $cflags = gcc_mk_raw_str_opt($CFLAGS); #  GCC's compile options 
 

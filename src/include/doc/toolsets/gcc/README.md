@@ -49,6 +49,9 @@ In order to specify where to generate the object file use the option "--obj-outp
 
 Also it is possible to specify the output directory for the binary using the option "--bin-output-dir=<path>".
 
+If you want to instrument your build artifact for coverage use "--coverage" option it will activate the
+compile model "debug".
+
 The toolset used to link static/shared libraries is named "gcc-c-lib" for C language and "gcc-cc-lib" for
 C++ language... And it is located under "toolsets/gcc/gcc-lib.hsl".
 

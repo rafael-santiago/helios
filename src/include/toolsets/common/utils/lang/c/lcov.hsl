@@ -1,0 +1,255 @@
+#                                    Sun 02 Jul 2023 07:48:55 PM BRT
+#
+#                              Copyright (C) 2023 by Rafael Santiago
+#
+# This is free software. You can redistribute it and/or modify under
+# the terms of the GNU General Public License version 2.
+#
+# "lcov.hsl"
+#       by Rafael Santiago
+#
+#  Description: LCOV report generation conveniences.
+# ------------------------------------------------------------------
+# This is a convenience wrapper for LCOV usage. It works with GCC or
+# Clang and it is also able to detect which of those compilers are
+# in use when called generate_lcov_report() function.
+#
+# There is no secret on using it, once your code compiled with --coverage
+# option and your code ran, all you should do is call generate_lcov_report()
+# function passing the object output directory.
+#
+# If your entry point is in a file different of main.c you must pass the
+# full qualified path of it through the option --main-obj-filepath=<path>
+#
+# If your application when execute generates gcda file in several directories
+# you must pass those path in --gcda-search-path=<path0>,...,<pathN> option.
+#
+# If you want to generate the coverage info file in a directory different
+# from the --obj-output-dir option, you must use the option
+# --lcov-filepath=<path> option. It defaults to 'coverage.info'.
+#
+# If there are patterns that should be removed from lcov report, you
+# must use the option --lcov-remove-patterns=<pattern0>,...,<patternN>
+# option.
+#
+# If you want to generate the HTML based report you must use
+# --genhtml-outpath=<directory path> option. It creates the path
+# if it does not exist.
+#
+# You can pass the genhtml's rendering options through the option
+# --genhtml-rendering-options=<option0>,...,<optionN>
+#
+#                                                       -- Rafael
+
+include ~/fsutil.hsl
+
+function generate_lcov_report(obj_dir type string) : result type int {
+    var compiler type string;
+    $compiler = hefesto.project.toolset();
+    $compiler.replace("-.*$", "");
+    var generator type int;
+    $generator = hefesto.sys.get_func_addr($compiler + "_gen_lcov_report");
+    if ($generator == 0) {
+        hefesto.sys.echo("ERROR: you have a unknown compiler: '" + $compiler +
+                         "'. LCOV convenience no gives support for it.\n");
+        result 1;
+    }
+    var oldcwd type string;
+    $oldcwd = hefesto.sys.pwd();
+    if (hefesto.sys.cd($obj_dir) == 0) {
+        hefesto.sys.echo("ERROR: unable to access '" + $obj_dir + "'.\n");
+        result 1;
+    }
+
+    var option type list;
+    var main_obj_filepath type string;
+    var gcda_search_path type list;
+    var lcov_filepath type string;
+
+    get_coverage_options($oldcwd, $main_obj_filepath, $gcda_search_path, $lcov_filepath);
+
+    move_gcda_to_obj_dir($obj_dir, $gcda_search_path);
+
+    var err type int;
+    $err = hefesto.sys.call_func_addr($generator, $obj_dir, $main_obj_filepath, $lcov_filepath);
+
+    hefesto.sys.cd($oldcwd);
+
+    if ($err == 0) {
+        $option = hefesto.sys.get_option("genhtml-outpath");
+        if ($option.count() > 0) {
+            var genhtml_outpath type string;
+            $genhtml_outpath = $option.item(0);
+            $err = genhtml($lcov_filepath, $genhtml_outpath);
+        }
+    }
+
+    clean_coverage_files($obj_dir);
+
+    result $err;
+}
+
+local function gcc_gen_lcov_report(obj_dir type string,
+                                   main_obj_filepath type string,
+                                   lcov_filepath type string) : result type int {
+    var option type list;
+    $main_obj_filepath = pathfromfilepath($main_obj_filepath);
+    var err type int;
+    $err = hefesto.sys.run("lcov --capture --directory . --directory " +
+                           $main_obj_filepath + " --output-file " + $lcov_filepath + ">/dev/null 2>&1");
+    if ($err == 0) {
+        $option = hefesto.sys.get_option("lcov-remove-patterns");
+        $err = hefesto.sys.run("lcov --quiet --remove " + $lcov_filepath + " " +
+                                gcc_mk_raw_str_opt($option) + " --output-file " +
+                                $lcov_filepath + ">/dev/null 2>&1");
+        if ($err == 0) {
+            hefesto.sys.echo("INFO: coverage file generated at '" + $lcov_filepath + "'.\n");
+        } else {
+            hefesto.sys.echo("ERROR: unable to remove lcov patterns.\n");
+        }
+    } else {
+        hefesto.sys.echo("ERROR: unable to capture coverage info.\n");
+    }
+
+    result $err;
+}
+
+local function clang_gen_lcov_report(obj_dir type string,
+                                     main_obj_filepath type string,
+                                     lcov_filepath type string) : result type int {
+    var option type list;
+    var main_gcda type string;
+    $main_gcda = filenamefrompath($main_obj_filepath);
+    $main_gcda.replace("\\.o$", ".gcda");
+    var err type int;
+    $err = hefesto.sys.run("llvm-cov gcov -f -b " + $main_gcda + " >/dev/null 2>&1");
+    if ($err == 0 && mk_llvm_gcov_shell() == 0) {
+        $main_obj_filepath = pathfromfilepath($main_obj_filepath);
+        $err = hefesto.sys.run("lcov --capture --directory . --directory " + $main_obj_filepath +
+                               " --gcov-tool " + hefesto.sys.make_path(hefesto.sys.pwd(), ".llvm-gcov") +
+                               " --output-file " + $lcov_filepath + " >/dev/null 2>&1");
+        if ($err == 0) {
+            $option = hefesto.sys.get_option("lcov-remove-patterns");
+            $err = hefesto.sys.run("lcov --quiet --remove " + $lcov_filepath + " " +
+                                    gcc_mk_raw_str_opt($option) + " --output-file " +
+                                    $lcov_filepath + ">/dev/null 2>&1");
+            if ($err == 0) {
+                hefesto.sys.echo("INFO: coverage file generated at '" + $lcov_filepath + "'.\n");
+            } else {
+                hefesto.sys.echo("ERROR: unable to remove lcov patterns.\n");
+            }
+        } else {
+            hefesto.sys.echo("ERROR: unable to capture coverage info.\n");
+        }
+        rm_llvm_gcov_shell();
+    }
+
+    result $err;
+}
+
+local function mk_llvm_gcov_shell() : result type int {
+    var sh type file;
+    $sh = hefesto.sys.fopen(".llvm-gcov", "w");
+    if ($sh == 0) {
+        result 1;
+    }
+    var cmd type string;
+    $cmd = "exec llvm-cov gcov \"$@\"\n";
+    hefesto.sys.fwrite($cmd, $cmd.len(), $sh);
+    hefesto.sys.fclose($sh);
+    hefesto.sys.run("chmod +x .llvm-gcov");
+    result 0;
+}
+
+local function rm_llvm_gcov_shell() : result type none {
+    hefesto.sys.rm(".llvm-gcov");
+}
+
+local function move_gcda_to_obj_dir(obj_dir type string, gcda_search_path type list) : result type none {
+    var oldcwd type string;
+    $oldcwd = hefesto.sys.pwd();
+    if ($gcda_search_path.count() == 0) {
+        $gcda_search_path.add_item("..");
+    }
+
+    var gcda type list;
+    var g type int;
+
+    $g = 0;
+    while ($g < $gcda_search_path.count()) {
+        if (hefesto.sys.cd($gcda_search_path.item($g))) {
+            $gcda.ls(".*\\.gcda$");
+        }
+        $g = $g + 1;
+    }
+
+    $g = 0;
+    while ($g < $gcda.count()) {
+        var dest type string;
+        var src type string;
+        $src = $gcda.item($g);
+        $dest = hefesto.sys.make_path($obj_dir, filenamefrompath($src));
+        hefesto.sys.run("mv " + $src + " " + $dest);
+        $g = $g + 1;
+    }
+
+    hefesto.sys.cd($oldcwd);
+}
+
+local function clean_coverage_files(obj_dir type string) : result type none {
+    var oldcwd type string;
+    $oldcwd = hefesto.sys.pwd();
+    if (hefesto.sys.cd($obj_dir)) {
+        var objs type list;
+        $objs.ls(".*\\.o$");
+        $objs.ls(".*\\.gcda$");
+        $objs.ls(".*\\.gcno$");
+        var o type int;
+        $o = 0;
+        while ($o < $objs.count()) {
+            hefesto.sys.rm($objs.item($o));
+            $o = $o + 1;
+        }
+        hefesto.sys.cd($oldcwd);
+    }
+}
+
+local function genhtml(lcov_filename type string, outpath type string) : result type int {
+    var option type list;
+    $option = hefesto.sys.get_option("genhtml-rendering-options");
+    mktree($outpath);
+    var err type int;
+    $err = hefesto.sys.run("genhtml " + $lcov_filename + " " +
+                           gcc_mk_raw_str_opt($option) + " --output-directory " +
+                           $outpath + " >/dev/null 2>&1");
+    if ($err == 0) {
+        hefesto.sys.echo("INFO: coverage HTML report generated at '" + $outpath + "'.\n");
+    } else {
+        hefesto.sys.echo("ERROR: unable to generate coverage HTML report.\n");
+    }
+    result $err;
+}
+
+local function get_coverage_options(oldcwd type string,
+                                    main_obj_filepath type string,
+                                    gcda_search_path type list,
+                                    lcov_filepath type string) : result type none {
+    var option type list;
+    $option = hefesto.sys.get_option("main-obj-filepath");
+    if ($option.count() > 0) {
+        $main_obj_filepath = $option.item(0);
+    } else {
+        $main_obj_filepath = hefesto.sys.make_path($oldcwd, "main.c");
+    }
+    $gcda_search_path = hefesto.sys.get_option("gcda-search-path");
+    #move_gcda_to_obj_dir($obj_dir, $gcda_search_path);
+    $option = hefesto.sys.get_option("lcov-filepath");
+    if ($option.count() > 0) {
+        $lcov_filepath = $option.item(0);
+    } else {
+        $lcov_filepath = hefesto.sys.make_path(hefesto.sys.pwd(), "coverage.info");
+    }
+    hefesto.sys.byref($main_obj_filepath);
+    hefesto.sys.byref($gcda_search_path);
+    hefesto.sys.byref($lcov_filepath);
+}
