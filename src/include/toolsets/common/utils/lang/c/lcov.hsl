@@ -56,10 +56,6 @@ function generate_lcov_report(obj_dir type string) : result type int {
     }
     var oldcwd type string;
     $oldcwd = hefesto.sys.pwd();
-    if (hefesto.sys.cd($obj_dir) == 0) {
-        hefesto.sys.echo("ERROR: unable to access '" + $obj_dir + "'.\n");
-        result 1;
-    }
 
     var option type list;
     var main_obj_filepath type string;
@@ -68,7 +64,12 @@ function generate_lcov_report(obj_dir type string) : result type int {
 
     get_coverage_options($oldcwd, $main_obj_filepath, $gcda_search_path, $lcov_filepath);
 
-    move_gcda_to_obj_dir($obj_dir, $gcda_search_path);
+    move_gcfiles_to_obj_dir($obj_dir, $gcda_search_path);
+
+    if (hefesto.sys.cd($obj_dir) == 0) {
+        hefesto.sys.echo("ERROR: unable to access '" + $obj_dir + "'.\n");
+        result 1;
+    }
 
     var err type int;
     $err = hefesto.sys.call_func_addr($generator, $obj_dir, $main_obj_filepath, $lcov_filepath);
@@ -84,7 +85,7 @@ function generate_lcov_report(obj_dir type string) : result type int {
         }
     }
 
-    clean_coverage_files($obj_dir);
+#    clean_coverage_files($obj_dir);
 
     result $err;
 }
@@ -165,35 +166,38 @@ local function rm_llvm_gcov_shell() : result type none {
     hefesto.sys.rm(".llvm-gcov");
 }
 
-local function move_gcda_to_obj_dir(obj_dir type string, gcda_search_path type list) : result type none {
+local function move_gcfiles_to_obj_dir(obj_dir type string, gcda_search_path type list) : result type none {
     var oldcwd type string;
     $oldcwd = hefesto.sys.pwd();
     if ($gcda_search_path.count() == 0) {
         $gcda_search_path.add_item("..");
     }
 
-    var gcda type list;
+    var gcfiles type list;
     var g type int;
 
     $g = 0;
     while ($g < $gcda_search_path.count()) {
         if (hefesto.sys.cd($gcda_search_path.item($g))) {
-            $gcda.ls(".*\\.gcda$");
+            $gcfiles.ls(".*\\.gcda$");
+            $gcfiles.ls(".*\\.gcno$");
         }
         $g = $g + 1;
     }
 
+    hefesto.sys.cd($oldcwd);
+
     $g = 0;
-    while ($g < $gcda.count()) {
+    while ($g < $gcfiles.count()) {
         var dest type string;
         var src type string;
-        $src = $gcda.item($g);
-        $dest = hefesto.sys.make_path($obj_dir, filenamefrompath($src));
-        hefesto.sys.run("mv " + $src + " " + $dest);
+        $src = $gcfiles.item($g);
+        $dest = hefesto.sys.make_path(hefesto.sys.make_path($oldcwd, $obj_dir), filenamefrompath($src));
+        if ($src != $dest) {
+            hefesto.sys.run("mv " + $src + " " + $dest);
+        }
         $g = $g + 1;
     }
-
-    hefesto.sys.cd($oldcwd);
 }
 
 local function clean_coverage_files(obj_dir type string) : result type none {
