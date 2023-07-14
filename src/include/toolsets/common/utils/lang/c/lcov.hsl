@@ -101,7 +101,7 @@ local function gcc_gen_lcov_report(obj_dir type string,
     if ($err == 0) {
         $option = hefesto.sys.get_option("lcov-remove-patterns");
         $err = hefesto.sys.run("lcov --quiet --remove " + $lcov_filepath + " " +
-                                gcc_mk_raw_str_opt($option) + " --output-file " +
+                                gcc_mk_raw_str_opt($option) + " --ignore-errors unused --output-file " +
                                 $lcov_filepath + ">/dev/null 2>&1");
         if ($err == 0) {
             hefesto.sys.echo("INFO: coverage file generated at '" + $lcov_filepath + "'.\n");
@@ -132,7 +132,7 @@ local function clang_gen_lcov_report(obj_dir type string,
         if ($err == 0) {
             $option = hefesto.sys.get_option("lcov-remove-patterns");
             $err = hefesto.sys.run("lcov --quiet --remove " + $lcov_filepath + " " +
-                                    gcc_mk_raw_str_opt($option) + " --output-file " +
+                                    gcc_mk_raw_str_opt($option) + " --ignore-errors unused --output-file " +
                                     $lcov_filepath + ">/dev/null 2>&1");
             if ($err == 0) {
                 hefesto.sys.echo("INFO: coverage file generated at '" + $lcov_filepath + "'.\n");
