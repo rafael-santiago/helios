@@ -147,7 +147,7 @@ function msvc_configure_dev_env() : result type int {
 
     var year type int;
 
-    $year = 2019;
+    $year = 2042;
 
     var exit_code type int;
     $exit_code = 1;
