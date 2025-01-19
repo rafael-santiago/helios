@@ -231,6 +231,10 @@ function clang_c_binary_forge(SOURCES type list, INCLUDES type list, CFLAGS type
         $bin_output = $APPNAME;
     }
 
+    if (hefesto.sys.os_name() == "windows" && $bin_output.match("\\.exe$") == 0) {
+        $bin_output = $bin_output + ".exe";
+    }
+
     $exit_code = 0;
 
     $includes = clang_mk_clang_incl_str_opt($INCLUDES); #  Clang's include list option string
